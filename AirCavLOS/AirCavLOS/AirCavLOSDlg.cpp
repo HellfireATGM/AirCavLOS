@@ -29,7 +29,7 @@ char *TerrainStr[4] =
 	"Clear", "Woods", "Town", "River"
 };
 
-static std::string file_dir = "G:\\AirCavLOS\\";
+static std::string file_dir = "C:\\AirCavLOS\\";
 static std::string weapons_file = "weapons.txt";
 static std::string units_file = "units.txt";
 

@@ -15,6 +15,9 @@
 #include "UnitDetails.h"
 #include "IndirectFire.h"
 
+#include <string>
+#include <map>
+
 #pragma warning(disable:4996)
 #pragma warning(disable: 4244)
 
@@ -1567,7 +1570,9 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		_itoa_s(activeUnitElev, buffer, 10);
 		m_activeUnitActualElev = (CString)buffer;
 
-		// calculate range from all other units to active unit (these are SIGHTING)
+		// calculate range from active unit to all other units (these are SIGHTED)
+		int numPopupSightings = 0;
+		std::map<int, std::string> popupSightedUnits;
 		for ( int c=0; c<m_maxCounters; c++ )
 		{
 			if ( c != m_ActiveUnit )
@@ -1685,20 +1690,60 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						length = sightingUnitType.GetLength() + 1;
 						for (int i = 0; i < length; i++)
 							sType[i] = sightingUnitType.GetAt(i);						
-						if ( popupRange )
-							sprintf_s( buffer, "%s [%s] [POPUP] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d", 
-									sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2 );
+						if (popupRange)
+						{
+							numPopupSightings++;
+							sprintf_s(buffer, "%s [%s] [POPUP] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+								sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+							popupSightedUnits.insert(std::make_pair(c, buffer));
+						}
 						else
-							sprintf_s( buffer, "%s [%s] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d", 
-									sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2 );
-						if ( rebuildList )
-							m_SightedUnitsListBox.AddString(CString(buffer));
+						{
+							sprintf_s(buffer, "%s [%s] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+								sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+							if (rebuildList)
+								m_SightedUnitsListBox.AddString(CString(buffer));
+						}
 					}
 				}
 			}
 		}
 
-		// calculate range from active unit to all other units (these are SIGHTED)
+		// check all other friendly units, if all sightings were popup sightings, then there are effectively no sightings (at least one must be non-popup)
+		for (auto s : popupSightedUnits)
+		{
+			int numNormalSightings = 0;
+			for (int c = 0; c < m_maxCounters; c++)
+			{
+				CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
+				int isAlive = counterDataList[c]->getIsAlive();
+				if (countryType == thisCountryType && isAlive)
+				{
+					int targetUnitHexColumn = counterDataList[s.first]->getHexCol();
+					int targetUnitHexRow = counterDataList[s.first]->getHexRow();
+					int targetUnitOffset = counterDataList[s.first]->getElevOffset();
+					int targetUnitHeloOffset = counterDataList[s.first]->getHeloOffset();
+					targetUnitOffset += targetUnitHeloOffset;
+					int friendlyUnitHexColumn = counterDataList[c]->getHexCol();
+					int friendlyUnitHexRow = counterDataList[c]->getHexRow();
+					int friendlyUnitOffset = counterDataList[c]->getElevOffset();
+					int friendlyUnitHeloOffset = counterDataList[c]->getHeloOffset();
+					friendlyUnitOffset += friendlyUnitHeloOffset;
+
+					int range = mapData->CalculateLOS(friendlyUnitHexRow, friendlyUnitHexColumn, friendlyUnitOffset,
+						targetUnitHexRow, targetUnitHexColumn, targetUnitOffset, buffer);
+					if (range > 0)
+						numNormalSightings++;
+				}
+			}
+			if (rebuildList && numNormalSightings)
+			{
+				m_SightedUnitsListBox.AddString(CString(s.second.c_str()));
+			}
+		}
+
+		// calculate range from all other units to active unit (these are SIGHTING)
+		numPopupSightings = 0;
 		for ( int c=0; c<m_maxCounters; c++ )
 		{
 			if ( c != m_ActiveUnit )
@@ -1815,18 +1860,54 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						length = sightingUnitType.GetLength() + 1;
 						for (int i = 0; i < length; i++)
 							sType[i] = sightingUnitType.GetAt(i);
-						if ( popupRange )
-							sprintf_s( buffer, "%s [%s] [POPUP] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d", 
-											sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2 );
+						if (popupRange)
+						{
+							numPopupSightings++;
+							sprintf_s(buffer, "%s [%s] [POPUP] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+								sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+						}
 						else
-							sprintf_s( buffer, "%s [%s] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d", 
-											sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2 );
+						{
+							sprintf_s(buffer, "%s [%s] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+								sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+						}
 						if ( rebuildList )
 							m_SightingUnitsListBox.AddString(CString(buffer));
 					}
 				}
 			}
 		}
+
+		// check all other friendly units, if all sightings were popup sightings, then there are effectively no sightings (at least one must be non-popup)
+		int numNormalSightings = 0;
+		for (int c = 0; c < m_maxCounters; c++)
+		{
+			if (c != m_ActiveUnit)
+			{
+				CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
+				int isAlive = counterDataList[c]->getIsAlive();
+				if (countryType != thisCountryType && isAlive)
+				{
+					int targetUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
+					int targetUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
+					int targetUnitOffset = counterDataList[m_ActiveUnit]->getElevOffset();
+					int targetUnitHeloOffset = counterDataList[m_ActiveUnit]->getHeloOffset();
+					targetUnitOffset += targetUnitHeloOffset;
+					int friendlyUnitHexColumn = counterDataList[c]->getHexCol();
+					int friendlyUnitHexRow = counterDataList[c]->getHexRow();
+					int friendlyUnitOffset = counterDataList[c]->getElevOffset();
+					int friendlyUnitHeloOffset = counterDataList[c]->getHeloOffset();
+					friendlyUnitOffset += friendlyUnitHeloOffset;
+
+					int range = mapData->CalculateLOS(friendlyUnitHexRow, friendlyUnitHexColumn, friendlyUnitOffset,
+						targetUnitHexRow, targetUnitHexColumn, targetUnitOffset, buffer);
+					if (range > 0)
+						numNormalSightings++;
+				}
+			}
+		}
+		if (numPopupSightings > 0 && numNormalSightings == 0)
+			m_SightingUnitsListBox.ResetContent();
 
 		UpdateData(FALSE);
 	}

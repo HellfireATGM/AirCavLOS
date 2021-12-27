@@ -250,12 +250,6 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 		sprintf( logBuffer, "Terrain Modifier = %d (None)\n", terrainMod );
 		strcat( logString, logBuffer );
 	}
-	if ( terr == WOODS )
-	{
-		terrainMod = woodsMod;
-		sprintf( logBuffer, "Terrain Modifier = %d (Woods)\n", terrainMod );
-		strcat( logString, logBuffer );
-	}
 
 	int lowLevel = tgt->getHeloOffset() > 0;
 	if ( smoke &&  !lowLevel )

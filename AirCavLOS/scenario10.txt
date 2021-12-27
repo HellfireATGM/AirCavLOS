@@ -1,0 +1,7 @@
+Scenario 10: Custom Scenario 5
+#
+# name     side   country  unit type           col  row  elev  carrier  mounted
+#
+Bravo_01   BLUE   US       M1A1_MBT            37   30   0     none       0
+Char_64    RED    SOVIET   T-72_MBT            13   45   0     none       0
+

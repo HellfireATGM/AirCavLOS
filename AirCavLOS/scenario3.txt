@@ -1,0 +1,37 @@
+Scenario 3: Ambush! 1978
+#
+# name     side   country  unit type           col  row  elev  carrier  mounted
+#
+Alpha_01     BLUE     US       AH-1S_Cobra       18   01   0   none    0  	 
+Alpha_02     BLUE     US       AH-1S_Cobra       22   01   0   none    0  	 
+Bravo_08     BLUE     US       OH-58_Kiowa       20   01   0   none    0  	 
+Char_61      RED      SOVIET   T-62_MBT          48   26   0   none    0  	 
+Char_62      RED      SOVIET   T-62_MBT          48   26   0   none    0  	 
+Char_63      RED      SOVIET   T-62_MBT          48   26   0   none    0  	 
+Char_64      RED      SOVIET   T-62_MBT          48   26   0   none    0  	 
+Mike_05      RED      SOVIET   BRDM_Recon        48   26   0   none    0  	 
+Mike_06      RED      SOVIET   BRDM_Recon        48   26   0   none    0  	 
+Mike_07      RED      SOVIET   BRDM_Recon        48   26   0   none    0  	 
+Echo_11      RED      SOVIET   BMP-1_APC         48   26   0   none    0  	 
+Echo_12      RED      SOVIET   BMP-1_APC         48   26   0   none    0  	 
+Echo_13      RED      SOVIET   BMP-1_APC         48   26   0   none    0  	 
+Echo_14      RED      SOVIET   BMP-1_APC         48   26   0   none    0  	 
+Echo_15      RED      SOVIET   BMP-1_APC         48   26   0   none    0  	 
+Echo_16      RED      SOVIET   BMP-1_APC         48   26   0   none    0  	 
+Echo_17      RED      SOVIET   BMP-1_APC         48   26   0   none    0  	 
+Echo_18      RED      SOVIET   BMP-1_APC         48   26   0   none    0  	 
+Echo_19      RED      SOVIET   BMP-1_APC         48   26   0   none    0  	 
+Echo_20      RED      SOVIET   BMP-1_APC         48   26   0   none    0  	 
+Papa_11      RED      SOVIET   Soviet_Inf_Squad  48   26   0   Echo_11    1  	 
+Papa_12      RED      SOVIET   Soviet_Inf_Squad  48   26   0   Echo_12    1  	 
+Papa_13      RED      SOVIET   Soviet_Inf_Squad  48   26   0   Echo_13    1  	 
+Papa_14      RED      SOVIET   Soviet_Inf_Squad  48   26   0   Echo_14    1  	 
+Papa_15      RED      SOVIET   Soviet_Inf_Squad  48   26   0   Echo_15    1  	 
+Papa_16      RED      SOVIET   Soviet_Inf_Squad  48   26   0   Echo_16    1  	 
+Papa_17      RED      SOVIET   Soviet_Inf_Squad  48   26   0   Echo_17    1  	 
+Papa_18      RED      SOVIET   Soviet_Inf_Squad  48   26   0   Echo_18    1  	 
+Papa_19      RED      SOVIET   Soviet_Inf_Squad  48   26   0   Echo_19    1  	 
+Papa_20      RED      SOVIET   Soviet_Inf_Squad  48   26   0   Echo_20    1  	 
+Jake_01      RED      SOVIET   ZSU-23_SPAAG      48   26   0   none    0  	 
+Jake_02      RED      SOVIET   ZSU-23_SPAAG      48   26   0   none    0  	 
+Lima_84      RED      SOVIET   BRDM_ATGM_Carrier 48   26   0   none    0  	 

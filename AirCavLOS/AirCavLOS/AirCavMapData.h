@@ -1,0 +1,42 @@
+#pragma once
+
+#include "AirCavCommon.h"
+
+
+class AirCavMapData
+{
+public:
+	AirCavMapData(void);
+	~AirCavMapData(void);
+
+	int OpenMapDataFile(std::string& file_dir);
+	int SaveAndCloseMapDataFile( char *msgbox );
+	int CloseMapDataFile(void);
+	int CalculateLOS( int fx, int fy, int fe, int tx, int ty, int te, char *log );
+	int Check_Block (int org_x, int org_y, int fe, int x, int y, int tgt_x, int tgt_y, int te);
+
+public:
+	int getContour( int col, int row );
+	int getTerrain( int col, int row );
+	int getElevation( int col, int row );
+	int getRoad( int x, int y );
+	int getAutobahn( int x, int y );
+	int getRiver( int x, int y );
+	int getRoadHex( int x, int y, int a );
+	int getAutobahnHex( int x, int y, int r );
+	int getStreamHex( int x, int y, int r );
+	int editTerrainData( int x, int y );
+	int getSmoke( int x, int y );
+	int setSmoke( int x, int y, bool toggle = FALSE );
+	void clearSmoke( int x, int y );
+	bool validHex( int col, int row );
+
+private:
+	FILE	*map_file_pointer;
+	MAP		Map[NCOL][NROW];
+	double	blk_x, blk_y;
+
+	std::string map;
+};
+
+

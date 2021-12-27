@@ -742,7 +742,11 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		UnitType tgtunitType = counterDataList[tgt]->getUnitInfo()->getUnitType();
 		if ( tgtunitType == ARH || tgtunitType == UHH || tgtunitType == UHM || tgtunitType == LHX )
 			if ( counterDataList[tgt]->getHeloOffset() == 0 )
+			{
+				CString msgstr = (CString)"Cannot fire SAM at a nap-of-earth helicopter!";
+				MessageBox((LPCTSTR)msgstr);
 				return;
+			}
 	}
 
 	// figure out if there enough OPs and enough ammo to fire the selected weapon

@@ -1621,7 +1621,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 					if ( range && counterDataList[c]->isVisible(thisTerrain, range, tgtlowLevel, m_Weather, thisSmoke) )
 					{
 						//  calculate final kill number
-						int oppfire = 0; //counterDataList[m_ActiveUnit]->getIsOppFiring();
+						int oppfire = counterDataList[m_ActiveUnit]->getIsOppFiring();
 						int mFKN1 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN( 
 										MAIN1, counterDataList[c], thisTerrain, tgtSmoke, range, oppfire, buffer );
 						if ( m_debugFKNMessages )
@@ -1750,7 +1750,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 					// ignore smoke in the target hex if it is a helo at low level
 					if ( tgtlowLevel && tgtSmoke )
 						tgtSmoke = 0;
-					int oppfire = 0; //counterDataList[c]->getIsOppFiring();
+					int oppfire = counterDataList[c]->getIsOppFiring();
 					if ( range && counterDataList[m_ActiveUnit]->isVisible(thisTerrain, range, activelowLevel, m_Weather, tgtSmoke) )
 					{
 						//  calculate final kill number

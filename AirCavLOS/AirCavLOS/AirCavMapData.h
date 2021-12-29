@@ -37,6 +37,7 @@ private:
 	double	blk_x, blk_y;
 
 	std::string map;
+	std::string dem;
 };
 
 

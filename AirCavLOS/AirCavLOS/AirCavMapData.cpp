@@ -11,7 +11,7 @@
 
 #define EPSILON 0.00001
 #define DBLEQUAL(a1, a2) (((a1 - a2) < EPSILON) && ( (a1 - a2) > -EPSILON))
-#define EPSILONTAN 15.0
+#define EPSILONTAN 26.0
 #define DBLEQUALTAN(a1, a2) (((a1 - a2) < EPSILONTAN) && ( (a1 - a2) > -EPSILONTAN))
 
 char *TerrainString[4] =
@@ -92,6 +92,8 @@ int AirCavMapData::OpenMapDataFile(std::string& file_dir)
 
 	/* open data file */
    map = file_dir + "map.dat";
+   dem = file_dir + "dem.txt";
+
    map_file_pointer = fopen (map.c_str(), "rb");
 	if (map_file_pointer == NULL) 
 	{
@@ -278,7 +280,7 @@ int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 
 	// write out the DEM
 	FILE *dem_file_pointer;
-	dem_file_pointer = fopen ("dem.txt", "w");
+	dem_file_pointer = fopen (dem.c_str(), "w");
 
 	if (dem_file_pointer == NULL) 
 		return 0;
@@ -544,7 +546,7 @@ top:
 		strcat( logString, logBuffer );
 	}
 	range += 1;
-	if (! clear_LOS)
+	if (!clear_LOS)
 	{
 		if (cur_x == tgt_x && cur_y == tgt_y)
 			clear_LOS = 1;
@@ -559,6 +561,7 @@ top:
 		else
 			goto top;
 	}
+	return 0;
 }
 
 int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y, int tgt_x, int tgt_y, int tgt_elev)

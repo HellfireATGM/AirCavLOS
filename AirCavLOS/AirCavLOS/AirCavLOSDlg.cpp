@@ -32,7 +32,7 @@ char *TerrainStr[4] =
 	"Clear", "Woods", "Town", "River"
 };
 
-static std::string file_dir = "C:\\AirCavLOS\\";
+static std::string file_dir = "G:\\AirCavLOS\\";
 static std::string weapons_file = "weapons.txt";
 static std::string units_file = "units.txt";
 
@@ -306,6 +306,7 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_MAKE_ACTIVE, &CAirCavLOSDlg::OnBnClickedButtonMakeActive)
 	ON_BN_CLICKED(IDC_BUTTON_RESET_ACTIVE, &CAirCavLOSDlg::OnBnClickedButtonResetActive)
 	ON_BN_CLICKED(IDC_BUTTON_EDIT_TERRAIN, &CAirCavLOSDlg::OnBnClickedButtonEditTerrain)
+	ON_BN_CLICKED(IDC_BUTTON_EDIT_TERRAIN2, &CAirCavLOSDlg::OnBnClickedButtonFillTerrain)
 	ON_NOTIFY(UDN_DELTAPOS, IDC_SPIN1, &CAirCavLOSDlg::OnDeltaposSpin1)
 	ON_BN_CLICKED(IDC_CHECK_ACTIVE_FIRED, &CAirCavLOSDlg::OnBnClickedCheckActiveFired)
 	ON_BN_CLICKED(IDC_CHECK_ACTIVE_MOVED, &CAirCavLOSDlg::OnBnClickedCheckActiveMoved)
@@ -1350,6 +1351,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		{
 			// unit is dead
 			m_activeUnitName += " [DEAD]";
+			counterDataList[m_ActiveUnit]->setOPs(0.0);
 		}
 		else if (counterDataList[m_ActiveUnit]->getActionTaken())
 		{
@@ -1570,344 +1572,359 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		_itoa_s(activeUnitElev, buffer, 10);
 		m_activeUnitActualElev = (CString)buffer;
 
-		// calculate range from active unit to all other units (these are SIGHTED)
-		int numPopupSightings = 0;
-		std::map<int, std::string> popupSightedUnits;
-		for ( int c=0; c<m_maxCounters; c++ )
+		// only bother with Line of Sight if the active unit is alive
+		if (counterDataList[m_ActiveUnit]->getIsAlive())
 		{
-			if ( c != m_ActiveUnit )
-			{
-				int hexColumn = counterDataList[c]->getHexCol();
-				int hexRow = counterDataList[c]->getHexRow();
-				CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
-				int isAlive = counterDataList[c]->getIsAlive();
-				if ( countryType != thisCountryType && isAlive )
-				{
-					bool popupRange = false;
-					int targetUnitOffset = counterDataList[c]->getElevOffset();
-					int targetUnitHeloOffset = counterDataList[c]->getHeloOffset();
-					targetUnitOffset += targetUnitHeloOffset;
-
-					//  calculate line-of-sight
-					int range = mapData->CalculateLOS( hexRow, hexColumn, targetUnitOffset,
-									activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, buffer );
-
-					// for pop-ups, calculate Helo elev as if it is at low level
-					if ( range == 0 )
-					{
-						UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-						if ( activeUnitOffset == 0 && ( unitType == ARH  || unitType == LHX ) )
-						{
-							//  recalculate calculate line-of-sight assuming a pop-up
-							range = mapData->CalculateLOS( hexRow, hexColumn, targetUnitOffset,
-											activeUnitHexRow, activeUnitHexColumn, activeUnitOffset+30, buffer );
-							if ( range > 0 )
-								popupRange = true;
-						}
-					}
-
-					CString unitName = counterDataList[m_ActiveUnit]->getName();
-					CString targetName = counterDataList[c]->getName();
-					if ( m_debugLOSMessages )
-					{
-						CString msgstr = (CString)buffer;
-						if (MessageBox((CString)msgstr, _T("Debug LOS from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
-							m_debugLOSMessages = FALSE;
-					}
-
-					int thisTerrain = mapData->getTerrain( hexRow, hexColumn );
-					int thisSmoke = mapData->getSmoke( activeUnitHexRow, activeUnitHexColumn );
-					int tgtSmoke = mapData->getSmoke( hexRow, hexColumn );
-					int tgtlowLevel = targetUnitHeloOffset > 0;
-					int activeUnitHeloOffset = counterDataList[m_ActiveUnit]->getHeloOffset();
-					int activelowLevel = activeUnitHeloOffset > 0;
-					// a unit can only be observed from 1 hex away if it is in smoke hex and not low level
-					if ( !tgtlowLevel && tgtSmoke && range > 1 )
-						continue;
-					// ignore smoke in the active hex if it is a helo at low level
-					if ( activelowLevel && thisSmoke )
-						thisSmoke = 0;
-					if ( range && counterDataList[c]->isVisible(thisTerrain, range, tgtlowLevel, m_Weather, thisSmoke) )
-					{
-						//  calculate final kill number
-						int oppfire = counterDataList[m_ActiveUnit]->getIsOppFiring();
-						int mFKN1 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN( 
-										MAIN1, counterDataList[c], thisTerrain, tgtSmoke, range, oppfire, buffer );
-						if ( m_debugFKNMessages )
-						{
-							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug FKN from " ) + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
-								m_debugFKNMessages = FALSE;
-						}
-
-						int mFKN2 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN( 
-										MAIN2, counterDataList[c], thisTerrain, tgtSmoke, range, oppfire, buffer );
-						if ( m_debugFKNMessages )
-						{
-							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
-								m_debugFKNMessages = FALSE;
-						}
-
-						int mFKN3 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN( 
-										MAIN3, counterDataList[c], thisTerrain, tgtSmoke, range, oppfire, buffer );
-						if ( m_debugFKNMessages )
-						{
-							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
-								m_debugFKNMessages = FALSE;
-						}
-
-						int sFKN1 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN( 
-										SECONDARY1, counterDataList[c], thisTerrain, tgtSmoke, range, oppfire, buffer );
-						if ( m_debugFKNMessages )
-						{
-							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
-								m_debugFKNMessages = FALSE;
-						}
-
-						int sFKN2 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN( 
-										SECONDARY2, counterDataList[c], thisTerrain, tgtSmoke, range, oppfire, buffer );
-						if ( m_debugFKNMessages )
-						{
-							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
-								m_debugFKNMessages = FALSE;
-						}
-
-						// only update FKN numbers for the active target
-						if ( m_ActiveTarget == c )
-							counterDataList[m_ActiveUnit]->setFinalKillNumbers( mFKN1, mFKN2, mFKN3, sFKN1, sFKN2 );
-
-						char sName[32], sType[32];
-						int length;
-						CString sightingUnitName = counterDataList[c]->getName();
-						CString sightingUnitType = counterDataList[c]->getUnitInfo()->getName();
-						length = sightingUnitName.GetLength() + 1;
-						for (int i = 0; i < length; i++)
-							sName[i] = sightingUnitName.GetAt(i);						
-						length = sightingUnitType.GetLength() + 1;
-						for (int i = 0; i < length; i++)
-							sType[i] = sightingUnitType.GetAt(i);						
-						if (popupRange)
-						{
-							numPopupSightings++;
-							sprintf_s(buffer, "%s [%s] [POPUP] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
-								sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
-							popupSightedUnits.insert(std::make_pair(c, buffer));
-						}
-						else
-						{
-							sprintf_s(buffer, "%s [%s] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
-								sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
-							if (rebuildList)
-								m_SightedUnitsListBox.AddString(CString(buffer));
-						}
-					}
-				}
-			}
-		}
-
-		// check all other friendly units, if all sightings were popup sightings, then there are effectively no sightings (at least one must be non-popup)
-		for (auto s : popupSightedUnits)
-		{
-			int numNormalSightings = 0;
+			// calculate range from active unit to all other units (these are SIGHTED)
+			int numPopupSightings = 0;
+			std::map<int, std::string> popupSightedUnits;
 			for (int c = 0; c < m_maxCounters; c++)
 			{
-				CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
-				int isAlive = counterDataList[c]->getIsAlive();
-				if (countryType == thisCountryType && isAlive)
+				if (c != m_ActiveUnit)
 				{
-					int targetUnitHexColumn = counterDataList[s.first]->getHexCol();
-					int targetUnitHexRow = counterDataList[s.first]->getHexRow();
-					int targetUnitOffset = counterDataList[s.first]->getElevOffset();
-					int targetUnitHeloOffset = counterDataList[s.first]->getHeloOffset();
-					targetUnitOffset += targetUnitHeloOffset;
-					int friendlyUnitHexColumn = counterDataList[c]->getHexCol();
-					int friendlyUnitHexRow = counterDataList[c]->getHexRow();
-					int friendlyUnitOffset = counterDataList[c]->getElevOffset();
-					int friendlyUnitHeloOffset = counterDataList[c]->getHeloOffset();
-					friendlyUnitOffset += friendlyUnitHeloOffset;
-
-					int range = mapData->CalculateLOS(friendlyUnitHexRow, friendlyUnitHexColumn, friendlyUnitOffset,
-						targetUnitHexRow, targetUnitHexColumn, targetUnitOffset, buffer);
-					if (range > 0)
-						numNormalSightings++;
-				}
-			}
-			if (rebuildList && numNormalSightings)
-			{
-				m_SightedUnitsListBox.AddString(CString(s.second.c_str()));
-			}
-		}
-
-		// calculate range from all other units to active unit (these are SIGHTING)
-		numPopupSightings = 0;
-		for ( int c=0; c<m_maxCounters; c++ )
-		{
-			if ( c != m_ActiveUnit )
-			{
-				int hexColumn = counterDataList[c]->getHexCol();
-				int hexRow = counterDataList[c]->getHexRow();
-				CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
-				int isAlive = counterDataList[c]->getIsAlive();
-				if ( countryType != thisCountryType && isAlive )
-				{
-					bool popupRange = false;
-					int targetUnitOffset = counterDataList[c]->getElevOffset();
-					int targetUnitHeloOffset = counterDataList[c]->getHeloOffset();
-					targetUnitOffset += targetUnitHeloOffset;
-
-					//  calculate line-of-sight
-					int range = mapData->CalculateLOS( activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, 
-										hexRow, hexColumn, targetUnitOffset, buffer );
-
-					// for pop-ups, calculate Helo elev as if it is at low level
-					if ( range == 0 )
+					int hexColumn = counterDataList[c]->getHexCol();
+					int hexRow = counterDataList[c]->getHexRow();
+					CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
+					int isAlive = counterDataList[c]->getIsAlive();
+					int isDismounted = counterDataList[c]->getIsDismounted();
+					if (countryType != thisCountryType && isAlive && isDismounted)
 					{
-						UnitType unitType = counterDataList[c]->getUnitInfo()->getUnitType();
-						if ( targetUnitHeloOffset == 0 && ( unitType == ARH  || unitType == LHX ) )
-							targetUnitHeloOffset = 30;
+						bool popupRange = false;
+						int targetUnitOffset = counterDataList[c]->getElevOffset();
+						int targetUnitHeloOffset = counterDataList[c]->getHeloOffset();
 						targetUnitOffset += targetUnitHeloOffset;
 
-						//  recalculate calculate line-of-sight assuming a pop-up
-						range = mapData->CalculateLOS( activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, 
-											hexRow, hexColumn, targetUnitOffset, buffer );
+						//  calculate line-of-sight
+						int range = mapData->CalculateLOS(hexRow, hexColumn, targetUnitOffset,
+							activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, buffer);
 
-						if ( range > 0 )
-							popupRange = true;
-					}
+						// for pop-ups, calculate Helo elev as if it is at low level
+						if (range == 0)
+						{
+							UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
+							if (activeUnitOffset == 0 && (unitType == ARH || unitType == LHX))
+							{
+								//  recalculate calculate line-of-sight assuming a pop-up
+								range = mapData->CalculateLOS(hexRow, hexColumn, targetUnitOffset,
+									activeUnitHexRow, activeUnitHexColumn, activeUnitOffset + 30, buffer);
+								if (range > 0)
+									popupRange = true;
+							}
+						}
 
-					CString unitName = counterDataList[m_ActiveUnit]->getName();
-					CString targetName = counterDataList[c]->getName();
-					if ( m_debugLOSMessages )
-					{
-						CString msgstr = (CString)buffer;
-						if (MessageBox((CString)msgstr, _T("Debug LOS from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
-							m_debugLOSMessages = FALSE;
-					}
-
-					int thisTerrain = mapData->getTerrain( activeUnitHexRow, activeUnitHexColumn );
-					int thisSmoke = mapData->getSmoke( activeUnitHexRow, activeUnitHexColumn );
-					int tgtSmoke = mapData->getSmoke( hexRow, hexColumn );
-					int activelowLevel = activeUnitHeloOffset > 0;
-					int tgtlowLevel = targetUnitHeloOffset > 0;
-					// a unit can only be observed from 1 hex away if it is in smoke hex and not low level
-					if ( !activelowLevel && thisSmoke && range > 1 )
-						continue;
-					// ignore smoke in the target hex if it is a helo at low level
-					if ( tgtlowLevel && tgtSmoke )
-						tgtSmoke = 0;
-					int oppfire = counterDataList[c]->getIsOppFiring();
-					if ( range && counterDataList[m_ActiveUnit]->isVisible(thisTerrain, range, activelowLevel, m_Weather, tgtSmoke) )
-					{
-						//  calculate final kill number
-						int mFKN1 = counterDataList[c]->getUnitInfo()->CalculateFKN( 
-										MAIN1, counterDataList[m_ActiveUnit], terrain, thisSmoke, range, oppfire, buffer );
-						if ( m_debugFKNMessages )
+						CString unitName = counterDataList[m_ActiveUnit]->getName();
+						CString targetName = counterDataList[c]->getName();
+						if (m_debugLOSMessages)
 						{
 							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
-								m_debugFKNMessages = FALSE;
+							if (MessageBox((CString)msgstr, _T("Debug LOS from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
+								m_debugLOSMessages = FALSE;
 						}
 
-						int mFKN2 = counterDataList[c]->getUnitInfo()->CalculateFKN( 
-										MAIN2, counterDataList[m_ActiveUnit], terrain, thisSmoke, range, oppfire, buffer );
-						if ( m_debugFKNMessages )
+						int thisTerrain = mapData->getTerrain(hexRow, hexColumn);
+						int thisSmoke = mapData->getSmoke(activeUnitHexRow, activeUnitHexColumn);
+						int tgtSmoke = mapData->getSmoke(hexRow, hexColumn);
+						int tgtlowLevel = targetUnitHeloOffset > 0;
+						int activeUnitHeloOffset = counterDataList[m_ActiveUnit]->getHeloOffset();
+						int activelowLevel = activeUnitHeloOffset > 0;
+						// a unit can only be observed from 1 hex away if it is in smoke hex and not low level
+						if (!tgtlowLevel && tgtSmoke && range > 1)
+							continue;
+						// ignore smoke in the active hex if it is a helo at low level
+						if (activelowLevel && thisSmoke)
+							thisSmoke = 0;
+						if (range && counterDataList[c]->isVisible(thisTerrain, range, tgtlowLevel, m_Weather, thisSmoke))
 						{
-							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
-								m_debugFKNMessages = FALSE;
-						}
+							//  calculate final kill number
+							int oppfire = counterDataList[m_ActiveUnit]->getIsOppFiring();
+							int mFKN1 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN(
+								MAIN1, counterDataList[c], thisTerrain, tgtSmoke, range, oppfire, buffer);
+							if (m_debugFKNMessages)
+							{
+								CString msgstr = (CString)buffer;
+								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
+									m_debugFKNMessages = FALSE;
+							}
 
-						int mFKN3 = counterDataList[c]->getUnitInfo()->CalculateFKN( 
-										MAIN3, counterDataList[m_ActiveUnit], terrain, thisSmoke, range, oppfire, buffer );
-						if ( m_debugFKNMessages )
-						{
-							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
-								m_debugFKNMessages = FALSE;
-						}
+							int mFKN2 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN(
+								MAIN2, counterDataList[c], thisTerrain, tgtSmoke, range, oppfire, buffer);
+							if (m_debugFKNMessages)
+							{
+								CString msgstr = (CString)buffer;
+								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
+									m_debugFKNMessages = FALSE;
+							}
 
-						int sFKN1 = counterDataList[c]->getUnitInfo()->CalculateFKN( 
-										SECONDARY1, counterDataList[m_ActiveUnit], terrain, thisSmoke, range, oppfire, buffer );
-						if ( m_debugFKNMessages )
-						{
-							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
-								m_debugFKNMessages = FALSE;
-						}
+							int mFKN3 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN(
+								MAIN3, counterDataList[c], thisTerrain, tgtSmoke, range, oppfire, buffer);
+							if (m_debugFKNMessages)
+							{
+								CString msgstr = (CString)buffer;
+								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
+									m_debugFKNMessages = FALSE;
+							}
 
-						int sFKN2 = counterDataList[c]->getUnitInfo()->CalculateFKN( 
-										SECONDARY2, counterDataList[m_ActiveUnit], terrain, thisSmoke, range, oppfire, buffer );
-						if ( m_debugFKNMessages )
-						{
-							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
-								m_debugFKNMessages = FALSE;
-						}
+							int sFKN1 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN(
+								SECONDARY1, counterDataList[c], thisTerrain, tgtSmoke, range, oppfire, buffer);
+							if (m_debugFKNMessages)
+							{
+								CString msgstr = (CString)buffer;
+								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
+									m_debugFKNMessages = FALSE;
+							}
 
-						counterDataList[c]->setFinalKillNumbers( mFKN1, mFKN2, mFKN3, sFKN1, sFKN2 );
+							int sFKN2 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN(
+								SECONDARY2, counterDataList[c], thisTerrain, tgtSmoke, range, oppfire, buffer);
+							if (m_debugFKNMessages)
+							{
+								CString msgstr = (CString)buffer;
+								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
+									m_debugFKNMessages = FALSE;
+							}
 
-						char sName[32], sType[32];
-						int length;
-						CString sightingUnitName = counterDataList[c]->getName();
-						CString sightingUnitType = counterDataList[c]->getUnitInfo()->getName();
-						length = sightingUnitName.GetLength() + 1;
-						for (int i = 0; i < length; i++)
-							sName[i] = sightingUnitName.GetAt(i);
-						length = sightingUnitType.GetLength() + 1;
-						for (int i = 0; i < length; i++)
-							sType[i] = sightingUnitType.GetAt(i);
-						if (popupRange)
-						{
-							numPopupSightings++;
-							sprintf_s(buffer, "%s [%s] [POPUP] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
-								sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+							// only update FKN numbers for the active target
+							if (m_ActiveTarget == c)
+								counterDataList[m_ActiveUnit]->setFinalKillNumbers(mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+
+							char sName[32], sType[32];
+							int length;
+							CString sightingUnitName = counterDataList[c]->getName();
+							CString sightingUnitType = counterDataList[c]->getUnitInfo()->getName();
+							length = sightingUnitName.GetLength() + 1;
+							for (int i = 0; i < length; i++)
+								sName[i] = sightingUnitName.GetAt(i);
+							length = sightingUnitType.GetLength() + 1;
+							for (int i = 0; i < length; i++)
+								sType[i] = sightingUnitType.GetAt(i);
+							if (popupRange)
+							{
+								numPopupSightings++;
+								sprintf_s(buffer, "%s [%s] [POPUP] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+									sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+								popupSightedUnits.insert(std::make_pair(c, buffer));
+							}
+							else
+							{
+								sprintf_s(buffer, "%s [%s] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+									sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+								if (rebuildList)
+									m_SightedUnitsListBox.AddString(CString(buffer));
+							}
 						}
-						else
-						{
-							sprintf_s(buffer, "%s [%s] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
-								sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
-						}
-						if ( rebuildList )
-							m_SightingUnitsListBox.AddString(CString(buffer));
 					}
 				}
 			}
-		}
 
-		// check all other friendly units, if all sightings were popup sightings, then there are effectively no sightings (at least one must be non-popup)
-		int numNormalSightings = 0;
-		for (int c = 0; c < m_maxCounters; c++)
-		{
-			if (c != m_ActiveUnit)
+			// check all other friendly units, if all sightings were popup sightings, then there are effectively no sightings (at least one must be non-popup)
+			for (auto s : popupSightedUnits)
 			{
-				CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
-				int isAlive = counterDataList[c]->getIsAlive();
-				if (countryType != thisCountryType && isAlive)
+				int numNormalSightings = 0;
+				for (int c = 0; c < m_maxCounters; c++)
 				{
-					int targetUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
-					int targetUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
-					int targetUnitOffset = counterDataList[m_ActiveUnit]->getElevOffset();
-					int targetUnitHeloOffset = counterDataList[m_ActiveUnit]->getHeloOffset();
-					targetUnitOffset += targetUnitHeloOffset;
-					int friendlyUnitHexColumn = counterDataList[c]->getHexCol();
-					int friendlyUnitHexRow = counterDataList[c]->getHexRow();
-					int friendlyUnitOffset = counterDataList[c]->getElevOffset();
-					int friendlyUnitHeloOffset = counterDataList[c]->getHeloOffset();
-					friendlyUnitOffset += friendlyUnitHeloOffset;
+					CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
+					int isAlive = counterDataList[c]->getIsAlive();
+					int isDismounted = counterDataList[c]->getIsDismounted();
+					if (countryType == thisCountryType && isAlive && isDismounted)
+					{
+						int targetUnitHexColumn = counterDataList[s.first]->getHexCol();
+						int targetUnitHexRow = counterDataList[s.first]->getHexRow();
+						int targetUnitOffset = counterDataList[s.first]->getElevOffset();
+						int targetUnitHeloOffset = counterDataList[s.first]->getHeloOffset();
+						targetUnitOffset += targetUnitHeloOffset;
+						int friendlyUnitHexColumn = counterDataList[c]->getHexCol();
+						int friendlyUnitHexRow = counterDataList[c]->getHexRow();
+						int friendlyUnitOffset = counterDataList[c]->getElevOffset();
+						int friendlyUnitHeloOffset = counterDataList[c]->getHeloOffset();
+						friendlyUnitOffset += friendlyUnitHeloOffset;
 
-					int range = mapData->CalculateLOS(friendlyUnitHexRow, friendlyUnitHexColumn, friendlyUnitOffset,
-						targetUnitHexRow, targetUnitHexColumn, targetUnitOffset, buffer);
-					if (range > 0)
-						numNormalSightings++;
+						int range = mapData->CalculateLOS(friendlyUnitHexRow, friendlyUnitHexColumn, friendlyUnitOffset,
+							targetUnitHexRow, targetUnitHexColumn, targetUnitOffset, buffer);
+						if (range > 0)
+							numNormalSightings++;
+					}
+				}
+				if (rebuildList && numNormalSightings)
+				{
+					m_SightedUnitsListBox.AddString(CString(s.second.c_str()));
+				}
+			}
+
+			// calculate range from all other units to active unit (these are SIGHTING)
+			numPopupSightings = 0;
+			std::map<int, std::string> popupSightingUnits;
+			for (int c = 0; c < m_maxCounters; c++)
+			{
+				if (c != m_ActiveUnit)
+				{
+					int hexColumn = counterDataList[c]->getHexCol();
+					int hexRow = counterDataList[c]->getHexRow();
+					CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
+					int isAlive = counterDataList[c]->getIsAlive();
+					int isDismounted = counterDataList[c]->getIsDismounted();
+					if (countryType != thisCountryType && isAlive && isDismounted)
+					{
+						bool popupRange = false;
+						int targetUnitOffset = counterDataList[c]->getElevOffset();
+						int targetUnitHeloOffset = counterDataList[c]->getHeloOffset();
+						targetUnitOffset += targetUnitHeloOffset;
+
+						//  calculate line-of-sight
+						int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset,
+							hexRow, hexColumn, targetUnitOffset, buffer);
+
+						// for pop-ups, calculate Helo elev as if it is at low level
+						if (range == 0)
+						{
+							UnitType unitType = counterDataList[c]->getUnitInfo()->getUnitType();
+							if (targetUnitHeloOffset == 0 && (unitType == ARH || unitType == LHX))
+								targetUnitHeloOffset = 30;
+							targetUnitOffset += targetUnitHeloOffset;
+
+							//  recalculate calculate line-of-sight assuming a pop-up
+							range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset,
+								hexRow, hexColumn, targetUnitOffset, buffer);
+
+							if (range > 0)
+								popupRange = true;
+						}
+
+						CString unitName = counterDataList[m_ActiveUnit]->getName();
+						CString targetName = counterDataList[c]->getName();
+						if (m_debugLOSMessages)
+						{
+							CString msgstr = (CString)buffer;
+							if (MessageBox((CString)msgstr, _T("Debug LOS from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
+								m_debugLOSMessages = FALSE;
+						}
+
+						int thisTerrain = mapData->getTerrain(activeUnitHexRow, activeUnitHexColumn);
+						int thisSmoke = mapData->getSmoke(activeUnitHexRow, activeUnitHexColumn);
+						int tgtSmoke = mapData->getSmoke(hexRow, hexColumn);
+						int activelowLevel = activeUnitHeloOffset > 0;
+						int tgtlowLevel = targetUnitHeloOffset > 0;
+						// a unit can only be observed from 1 hex away if it is in smoke hex and not low level
+						if (!activelowLevel && thisSmoke && range > 1)
+							continue;
+						// ignore smoke in the target hex if it is a helo at low level
+						if (tgtlowLevel && tgtSmoke)
+							tgtSmoke = 0;
+						int oppfire = counterDataList[c]->getIsOppFiring();
+						if (range && counterDataList[m_ActiveUnit]->isVisible(thisTerrain, range, activelowLevel, m_Weather, tgtSmoke))
+						{
+							//  calculate final kill number
+							int mFKN1 = counterDataList[c]->getUnitInfo()->CalculateFKN(
+								MAIN1, counterDataList[m_ActiveUnit], terrain, thisSmoke, range, oppfire, buffer);
+							if (m_debugFKNMessages)
+							{
+								CString msgstr = (CString)buffer;
+								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
+									m_debugFKNMessages = FALSE;
+							}
+
+							int mFKN2 = counterDataList[c]->getUnitInfo()->CalculateFKN(
+								MAIN2, counterDataList[m_ActiveUnit], terrain, thisSmoke, range, oppfire, buffer);
+							if (m_debugFKNMessages)
+							{
+								CString msgstr = (CString)buffer;
+								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
+									m_debugFKNMessages = FALSE;
+							}
+
+							int mFKN3 = counterDataList[c]->getUnitInfo()->CalculateFKN(
+								MAIN3, counterDataList[m_ActiveUnit], terrain, thisSmoke, range, oppfire, buffer);
+							if (m_debugFKNMessages)
+							{
+								CString msgstr = (CString)buffer;
+								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
+									m_debugFKNMessages = FALSE;
+							}
+
+							int sFKN1 = counterDataList[c]->getUnitInfo()->CalculateFKN(
+								SECONDARY1, counterDataList[m_ActiveUnit], terrain, thisSmoke, range, oppfire, buffer);
+							if (m_debugFKNMessages)
+							{
+								CString msgstr = (CString)buffer;
+								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
+									m_debugFKNMessages = FALSE;
+							}
+
+							int sFKN2 = counterDataList[c]->getUnitInfo()->CalculateFKN(
+								SECONDARY2, counterDataList[m_ActiveUnit], terrain, thisSmoke, range, oppfire, buffer);
+							if (m_debugFKNMessages)
+							{
+								CString msgstr = (CString)buffer;
+								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
+									m_debugFKNMessages = FALSE;
+							}
+
+							counterDataList[c]->setFinalKillNumbers(mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+
+							char sName[32], sType[32];
+							int length;
+							CString sightingUnitName = counterDataList[c]->getName();
+							CString sightingUnitType = counterDataList[c]->getUnitInfo()->getName();
+							length = sightingUnitName.GetLength() + 1;
+							for (int i = 0; i < length; i++)
+								sName[i] = sightingUnitName.GetAt(i);
+							length = sightingUnitType.GetLength() + 1;
+							for (int i = 0; i < length; i++)
+								sType[i] = sightingUnitType.GetAt(i);
+							if (popupRange)
+							{
+								numPopupSightings++;
+								sprintf_s(buffer, "%s [%s] [POPUP] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+									sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+								popupSightingUnits.insert(std::make_pair(c, buffer));
+							}
+							else
+							{
+								sprintf_s(buffer, "%s [%s] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+									sName, sType, hexColumn, hexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+								if (rebuildList)
+									m_SightingUnitsListBox.AddString(CString(buffer));
+							}
+						}
+					}
+				}
+			}
+
+			// check all other enemy units, if all sightings were popup sightings, then there are effectively no sightings (at least one must be non-popup)
+			for (auto s : popupSightingUnits)
+			{
+				int numNormalSightings = 0;
+				for (int c = 0; c < m_maxCounters; c++)
+				{
+					if (c != m_ActiveUnit)
+					{
+						CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
+						int isAlive = counterDataList[c]->getIsAlive();
+						int isDismounted = counterDataList[c]->getIsDismounted();
+						if (countryType != thisCountryType && isAlive && isDismounted)
+						{
+							int targetUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
+							int targetUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
+							int targetUnitOffset = counterDataList[m_ActiveUnit]->getElevOffset();
+							int targetUnitHeloOffset = counterDataList[m_ActiveUnit]->getHeloOffset();
+							targetUnitOffset += targetUnitHeloOffset;
+							int enemyUnitHexColumn = counterDataList[c]->getHexCol();
+							int enemyUnitHexRow = counterDataList[c]->getHexRow();
+							int enemyUnitOffset = counterDataList[c]->getElevOffset();
+							int enemyUnitHeloOffset = counterDataList[c]->getHeloOffset();
+							enemyUnitOffset += enemyUnitHeloOffset;
+
+							int range = mapData->CalculateLOS(enemyUnitHexRow, enemyUnitHexColumn, enemyUnitOffset,
+								targetUnitHexRow, targetUnitHexColumn, targetUnitOffset, buffer);
+							if (range > 0)
+								numNormalSightings++;
+						}
+					}
+				}
+				if (rebuildList && numNormalSightings)
+				{
+					m_SightingUnitsListBox.AddString(CString(s.second.c_str()));
 				}
 			}
 		}
-		if (numPopupSightings > 0 && numNormalSightings == 0)
-			m_SightingUnitsListBox.ResetContent();
 
 		UpdateData(FALSE);
 	}
@@ -1934,18 +1951,37 @@ void CAirCavLOSDlg::OnBnClickedButtonEditTerrain()
 	}
 }
 
+void CAirCavLOSDlg::OnBnClickedButtonFillTerrain()
+{
+	for (int r = MIN_ROWS; r <= MAX_ROWS; r++)
+	{
+		for (int c = MIN_COLUMNS; c <= MAX_COLUMNS; c++)
+		{
+			if (mapData->getElevation(r, c) < 0)
+				return;
+		}
+	}
+}
+
 void CAirCavLOSDlg::OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult)
 {
-	LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
+	if (counterDataList[m_ActiveUnit]->getIsAlive())
+	{
+		LPNMUPDOWN pNMUpDown = reinterpret_cast<LPNMUPDOWN>(pNMHDR);
 
-	if ( pNMUpDown->iDelta < 0 )
-		counterDataList[m_ActiveUnit]->incrOPs( (double)-((double)pNMUpDown->iDelta/(double)2.0) );
+		if (pNMUpDown->iDelta < 0)
+			counterDataList[m_ActiveUnit]->incrOPs((double)-((double)pNMUpDown->iDelta / (double)2.0));
+		else
+			counterDataList[m_ActiveUnit]->decrOPs((double)+((double)pNMUpDown->iDelta / (double)2.0));
+
+		char buffer[10];
+		sprintf_s(buffer, "%2.1f", counterDataList[m_ActiveUnit]->getOPs());
+		m_activeUnitOPs = (CString)buffer;
+	}
 	else
-		counterDataList[m_ActiveUnit]->decrOPs( (double)+((double)pNMUpDown->iDelta/(double)2.0) );
-
-	char buffer[10];
-	sprintf_s( buffer, "%2.1f", counterDataList[m_ActiveUnit]->getOPs() );
-	m_activeUnitOPs = (CString)buffer;
+	{
+		m_activeUnitOPs = (CString)"0.0";
+	}
 
 	UpdateData(FALSE);
 
@@ -1954,12 +1990,28 @@ void CAirCavLOSDlg::OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult)
 
 void CAirCavLOSDlg::OnBnClickedCheckActiveFired()
 {
-	// TODO: Add your control notification handler code here
+	if (m_ActiveUnit >= 0)
+	{
+		if (counterDataList[m_ActiveUnit]->getFired())
+			counterDataList[m_ActiveUnit]->nofire();
+		else
+			counterDataList[m_ActiveUnit]->fire();
+		UpdateData(TRUE);
+		updateActiveUnit();
+	}
 }
 
 void CAirCavLOSDlg::OnBnClickedCheckActiveMoved()
 {
-	// TODO: Add your control notification handler code here
+	if (m_ActiveUnit >= 0)
+	{
+		if (counterDataList[m_ActiveUnit]->getMoved())
+			counterDataList[m_ActiveUnit]->nomove();
+		else
+			counterDataList[m_ActiveUnit]->move();
+		UpdateData(TRUE);
+		updateActiveUnit();
+	}
 }
 
 void CAirCavLOSDlg::OnBnClickedButtonActionReset()

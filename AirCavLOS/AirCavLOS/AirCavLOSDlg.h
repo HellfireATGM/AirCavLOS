@@ -165,6 +165,7 @@ public:
 	void replaceUnderscores( char *strPtr );
 
 	afx_msg void OnBnClickedButtonEditTerrain();
+	afx_msg void OnBnClickedButtonFillTerrain();
 	afx_msg void OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnBnClickedCheckActiveFired();
 	afx_msg void OnBnClickedCheckActiveMoved();

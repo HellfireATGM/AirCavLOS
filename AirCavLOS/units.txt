@@ -32,7 +32,7 @@ Challenger_MBT    U.S._120mm_Gun       None                None             U.S.
 Scorpion_Recon    U.K._76mm_MG         None                None             U.S._7.62mm_MG     None             TLAV   TT_D  -3  -4  -2  0   0  
 Scorpion_90_Recon U.K._90mm_MG         None                None             U.S._7.62mm_MG     None             TLAV   TT_D  -3  -4  -1  0   0  
 MCV-80_APC        U.K._30mm_Cannon     None                None             U.S._7.62mm_MG     None             TLAV   TT_D  -3  -5  -1  0   0  
-U.K._Inf_Squad    U.K._L1A1_AR         U.S._RGL            U.S._7.62mm_MG   U.S._M72_LAW       None             INF    TT_E   0  -5  -5  4   0  
+U.K._Inf_Squad    U.K._L1A1_AR         U.S._RGL            U.S._7.62mm_MG   U.S._M72_LAW       None             INF    TT_E   0  -5  -5  4   4  
 U.K._Inf_Team     U.K._Milan_ATGM      U.K._Javelin_AAM    None             U.K._L1A1_AR       None             INF    TT_F   0  -5  -6  0   8  
 FV-438_ATGM       U.K._Swingfire_ATGM  None                None             U.S._7.62mm_MG     None             TLAV   TT_D  -3  -4  -2  0   8  
 Lynx_AH1          U.S._TOW_ATGM        None                None             None               None             ARH    TT_E  -4   0   0  0   8  

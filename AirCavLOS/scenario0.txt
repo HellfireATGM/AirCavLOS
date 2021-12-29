@@ -11,7 +11,7 @@ Mike_05    RED    SOVIET   BRDM_Recon          17   44   0     none       0
 Char_64    RED    SOVIET   T-72_MBT            13   45   0     none       0
 Char_65    RED    SOVIET   T-72_MBT            12   46   0     none       0
 Char_66    RED    SOVIET   T-72_MBT            11   46   0     none       0
-Jake_01    RED    SOVIET   ZSU-23_SPAAG        14   45   0     none       0
+Jake_01    RED    SOVIET   ZSU-23_SPAAG        20   40   0     none       0
 India_81   RED    SOVIET   BRDM_SPSAM          15   44   0     none       0
 Fox_21     RED    SOVIET   BMP-1_APC           23   40   0     none       0
 Romeo_21   RED    SOVIET   Soviet_Inf_Squad    23   40   0     Fox_21     1

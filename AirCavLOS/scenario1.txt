@@ -4,8 +4,8 @@ Scenario 1: Pipesmoke Mission 1980
 #
 Alpha_01   BLUE   US       AH-1S_Cobra         36   33   0     none      0
 Alpha_02   BLUE   US       AH-1S_Cobra         38   34   0     none      0
-Jake_01    BLUE   US       U.S._Inf_Squad      39   31   0     Delta_21  0
 Delta_21   BLUE   US       UH-60_Blackhawk     38   01   0     none      0
+Jake_01    BLUE   US       U.S._Inf_Squad      39   31   0     Delta_21  0
 Mike_05    RED    SOVIET   BRDM_Recon          14   43   0     none      0
 Mike_06    RED    SOVIET   BRDM_Recon          14   43   0     none      0
 Mike_07    RED    SOVIET   BRDM_Recon          14   43   0     none      0

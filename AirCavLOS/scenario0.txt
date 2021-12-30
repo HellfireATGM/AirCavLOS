@@ -3,7 +3,7 @@ Scenario 0: Testing Ground
 # name     side   country  unit type           col  row  elev  carrier  mounted
 #
 Alpha_01   BLUE   US       AH-64_Apache        33   31   0     none       0
-Alpha_02   BLUE   US       AH-1S_Cobra         38   34   0     none       0
+Alpha_02   BLUE   US       LHX_SCAT            38   34   0     none       0
 Bravo_01   BLUE   US       M1A1_MBT            37   30   0     none       0
 Delta_21   BLUE   US       UH-60_Blackhawk     10   33   0     none       0
 Jake_01    BLUE   US       U.S._Inf_Squad      39   31   0     Delta_21   0

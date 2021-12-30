@@ -643,7 +643,11 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 	// get the unit that the active unit has sighted
 	int indexSelectedUnit = m_SightedUnitsListBox.GetCurSel();
 	if (indexSelectedUnit < 0 )
+	{
+		CString msgstr = (CString)"No sighted unit has been selected to fire upon";
+		MessageBox((LPCTSTR)msgstr);
 		return;
+	}
 
 	// get the string, if this is a popup set the flag
 	m_SightedUnitsListBox.GetText(indexSelectedUnit, strSightedUnit);
@@ -791,7 +795,11 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		// cannot fire Missiles on Infantry
 		UnitType tgtUnitClass = counterDataList[t]->getUnitInfo()->getUnitType();
 		if ( tgtUnitClass == INF && wpnType == ATGM )
+		{
+			CString msgstr = (CString)"Cannot fire missiles on infantry!";
+			MessageBox((LPCTSTR)msgstr);
 			continue;
+		}
 
 		// allow the target unit to Evade
 		int EVMmod = 0;
@@ -1009,7 +1017,12 @@ void CAirCavLOSDlg::OnLbnSelchangeListSightedUnits()
 	UpdateData(FALSE);
 	int indexSelectedUnit = m_SightedUnitsListBox.GetCurSel();
 	if (indexSelectedUnit < 0 )
+	{
+		CString msgstr = (CString)"No sighted unit has been selected to fire upon";
+		MessageBox((LPCTSTR)msgstr);
 		return;
+	}
+
 	for ( int c=0; c<m_maxCounters; c++ )
 	{
 		CString thisUnitsName;
@@ -1017,7 +1030,7 @@ void CAirCavLOSDlg::OnLbnSelchangeListSightedUnits()
 		m_SightedUnitsListBox.GetText(indexSelectedUnit, thisUnitsName);
 		int rightBracket = thisUnitsName.Find(')');
 		int j = 0;
-		for ( int i=0; i<rightBracket-4; i++ )
+		for ( int i=0; i<=rightBracket; i++ )
 		{
 			actualThisName[j] = thisUnitsName.GetAt(i);
 			j++;
@@ -1028,7 +1041,7 @@ void CAirCavLOSDlg::OnLbnSelchangeListSightedUnits()
 		CString activeUnitsName = counterDataList[c]->getName();
 		rightBracket = activeUnitsName.Find(')');
 		j = 0;
-		for ( int i=0; i<rightBracket-4; i++ )
+		for ( int i=0; i<=rightBracket; i++ )
 		{
 			actualActiveName[j] = activeUnitsName.GetAt(i);
 			j++;

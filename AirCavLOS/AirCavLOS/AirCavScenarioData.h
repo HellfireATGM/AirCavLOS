@@ -4,7 +4,7 @@
 #include "AirCavCounterData.h"
 #include "AirCavUnitData.h"
 
-#define MAXSCENARIOS 11
+#define MAXSCENARIOS 12
 
 
 class AirCavScenarioData
@@ -19,4 +19,6 @@ public:
 
 	Scenario scenarioData[MAXSCENARIOS];
 
+	int saveScenario(std::string& file_dir, AirCavCounterData *counterDataList[MAXCOUNTERS]);
+	int m_currentScenario;
 };

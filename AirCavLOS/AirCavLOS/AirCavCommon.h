@@ -43,8 +43,8 @@ enum TargetType
 // side types
 enum SideType
 {
-	SIDE_RED = 0,	// red
-	SIDE_BLUE		// blue
+	SIDE_BLUE = 0,	// blue
+	SIDE_RED		// red
 };
 
 // country types
@@ -253,6 +253,7 @@ typedef struct {
 	int		column;		// location on map
 	int		row;		// location on map
 	int		offset;		// elevation offset
+	float	op;			// OPs remaining
 	int		mount;		// unit mounting this one
 	int		mounted;	// starts mounted
 } UnitDef;

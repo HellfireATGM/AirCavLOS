@@ -39,6 +39,7 @@ void ScenarioDlg::OnBnClickedRadioScenario0()
 	// TODO: Add your control notification handler code here
 }
 
+
 int ScenarioDlg::getScenario()
 {
 	return m_scenario;
@@ -59,6 +60,7 @@ BOOL ScenarioDlg::OnInitDialog()
 	SetDlgItemText(IDC_RADIO_SCENARIO_8, scenarioNames[8]);
 	SetDlgItemText(IDC_RADIO_SCENARIO_9, scenarioNames[9]);
 	SetDlgItemText(IDC_RADIO_SCENARIO_10, scenarioNames[10]);
+	SetDlgItemText(IDC_RADIO_SCENARIO_11, scenarioNames[11]);
 
 	UpdateData(FALSE);
 	return TRUE;
@@ -68,3 +70,5 @@ void ScenarioDlg::setScenarioTitle(int which, CString name)
 {
 	scenarioNames[which] = name;
 }
+
+

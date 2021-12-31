@@ -331,6 +331,7 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_ACTION_INDFIRE, &CAirCavLOSDlg::OnBnClickedButtonActionIndfire)
 	ON_BN_CLICKED(IDC_BUTTON_REMOVE_SMOKE, &CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke)
 	ON_BN_CLICKED(IDC_CHECK_POP_SMOKE, &CAirCavLOSDlg::OnBnClickedCheckPopSmoke)
+	ON_BN_CLICKED(IDC_BUTTON_SAVE_PROGRESS, &CAirCavLOSDlg::OnBnClickedButtonSaveProgress)
 END_MESSAGE_MAP()
 
 
@@ -2854,9 +2855,9 @@ bool CAirCavLOSDlg::readUnitTextFile( FILE *fptr )
 
 FILE * CAirCavLOSDlg::openScenarioTextFile(std::string file_dir, int scen)
 {
-   char which[5];
-   itoa(scen, which, 10);
-   std::string whichFile = file_dir + (std::string)"scenario" + std::string(which) + (std::string)".txt";
+	char which[5];
+	itoa(scen, which, 10);
+	std::string whichFile = file_dir + (std::string)"scenario" + std::string(which) + (std::string)".txt";
 	FILE *scenarioFile = fopen (whichFile.c_str(), "rt");
 	if ( ! scenarioFile )
 	{
@@ -2870,8 +2871,10 @@ FILE * CAirCavLOSDlg::openScenarioTextFile(std::string file_dir, int scen)
 
 bool CAirCavLOSDlg::readScenarioTextFile( FILE *fptr, int scen )
 {
-//  0         1       2        3        4     5     6      7       8
-// name     side   country  unit type  col   row  elev  carrier  mounted
+	const int numParameters = 10;
+
+//  0         1       2        3        4     5     6      7       8       9
+// name     side   country  unit type  col   row  elev     op   carrier  mounted
 	char		name[32];		// unit name
 	char		side[32];		// which side (0=BLUE, 1=RED)
 	char		country[32];	// which country (0=US, 1=USSR)
@@ -2879,6 +2882,7 @@ bool CAirCavLOSDlg::readScenarioTextFile( FILE *fptr, int scen )
 	int			col;		 	// location on map
 	int			row; 			// location on map
 	int			elev;			// elevation offset
+	float		op;				// OPs remaining
 	char		carrier[32];	// unit mounting this one
 	int			mounted;		// starts mounted
 
@@ -2908,10 +2912,10 @@ bool CAirCavLOSDlg::readScenarioTextFile( FILE *fptr, int scen )
 			if ( lineStr[0] == '#' )
 				continue;
 
-			int ret = sscanf( lineStr, "%s %s %s %s %d %d %d %s %d", 
-								name, side, country, type, &col, &row, &elev, carrier, &mounted );
+			int ret = sscanf( lineStr, "%s %s %s %s %d %d %d %f %s %d", 
+								name, side, country, type, &col, &row, &elev, &op, carrier, &mounted );
 
-			if( ret == 9 )
+			if( ret == numParameters)
 			{
 				replaceUnderscores( name );
 				replaceUnderscores( side );
@@ -2930,11 +2934,14 @@ bool CAirCavLOSDlg::readScenarioTextFile( FILE *fptr, int scen )
 				else if ( strstr( country, "SOVIET" ) ) newUnit.country = COUNTRY_SOVIET;
 				else if ( strstr( country, "GERMANY" ) ) newUnit.country = COUNTRY_GERMANY;
 				else if ( strstr( country, "BRITAIN" ) ) newUnit.country = COUNTRY_BRITAIN;
+				else if (strstr(country, "SYRIA")) newUnit.country = COUNTRY_SYRIA;
+				else if (strstr(country, "ISRAEL")) newUnit.country = COUNTRY_ISRAEL;
 				else newUnit.country = COUNTRY_US;
 
 				newUnit.column = col;
 				newUnit.row = row;
 				newUnit.offset = elev;
+				newUnit.op = op;
 				newUnit.mounted = mounted;
 
 				newUnit.type = findUnitIndex( type );
@@ -3010,4 +3017,16 @@ void CAirCavLOSDlg::replaceUnderscores( char *strPtr )
 {
 	for ( unsigned int i = 0; i < strlen(strPtr); i++ )
 		if ( strPtr[i] == '_' ) strPtr[i] = ' ';
+}
+
+void CAirCavLOSDlg::OnBnClickedButtonSaveProgress()
+{
+	if (scenarioData->saveScenario(file_dir, counterDataList))
+	{
+		MessageBox((CString)"In Progress scenario saved successfully", (CString)"Save", MB_OK);
+	}
+	else
+	{
+		MessageBox((CString)"In Progress scenario not saved", (CString)"Save", MB_OK);
+	}
 }

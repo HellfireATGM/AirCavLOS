@@ -145,6 +145,8 @@
 #define IDC_BUTTON_EDIT_TERRAIN2        1078
 #define IDC_EDIT_MAINWPN1               1079
 #define IDC_RADIO_SCENARIO_8            1079
+#define IDC_BUTTON_REMOVE_SMOKE2        1079
+#define IDC_BUTTON_SAVE_PROGRESS        1079
 #define IDC_EDIT_MAINWPN2               1080
 #define IDC_EDIT_FKN                    1080
 #define IDC_RADIO_SCENARIO_9            1080
@@ -153,6 +155,7 @@
 #define IDC_RADIO_SCENARIO_10           1081
 #define IDC_EDIT_MAINWPN4               1082
 #define IDC_BUTTON_LAYSMOKE             1082
+#define IDC_RADIO_SCENARIO_11           1082
 #define IDC_EDIT_MAINWPN5               1083
 #define IDC_CHECK_SMOKE                 1083
 #define IDC_BUTTON_ELEVOFFSET           1084
@@ -167,7 +170,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        149
+#define _APS_NEXT_RESOURCE_VALUE        150
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1090
 #define _APS_NEXT_SYMED_VALUE           101

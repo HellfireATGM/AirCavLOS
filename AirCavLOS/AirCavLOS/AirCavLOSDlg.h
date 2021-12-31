@@ -190,4 +190,5 @@ public:
 	afx_msg void OnBnClickedButtonActionIndfire();
 	afx_msg void OnBnClickedButtonRemoveSmoke();
 	afx_msg void OnBnClickedCheckPopSmoke();
+	afx_msg void OnBnClickedButtonSaveProgress();
 };

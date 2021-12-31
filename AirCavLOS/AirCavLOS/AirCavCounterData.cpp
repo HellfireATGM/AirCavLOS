@@ -127,7 +127,7 @@ AirCavCounterData::AirCavCounterData(void)
 }
 
 AirCavCounterData::AirCavCounterData(CString name, SideType side, CountryType country, 
-					AirCavUnitData *unitinfo, int column, int row, int elev, int mount, int mounted)
+					AirCavUnitData *unitinfo, int column, int row, int elev, float op, int mount, int mounted)
 {
 	unitinfo->setCountryType(country);
 	m_name = name;
@@ -136,14 +136,14 @@ AirCavCounterData::AirCavCounterData(CString name, SideType side, CountryType co
 	m_unitInfo = unitinfo;
 	m_hexCol = column;
 	m_hexRow = row;
-	m_OPs = MAX_OPS;
+	m_OPs = op < 0 ? 0.0 : op;
 	m_OPsSpentMoving = 0;
 	m_isActive = NOT_ACTIVE;
 	m_isOppFiring = FALSE;
 	m_isPopUp = FALSE;
     m_wpnOppFiring = 0;
     m_tgtOppFiring = 0;
-	m_status = ALIVE;
+	m_status = op < 0 ? DEAD : ALIVE;		// a dead unit has negative OPs remaining
 	m_mode = 0;
 	m_fired = 0;
 	m_moved = 0;

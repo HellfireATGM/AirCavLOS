@@ -28,5 +28,5 @@ public:
 
 	void setScenarioTitle(int which, CString name);
 
-	CString scenarioNames[11];
+	CString scenarioNames[12];
 };

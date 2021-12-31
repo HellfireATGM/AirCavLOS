@@ -1,47 +1,47 @@
 Scenario 2: Airmobile Assault 1986
 #
-# name       side       country    unit type         col    row   elev carrier     mounted
+# name       side       country    unit type         col    row   elev op    carrier     mounted
 #
-Alpha_01     BLUE       US         AH-64_Apache      27     36     0   none        0
-Alpha_02     BLUE       US         AH-64_Apache      27     36     0   none        0
-Bravo_08     BLUE       US         AHIP_Scout        27     38     0   none        0
-Delta_01     BLUE       US         M3_Bradley_APC    24     33     0   none        0
-Delta_02     BLUE       US         M3_Bradley_APC    24     33     0   none        0
-Delta_03     BLUE       US         M3_Bradley_APC    24     33     0   none        0
-Delta_04     BLUE       US         M3_Bradley_APC    24     33     0   none        0
-Delta_05     BLUE       US         M3_Bradley_APC    24     33     0   none        0
-Delta_06     BLUE       US         M3_Bradley_APC    24     33     0   none        0
-Bravo_01     BLUE       US         U.S._Inf_Team     24     33     0   Delta_01    1
-Bravo_02     BLUE       US         U.S._Inf_Team     24     33     0   Delta_02    1
-Bravo_03     BLUE       US         U.S._Inf_Team     24     33     0   Delta_03    1
-Char_01      BLUE       US         M1A1_MBT          27     35     0   none        0
-Char_02      BLUE       US         M1A1_MBT          27     35     0   none        0
-Char_03      BLUE       US         M1A1_MBT          27     35     0   none        0
-Char_04      BLUE       US         M1A1_MBT          27     35     0   none        0
-Echo_01      RED        SOVIET     Mi-6_Hook         22     37     0   none        0
-Echo_02      RED        SOVIET     Mi-6_Hook         22     37     0   none        0
-Echo_03      RED        SOVIET     Mi-6_Hook         22     37     0   none        0
-Echo_04      RED        SOVIET     Mi-6_Hook         22     37     0   none        0
-Fox_01       RED        SOVIET     Mi-8_Hip          22     37     0   none        0
-Fox_02       RED        SOVIET     Mi-8_Hip          22     37     0   none        0
-Fox_03       RED        SOVIET     Mi-8_Hip          22     37     0   none        0
-Fox_04       RED        SOVIET     Mi-8_Hip          22     37     0   none        0
-Sierra_01    RED        SOVIET     Mi-24_Hind        22     37     0   none        0
-Sierra_02    RED        SOVIET     Mi-24_Hind        22     37     0   none        0
-Sierra_03    RED        SOVIET     Mi-24_Hind        22     37     0   none        0
-Sierra_04    RED        SOVIET     Mi-24_Hind        22     37     0   none        0
-Mike_05      RED        SOVIET     BMD_APC           22     37     0   Echo_01     1
-Mike_06      RED        SOVIET     BMD_APC           22     37     0   Echo_02     1
-Mike_07      RED        SOVIET     BMD_APC           22     37     0   Echo_03     1
-Jake_01      RED        SOVIET     Soviet_Inf_Squad  13     43     0   Fox_01      1
-Jake_02      RED        SOVIET     Soviet_Inf_Squad  13     43     0   Fox_01      1
-Jake_03      RED        SOVIET     Soviet_Inf_Squad  13     43     0   Fox_02      1
-Kilo_01      RED        SOVIET     Soviet_Inf_Squad  13     43     0   Fox_02      1
-Kilo_02      RED        SOVIET     Soviet_Inf_Squad  13     43     0   Fox_03      1
-Kilo_03      RED        SOVIET     Soviet_Inf_Squad  13     43     0   Fox_03      1
-Lima_01      RED        SOVIET     Soviet_Inf_Squad  13     43     0   Fox_04      1
-Lima_02      RED        SOVIET     Soviet_Inf_Squad  13     43     0   Fox_04      1
-Lima_03      RED        SOVIET     Soviet_Inf_Squad  13     43     0   Echo_04     1
-Nels_01      RED        SOVIET     Soviet_Inf_Team   13     43     0   Echo_04     1
-Nels_02      RED        SOVIET     Soviet_Inf_Team   13     43     0   Echo_04     1
-Nels_03      RED        SOVIET     Soviet_Inf_Team   13     43     0   Echo_04     1
+Alpha_01     BLUE       US         AH-64_Apache      27     36     0   12.0  none        0
+Alpha_02     BLUE       US         AH-64_Apache      27     36     0   12.0  none        0
+Bravo_08     BLUE       US         AHIP_Scout        27     38     0   12.0  none        0
+Delta_01     BLUE       US         M3_Bradley_APC    24     33     0   12.0  none        0
+Delta_02     BLUE       US         M3_Bradley_APC    24     33     0   12.0  none        0
+Delta_03     BLUE       US         M3_Bradley_APC    24     33     0   12.0  none        0
+Delta_04     BLUE       US         M3_Bradley_APC    24     33     0   12.0  none        0
+Delta_05     BLUE       US         M3_Bradley_APC    24     33     0   12.0  none        0
+Delta_06     BLUE       US         M3_Bradley_APC    24     33     0   12.0  none        0
+Bravo_01     BLUE       US         U.S._Inf_Team     24     33     0   12.0  Delta_01    1
+Bravo_02     BLUE       US         U.S._Inf_Team     24     33     0   12.0  Delta_02    1
+Bravo_03     BLUE       US         U.S._Inf_Team     24     33     0   12.0  Delta_03    1
+Char_01      BLUE       US         M1A1_MBT          27     35     0   12.0  none        0
+Char_02      BLUE       US         M1A1_MBT          27     35     0   12.0  none        0
+Char_03      BLUE       US         M1A1_MBT          27     35     0   12.0  none        0
+Char_04      BLUE       US         M1A1_MBT          27     35     0   12.0  none        0
+Echo_01      RED        SOVIET     Mi-6_Hook         22     37     0   12.0  none        0
+Echo_02      RED        SOVIET     Mi-6_Hook         22     37     0   12.0  none        0
+Echo_03      RED        SOVIET     Mi-6_Hook         22     37     0   12.0  none        0
+Echo_04      RED        SOVIET     Mi-6_Hook         22     37     0   12.0  none        0
+Fox_01       RED        SOVIET     Mi-8_Hip          22     37     0   12.0  none        0
+Fox_02       RED        SOVIET     Mi-8_Hip          22     37     0   12.0  none        0
+Fox_03       RED        SOVIET     Mi-8_Hip          22     37     0   12.0  none        0
+Fox_04       RED        SOVIET     Mi-8_Hip          22     37     0   12.0  none        0
+Sierra_01    RED        SOVIET     Mi-24_Hind        22     37     0   12.0  none        0
+Sierra_02    RED        SOVIET     Mi-24_Hind        22     37     0   12.0  none        0
+Sierra_03    RED        SOVIET     Mi-24_Hind        22     37     0   12.0  none        0
+Sierra_04    RED        SOVIET     Mi-24_Hind        22     37     0   12.0  none        0
+Mike_05      RED        SOVIET     BMD_APC           22     37     0   12.0  Echo_01     1
+Mike_06      RED        SOVIET     BMD_APC           22     37     0   12.0  Echo_02     1
+Mike_07      RED        SOVIET     BMD_APC           22     37     0   12.0  Echo_03     1
+Jake_01      RED        SOVIET     Soviet_Inf_Squad  13     43     0   12.0  Fox_01      1
+Jake_02      RED        SOVIET     Soviet_Inf_Squad  13     43     0   12.0  Fox_01      1
+Jake_03      RED        SOVIET     Soviet_Inf_Squad  13     43     0   12.0  Fox_02      1
+Kilo_01      RED        SOVIET     Soviet_Inf_Squad  13     43     0   12.0  Fox_02      1
+Kilo_02      RED        SOVIET     Soviet_Inf_Squad  13     43     0   12.0  Fox_03      1
+Kilo_03      RED        SOVIET     Soviet_Inf_Squad  13     43     0   12.0  Fox_03      1
+Lima_01      RED        SOVIET     Soviet_Inf_Squad  13     43     0   12.0  Fox_04      1
+Lima_02      RED        SOVIET     Soviet_Inf_Squad  13     43     0   12.0  Fox_04      1
+Lima_03      RED        SOVIET     Soviet_Inf_Squad  13     43     0   12.0  Echo_04     1
+Nels_01      RED        SOVIET     Soviet_Inf_Team   13     43     0   12.0  Echo_04     1
+Nels_02      RED        SOVIET     Soviet_Inf_Team   13     43     0   12.0  Echo_04     1
+Nels_03      RED        SOVIET     Soviet_Inf_Team   13     43     0   12.0  Echo_04     1

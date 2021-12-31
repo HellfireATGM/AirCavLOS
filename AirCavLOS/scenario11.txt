@@ -1,0 +1,17 @@
+Scenario 11: In-Progress
+#
+# name     side   country  unit type           col  row  elev  op   carrier  mounted
+#
+Alpha_01   BLUE  US  AH-64_Apache  33  31  0  9.0  none  0
+Alpha_02   BLUE  US  LHX_SCAT  38  34  0  12.0  none  0
+Bravo_01   BLUE  US  M1A1_MBT  37  30  0  12.0  none  0
+Delta_21   BLUE  US  UH-60_Blackhawk  10  33  0  12.0  none  0
+Jake_01   BLUE  US  U.S._Inf_Squad  39  31  0  12.0  Delta_21   0
+Mike_05   RED  SOVIET  BRDM_Recon  17  44  0  12.0  none  0
+Char_64   RED  SOVIET  T-72_MBT  13  45  0  12.0  none  0
+Char_65   RED  SOVIET  T-72_MBT  12  46  0  12.0  none  0
+Char_66   RED  SOVIET  T-72_MBT  11  46  0  12.0  none  0
+Jake_01   RED  SOVIET  ZSU-23_SPAAG  20  40  0  -1.0  none  0
+India_81   RED  SOVIET  BRDM_SPSAM  15  44  0  12.0  none  0
+Fox_21   RED  SOVIET  BMP-1_APC  23  40  0  12.0  none  0
+Romeo_21   RED  SOVIET  Soviet_Inf_Squad  23  40  0  12.0  Fox_21   1

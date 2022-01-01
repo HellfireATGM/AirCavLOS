@@ -76,7 +76,7 @@ int AirCavScenarioData::saveScenario(std::string& file_dir, AirCavCounterData *c
 	oss << std::put_time(&tm, "%m-%d-%Y_%H-%M-%S");
 	auto str = oss.str();
 
-	std::string whichFile = file_dir + (std::string)"scenario" + std::string("11-") + str + (std::string)".txt";
+	std::string whichFile = file_dir + (std::string)"scenario" + std::string("11_") + str + (std::string)".txt";
 	FILE *scenarioFile = fopen(whichFile.c_str(), "wt");
 	if (!scenarioFile)
 	{

@@ -28,4 +28,4 @@ Current limitations:
 - See the "Air Cav LOS Features.doc" file for a list of features on the "to do" list
 - Runs on Windows only
 
-Please email bjmcho@gmail.com for any questions
+Please email aircavlos@gmail.com for any questions

@@ -273,7 +273,8 @@ void CAirCavLOSDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_ACTIVE_MOVED, m_activeUnitMoved);
 	DDX_Check(pDX, IDC_CHECK_ACTIVE_EVADING, m_activeUnitEvading);
 	DDX_Check(pDX, IDC_CHECK_ACTIVE_IN_DEF, m_activeUnitInDefilade);
-	DDX_Text(pDX, IDC_EDIT_ACTIVE_SIDE, m_activeSide);
+	DDX_Text(pDX, IDC_EDIT_ACTIVE_SIDE, m_activeCountry);
+	DDX_Text(pDX, IDC_EDIT_ACTIVE_SIDE2, m_activeSide);
 	DDX_Check(pDX, IDC_CHECK_DEBUG, m_debugLOSMessages);
 	DDX_Check(pDX, IDC_CHECK_DEBUG_PK, m_debugFKNMessages);
 	DDX_Check(pDX, IDC_CHECK_ACTIVE_LOWLEVEL, m_activeUnitLowLevel);
@@ -332,6 +333,7 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_REMOVE_SMOKE, &CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke)
 	ON_BN_CLICKED(IDC_CHECK_POP_SMOKE, &CAirCavLOSDlg::OnBnClickedCheckPopSmoke)
 	ON_BN_CLICKED(IDC_BUTTON_SAVE_PROGRESS, &CAirCavLOSDlg::OnBnClickedButtonSaveProgress)
+	ON_BN_CLICKED(IDC_BUTTON_ABOUT, &CAirCavLOSDlg::OnBnClickedButtonAbout)
 END_MESSAGE_MAP()
 
 
@@ -1403,8 +1405,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW)->EnableWindow(FALSE);
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE)->EnableWindow(FALSE);
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->EnableWindow(FALSE);
-         GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(FALSE);
-         GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(FALSE);
+			GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(FALSE);
+			GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(FALSE);
       }
 		else
 		{
@@ -1415,8 +1417,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->EnableWindow(TRUE);
-         GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(TRUE);
-         GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(TRUE);
+			GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(TRUE);
+			GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(TRUE);
       }
 		if ( m_activeUnitMounted >= 0 )
 			GetDlgItem(IDC_BUTTON_ACTION_MOUNT)->EnableWindow(TRUE);
@@ -1426,14 +1428,17 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		// country of origin
 		CountryType countryType = counterDataList[m_ActiveUnit]->getUnitInfo()->getCountryType();
 		m_activeUnitCountry = counterDataList[m_ActiveUnit]->getUnitInfo()->getCountryTypeString(countryType);
-		m_activeSide = m_activeUnitCountry;
+		m_activeCountry = m_activeUnitCountry;
 
 		// which side - blue or red
 		SideType activeSideType = counterDataList[m_ActiveUnit]->getSideType();
+		m_activeSide = counterDataList[m_ActiveUnit]->getUnitInfo()->getSideTypeString(activeSideType);;
 
 		// unit type
 		UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
 		m_activeUnitUnitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitTypeString(unitType);
+
+		// only helicopters have the option for low level
 		if ( unitType != ARH && unitType != UHH && unitType != UHM && unitType != LHX )
 		{
 			GetDlgItem(IDC_CHECK_ACTIVE_LOWLEVEL)->EnableWindow(FALSE);
@@ -1444,6 +1449,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			GetDlgItem(IDC_CHECK_ACTIVE_LOWLEVEL)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_ACTION_LOWLEVEL)->EnableWindow(TRUE);
 		}
+
+		// only attack/recon helicopters have the option for popups
 		if ( unitType != ARH && unitType != LHX )
 			GetDlgItem(IDC_BUTTON_ACTION_PASS)->EnableWindow(FALSE);
 		else
@@ -1580,17 +1587,21 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			m_SightedUnitsListBox.ResetContent();
 			m_SightingUnitsListBox.ResetContent();
 		}
+
+		// a helicopter at low level is considered to be 30m above the terrain
 		int activeUnitOffset = counterDataList[m_ActiveUnit]->getElevOffset();
 		int activeUnitHeloOffset = counterDataList[m_ActiveUnit]->getHeloOffset();
 		activeUnitOffset += activeUnitHeloOffset;
 		if ( activeUnitHeloOffset > 0 )
 		{
-			SetDlgItemText(IDC_BUTTON_ACTION_PASS, STR_POPDOWN);
+			if (unitType == ARH || unitType == LHX)
+				SetDlgItemText(IDC_BUTTON_ACTION_PASS, STR_POPDOWN);
 			SetDlgItemText(IDC_BUTTON_ACTION_LOWLEVEL, STR_NOE);
 		}
 		else
 		{
-			SetDlgItemText(IDC_BUTTON_ACTION_PASS, STR_POPUP);
+			if (unitType == ARH || unitType == LHX)
+				SetDlgItemText(IDC_BUTTON_ACTION_PASS, STR_POPUP);
 			SetDlgItemText(IDC_BUTTON_ACTION_LOWLEVEL, STR_LL);
 		}
 
@@ -2125,7 +2136,10 @@ void CAirCavLOSDlg::OnBnClickedButtonActionDefilade()
 	if ( m_ActiveUnit >= 0 )
 	{
 		UpdateData(TRUE);
-		counterDataList[m_ActiveUnit]->enterDefilade();
+		int hexColActiveUnit = counterDataList[m_ActiveUnit]->getHexCol();
+		int hexRowActiveUnit = counterDataList[m_ActiveUnit]->getHexRow();
+		int terrain = mapData->getTerrain(hexRowActiveUnit, hexColActiveUnit);
+		counterDataList[m_ActiveUnit]->enterDefilade(terrain);
 		updateActiveUnit();
 	}
 }
@@ -3075,4 +3089,10 @@ void CAirCavLOSDlg::OnBnClickedButtonSaveProgress()
 	{
 		MessageBox((CString)"In Progress scenario not saved", (CString)"Save", MB_OK);
 	}
+}
+
+void CAirCavLOSDlg::OnBnClickedButtonAbout()
+{
+	CAboutDlg dlgAbout;
+	dlgAbout.DoModal();
 }

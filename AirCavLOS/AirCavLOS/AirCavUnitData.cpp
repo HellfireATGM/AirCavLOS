@@ -26,6 +26,10 @@ char *CountryTypeString[6] =
 	"United States", "Soviet Union", "West Germany", "Great Britain", "Syria", "Israel"
 };
 
+char *SideTypeString[2] =
+{
+	"BLUE", "RED"
+};
 
 AirCavUnitData::AirCavUnitData(void)
 {
@@ -85,6 +89,11 @@ CString AirCavUnitData::getTargetTypeString( TargetType targetType )
 CString AirCavUnitData::getCountryTypeString( CountryType countryType )
 {
 	return( (CString)CountryTypeString[countryType] );
+}
+
+CString AirCavUnitData::getSideTypeString(SideType sideType)
+{
+	return((CString)SideTypeString[sideType]);
 }
 
 int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke, 

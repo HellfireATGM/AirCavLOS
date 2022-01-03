@@ -796,7 +796,7 @@ void AirCavCounterData::setFinalKillNumbers( int FKNm1, int FKNm2, int FKNm3, in
 	m_FKNs2 = FKNs2;
 }
 
-int AirCavCounterData::enterDefilade(int toggle)
+int AirCavCounterData::enterDefilade(int terrain, int toggle)
 {
 	double OPcost;
 
@@ -806,12 +806,13 @@ int AirCavCounterData::enterDefilade(int toggle)
 		return 0;
 	}
 
+	int terrainType = (terrain == CLEAR) ? DEFCLR : DEFBRK;
 	int utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
-		OPcost = US_OP_Cost[utype][DEFBRK];
+		OPcost = US_OP_Cost[utype][terrainType];
 	else
-		OPcost = Sov_OP_Cost[utype][DEFBRK];
+		OPcost = Sov_OP_Cost[utype][terrainType];
 
 	if ( OPcost > 0 )
 	{

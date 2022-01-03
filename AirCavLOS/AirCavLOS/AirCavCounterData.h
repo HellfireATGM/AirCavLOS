@@ -67,7 +67,7 @@ public:
 	int getElevOffset() { return m_elevOffset; }
 	void setHeloOffset(AirCavMapData *mapData, int elev, bool noCost = false);
 	int getHeloOffset() { return m_heloOffset; }
-	int enterDefilade(int toggle = TRUE);
+	int enterDefilade(int terrain, int toggle = TRUE);
 	int evasiveManeuver(int toggle = TRUE);
 	int getDefilade() { return m_inDefilade; }
 	int getEvading() { return m_evasiveManeuver; }

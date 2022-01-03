@@ -59,6 +59,7 @@ public:
 	CString getUnitTypeString( UnitType unitType );
 	CString getTargetTypeString( TargetType targetType );
 	CString getCountryTypeString( CountryType countryType );
+	CString getSideTypeString(SideType sideType);
 
 	int CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke, 
 							int range, int opp, char *log );

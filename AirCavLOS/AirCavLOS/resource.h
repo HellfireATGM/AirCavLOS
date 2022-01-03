@@ -145,14 +145,16 @@
 #define IDC_BUTTON_EDIT_TERRAIN2        1078
 #define IDC_EDIT_MAINWPN1               1079
 #define IDC_RADIO_SCENARIO_8            1079
-#define IDC_BUTTON_REMOVE_SMOKE2        1079
 #define IDC_BUTTON_SAVE_PROGRESS        1079
 #define IDC_EDIT_MAINWPN2               1080
 #define IDC_EDIT_FKN                    1080
 #define IDC_RADIO_SCENARIO_9            1080
+#define IDC_EDIT_ACTIVE_SIDE2           1080
 #define IDC_EDIT_MAINWPN3               1081
 #define IDC_EDIT_FKN2                   1081
 #define IDC_RADIO_SCENARIO_10           1081
+#define IDC_BUTTON_SAVE_PROGRESS2       1081
+#define IDC_BUTTON_ABOUT                1081
 #define IDC_EDIT_MAINWPN4               1082
 #define IDC_BUTTON_LAYSMOKE             1082
 #define IDC_RADIO_SCENARIO_11           1082

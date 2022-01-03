@@ -105,6 +105,7 @@ public:
 	CString m_activeUnitPosition;
 	CString m_activeUnitOffset;
 	CString m_activeUnitActualElev;
+	CString m_activeCountry;
 	CString m_activeSide;
 	CString m_currentWeather;
 
@@ -191,4 +192,5 @@ public:
 	afx_msg void OnBnClickedButtonRemoveSmoke();
 	afx_msg void OnBnClickedCheckPopSmoke();
 	afx_msg void OnBnClickedButtonSaveProgress();
+	afx_msg void OnBnClickedButtonAbout();
 };

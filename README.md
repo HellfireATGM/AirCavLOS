@@ -1,7 +1,7 @@
 # AirCavLOS
 Line of Sight tool for West End Games Air Cav
 
-This tool is intended to be used in conjunction with the board game "Air Cav" from West End Games, 1986. It calculates Line of Sight (LOS) and Final Kill Numbers (FKN) for all units in a given scenario. It does not implement "turns" of the game - but it keeps track of all units and their state, in addition to the map terrain. Think of it as a companion for taking care of the tedious parts of the game.
+This tool is intended to be used in conjunction with the board game "Air Cav" from West End Games, 1985. It calculates Line of Sight (LOS) and Final Kill Numbers (FKN) for all units in a given scenario. It does not implement "turns" of the game - but it keeps track of all units and their state, in addition to the map terrain. Think of it as a companion for taking care of the tedious parts of the game.
 
 I originally wrote this to handle LOS calculations because these are quite difficult in this game, given the topography of the map. This program will handle all of this for you, letting you play the game quickly. The interactions of all the units can also become difficult - now this is handled automatically. One great thing about Air Cav is line of sight is not mutually exclusive - a unit can see without being seen, and this greatly affects what tactics are used.
 

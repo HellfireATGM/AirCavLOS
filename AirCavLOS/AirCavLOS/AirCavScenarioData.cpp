@@ -98,7 +98,7 @@ int AirCavScenarioData::saveScenario(std::string& file_dir, AirCavCounterData *c
 		std::replace(name.begin(), name.end(), ' ', '_');
 		replaceString(name, "_(US)", " ");
 		replaceString(name, "_(SU)", " ");
-		replaceString(name, "_(GR)", " ");
+		replaceString(name, "_(WG)", " ");
 		replaceString(name, "_(UK)", " ");
 		replaceString(name, "_(SY)", " ");
 		replaceString(name, "_(IS)", " ");
@@ -141,7 +141,7 @@ int AirCavScenarioData::saveScenario(std::string& file_dir, AirCavCounterData *c
 			std::replace(parent.begin(), parent.end(), ' ', '_');
 			replaceString(parent, "_(US)", " ");
 			replaceString(parent, "_(SU)", " ");
-			replaceString(parent, "_(GR)", " ");
+			replaceString(parent, "_(WG)", " ");
 			replaceString(parent, "_(UK)", " ");
 			replaceString(parent, "_(SY)", " ");
 			replaceString(parent, "_(IS)", " ");
@@ -154,5 +154,14 @@ int AirCavScenarioData::saveScenario(std::string& file_dir, AirCavCounterData *c
 		fprintf(scenarioFile, "  %d\n", counterDataList[i]->getIsDismounted()==1 ? 0 : 1);
 	}
 	fclose(scenarioFile);
+
+   // copy this file to the scenario11.txt file so that file represents the last saved scenario
+   std::string latestFile = file_dir + (std::string)"scenario" + std::string("11") + (std::string)".txt";
+   std::wstring wFileName(latestFile.begin(), latestFile.end());
+   auto deleted = DeleteFile(wFileName.c_str());
+
+   std::wstring wSourceFileName(whichFile.begin(), whichFile.end());
+   auto copied = CopyFile(wSourceFileName.c_str(), wFileName.c_str(), 0);
+
 	return 1;
 }

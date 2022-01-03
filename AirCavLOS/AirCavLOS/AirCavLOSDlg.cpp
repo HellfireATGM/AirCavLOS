@@ -32,7 +32,7 @@ char *TerrainStr[4] =
 	"Clear", "Woods", "Town", "River"
 };
 
-static std::string file_dir = "G:\\AirCavLOS\\";
+static std::string file_dir = "C:\\AirCavLOS\\";
 static std::string weapons_file = "weapons.txt";
 static std::string units_file = "units.txt";
 
@@ -364,23 +364,31 @@ BOOL CAirCavLOSDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
+	// get current path and use this to open other files (assumes exe is in AirCavLOS\x64\Release or AirCavLOS\x64\Debug)
+	TCHAR fileNameBuffer[MAX_PATH] = { 0 };
+	GetModuleFileName(NULL, fileNameBuffer, MAX_PATH);
+	std::wstring::size_type pos = std::wstring(fileNameBuffer).find_last_of(L"\\/");
+	std::wstring thisPathW = std::wstring(fileNameBuffer).substr(0, pos);
+	std::string thisPath(thisPathW.begin(), thisPathW.end());
+	file_dir = thisPath + "\\..\\..\\";
+
 	// create the weapon data
-   std::string weapons = file_dir + weapons_file;
+	std::string weapons = file_dir + weapons_file;
 	FILE *weaponFile = fopen (weapons.c_str(), "rt");
 	if ( ! weaponFile )
 	{
-		MessageBox( (CString)"Unable to open weapons.txt", (CString)"Error", MB_OK );
+		MessageBox((CString)"Unable to open weapons.txt", (CString)"Error", MB_OK);
 		return FALSE;
 	}
 	readWeaponTextFile( weaponFile );
 	fclose( weaponFile );
 
 	// create the unit data
-   std::string units = file_dir + units_file;
-   FILE *unitFile = fopen (units.c_str(), "rt");
+	std::string units = file_dir + units_file;
+	FILE *unitFile = fopen (units.c_str(), "rt");
 	if ( ! unitFile )
 	{
-		MessageBox( (CString)"Unable to open units.txt", (CString)"Error", MB_OK );
+		MessageBox((CString)"Unable to open units.txt", (CString)"Error", MB_OK);
 		return FALSE;
 	}
 	readUnitTextFile( weaponFile );
@@ -1395,7 +1403,9 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW)->EnableWindow(FALSE);
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE)->EnableWindow(FALSE);
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->EnableWindow(FALSE);
-		}
+         GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(FALSE);
+         GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(FALSE);
+      }
 		else
 		{
 			SetDlgItemText(IDC_BUTTON_ACTION_MOUNT, STR_MOUNT);
@@ -1405,7 +1415,9 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->EnableWindow(TRUE);
-		}
+         GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(TRUE);
+         GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(TRUE);
+      }
 		if ( m_activeUnitMounted >= 0 )
 			GetDlgItem(IDC_BUTTON_ACTION_MOUNT)->EnableWindow(TRUE);
 		else
@@ -1415,6 +1427,9 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		CountryType countryType = counterDataList[m_ActiveUnit]->getUnitInfo()->getCountryType();
 		m_activeUnitCountry = counterDataList[m_ActiveUnit]->getUnitInfo()->getCountryTypeString(countryType);
 		m_activeSide = m_activeUnitCountry;
+
+		// which side - blue or red
+		SideType activeSideType = counterDataList[m_ActiveUnit]->getSideType();
 
 		// unit type
 		UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
@@ -1589,7 +1604,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		// only bother with Line of Sight if the active unit is alive
 		if (counterDataList[m_ActiveUnit]->getIsAlive())
 		{
-			// calculate range from active unit to all other units (these are SIGHTED)
+			// calculate range from active unit to all other enemy units (these are SIGHTED)
 			int numPopupSightings = 0;
 			std::map<int, std::string> popupSightedUnits;
 			for (int c = 0; c < m_maxCounters; c++)
@@ -1598,10 +1613,10 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 				{
 					int hexColumn = counterDataList[c]->getHexCol();
 					int hexRow = counterDataList[c]->getHexRow();
-					CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
+					SideType thisSideType = counterDataList[c]->getSideType();
 					int isAlive = counterDataList[c]->getIsAlive();
 					int isDismounted = counterDataList[c]->getIsDismounted();
-					if (countryType != thisCountryType && isAlive && isDismounted)
+					if (activeSideType != thisSideType && isAlive && isDismounted)
 					{
 						bool popupRange = false;
 						int targetUnitOffset = counterDataList[c]->getElevOffset();
@@ -1641,9 +1656,20 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						int tgtlowLevel = targetUnitHeloOffset > 0;
 						int activeUnitHeloOffset = counterDataList[m_ActiveUnit]->getHeloOffset();
 						int activelowLevel = activeUnitHeloOffset > 0;
-						// a unit can only be observed from 1 hex away if it is in smoke hex and not low level
-						if (!tgtlowLevel && tgtSmoke && range > 1)
+						int targetFired = counterDataList[c]->getFired();
+						if (targetFired)
+						{
+							// a unit can only be observed from 5 hexes away if it is in smoke hex and not low level and it has fired
+							if (!tgtlowLevel && tgtSmoke && range > 5)
 							continue;
+						}
+						else
+						{
+							// if it has not fired, a unit can only be observed from 1 hex away if it is in smoke hex and not low level
+							if (!tgtlowLevel && tgtSmoke && range > 1)
+							continue;
+						}
+
 						// ignore smoke in the active hex if it is a helo at low level
 						if (activelowLevel && thisSmoke)
 							thisSmoke = 0;
@@ -1735,10 +1761,10 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 				int numNormalSightings = 0;
 				for (int c = 0; c < m_maxCounters; c++)
 				{
-					CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
+					SideType thisSideType = counterDataList[c]->getSideType();
 					int isAlive = counterDataList[c]->getIsAlive();
 					int isDismounted = counterDataList[c]->getIsDismounted();
-					if (countryType == thisCountryType && isAlive && isDismounted)
+					if (activeSideType == thisSideType && isAlive && isDismounted)
 					{
 						int targetUnitHexColumn = counterDataList[s.first]->getHexCol();
 						int targetUnitHexRow = counterDataList[s.first]->getHexRow();
@@ -1763,7 +1789,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 				}
 			}
 
-			// calculate range from all other units to active unit (these are SIGHTING)
+			// calculate range from all other enemy units to active unit (these are SIGHTING)
 			numPopupSightings = 0;
 			std::map<int, std::string> popupSightingUnits;
 			for (int c = 0; c < m_maxCounters; c++)
@@ -1772,10 +1798,10 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 				{
 					int hexColumn = counterDataList[c]->getHexCol();
 					int hexRow = counterDataList[c]->getHexRow();
-					CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
+					SideType thisSideType = counterDataList[c]->getSideType();
 					int isAlive = counterDataList[c]->getIsAlive();
 					int isDismounted = counterDataList[c]->getIsDismounted();
-					if (countryType != thisCountryType && isAlive && isDismounted)
+					if (activeSideType != thisSideType && isAlive && isDismounted)
 					{
 						bool popupRange = false;
 						int targetUnitOffset = counterDataList[c]->getElevOffset();
@@ -1816,9 +1842,21 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						int tgtSmoke = mapData->getSmoke(hexRow, hexColumn);
 						int activelowLevel = activeUnitHeloOffset > 0;
 						int tgtlowLevel = targetUnitHeloOffset > 0;
-						// a unit can only be observed from 1 hex away if it is in smoke hex and not low level
-						if (!activelowLevel && thisSmoke && range > 1)
+
+						int activeFired = counterDataList[m_ActiveUnit]->getFired();
+						if (activeFired)
+						{
+							// a unit can only be observed from 5 hexes away if it is in smoke hex and not low level and it has fired
+							if (!activelowLevel && thisSmoke && range > 5)
 							continue;
+						}
+						else
+						{
+							// if it has not fired, a unit can only be observed from 1 hex away if it is in smoke hex and not low level
+							if (!activelowLevel && thisSmoke && range > 1)
+							continue;
+						}
+
 						// ignore smoke in the target hex if it is a helo at low level
 						if (tgtlowLevel && tgtSmoke)
 							tgtSmoke = 0;
@@ -1910,10 +1948,10 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 				{
 					if (c != m_ActiveUnit)
 					{
-						CountryType thisCountryType = counterDataList[c]->getUnitInfo()->getCountryType();
+						SideType thisSideType = counterDataList[c]->getSideType();
 						int isAlive = counterDataList[c]->getIsAlive();
 						int isDismounted = counterDataList[c]->getIsDismounted();
-						if (countryType != thisCountryType && isAlive && isDismounted)
+						if (activeSideType != thisSideType && isAlive && isDismounted)
 						{
 							int targetUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
 							int targetUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
@@ -2379,6 +2417,12 @@ void CAirCavLOSDlg::OnBnClickedButtonResolveOppfire()
 
 void CAirCavLOSDlg::OnBnClickedButtonLaysmoke()
 {
+   if (!counterDataList[m_ActiveUnit]->getIsDismounted())
+   {
+      MessageBox((CString)"A mounted unit cannot lay smoke", (CString)"Lay Smoke", MB_OK);
+      return;
+   }
+
 	int col = counterDataList[m_ActiveUnit]->getHexCol();
 	int row = counterDataList[m_ActiveUnit]->getHexRow();
 	counterDataList[m_ActiveUnit]->laySmoke(mapData, col, row);
@@ -2686,8 +2730,10 @@ void CAirCavLOSDlg::OnBnClickedCheckPopSmoke()
 	UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
 	if ( unitType == ARH || unitType == UHH || unitType == UHM || unitType == LHX )
 		MessageBox( (CString)"Helicopters cannot lay smoke", (CString)"Pop Smoke", MB_OK );
-	else
-		UpdateData(TRUE);
+	else if (!counterDataList[m_ActiveUnit]->getIsDismounted())
+      MessageBox((CString)"A mounted unit cannot pop smoke", (CString)"Pop Smoke", MB_OK);
+   else
+      UpdateData(TRUE);
 }
 
 bool CAirCavLOSDlg::readWeaponTextFile( FILE *fptr )
@@ -2955,7 +3001,7 @@ bool CAirCavLOSDlg::readScenarioTextFile( FILE *fptr, int scen )
 				else if ( newUnit.country == COUNTRY_SOVIET )
 					newUnit.name += " (SU)";
 				else if ( newUnit.country == COUNTRY_GERMANY )
-					newUnit.name += " (GR)";
+					newUnit.name += " (WG)";
 				else if ( newUnit.country == COUNTRY_BRITAIN )
 					newUnit.name += " (UK)";
 				else if ( newUnit.country == COUNTRY_SYRIA )
@@ -3000,7 +3046,7 @@ int CAirCavLOSDlg::findScenarioUnitIndex( int scen, char *unitName )
 		else if (scenarioData->scenarioData[scen].unit[u].country == COUNTRY_SOVIET)
 			name += " (SU)";
 		else if (scenarioData->scenarioData[scen].unit[u].country == COUNTRY_GERMANY)
-			name += " (GR)";
+			name += " (WG)";
 		else if (scenarioData->scenarioData[scen].unit[u].country == COUNTRY_BRITAIN)
 			name += " (UK)";
 		else if (scenarioData->scenarioData[scen].unit[u].country == COUNTRY_SYRIA)

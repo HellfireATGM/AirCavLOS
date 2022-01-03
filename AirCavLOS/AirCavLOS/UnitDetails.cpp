@@ -91,8 +91,11 @@ void UnitDetails::setUnitStatusText( void )
 {
 	double OPsRemaining = m_counterDataList[m_activeUnit]->getOPs();
 	bool actionTaken = m_counterDataList[m_activeUnit]->getActionTaken();
-	char buffer1[1024];
-	sprintf_s( buffer1, actionTaken ? "Active [%2.1f]" : "Not Active [%2.1f]", OPsRemaining );
+   char buffer1[1024];
+   if (m_counterDataList[m_activeUnit]->getIsAlive())
+      sprintf_s(buffer1, actionTaken ? "Active [%2.1f]" : "Not Active [%2.1f]", OPsRemaining);
+   else
+      sprintf_s( buffer1, "DEAD");
 	m_activeUnitStatus = (CString) buffer1;
 }
 

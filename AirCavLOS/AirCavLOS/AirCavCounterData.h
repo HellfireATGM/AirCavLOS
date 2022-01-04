@@ -65,7 +65,7 @@ public:
 	int getHexRow() { return m_hexRow; }
 	void setElevOffset(int elev) { m_elevOffset = elev; }
 	int getElevOffset() { return m_elevOffset; }
-	void setHeloOffset(AirCavMapData *mapData, int elev, bool noCost = false);
+	void setHeloOffset(AirCavMapData *mapData, AirCavCounterData *counterDataList[MAXCOUNTERS], int elev, bool noCost = false);
 	int getHeloOffset() { return m_heloOffset; }
 	int enterDefilade(int terrain, int toggle = TRUE);
 	int evasiveManeuver(int toggle = TRUE);
@@ -90,7 +90,7 @@ public:
 	double incrOPs(double op);
 	double decrOPs(double op, bool oppAction=false);
 
-	int moveAction( AirCavMapData *mapData, int col, int row, int from, int popSmoke );
+	int moveAction( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int col, int row, int from, int popSmoke, bool goingToNOE = false);
 	int fireGun( bool oppFire = FALSE );
 	int fireMissile( bool oppFire = FALSE );
 	int fireRocket( bool oppFire = FALSE );
@@ -133,20 +133,52 @@ public:
 	void setFKN4(int FKN) { m_FKNs1 = FKN; }
 	void setFKN5(int FKN) { m_FKNs2 = FKN; }
 
-	void moveTo(AirCavMapData *mapData, int col, int row, bool doCheckContour = true);
-	void moveNorth( AirCavMapData *mapData, int popSmoke );
-	void moveNorthWest( AirCavMapData *mapData, int popSmoke );
-	void moveNorthEast( AirCavMapData *mapData, int popSmoke );
-	void moveSouth( AirCavMapData *mapData, int popSmoke );
-	void moveSouthWest( AirCavMapData *mapData, int popSmoke );
-	void moveSouthEast( AirCavMapData *mapData, int popSmoke );
+	void moveTo(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int col, int row, bool doCheckContour = true);
+	void moveNorth( AirCavMapData *mapData, AirCavCounterData *counterDataList[MAXCOUNTERS], int popSmoke );
+	void moveNorthWest( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
+	void moveNorthEast( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
+	void moveSouth( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
+	void moveSouthWest( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
+	void moveSouthEast( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
 
 	int checkContour(AirCavMapData *mapData, int col, int row, int curOffset = 0);
 	int isVisible(int terrain, int range, int lowlevel, int weather, int smoke = FALSE);
+
+	bool hexStackingFull(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int row, int col, bool checkLowLevel = false, bool isGoingtoNOE = false);
+	CString AirCavCounterData::getStackingString(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int row, int col);
 
 	bool isNATO( CountryType side )
 	{
 		return ( side == COUNTRY_US || side == COUNTRY_GERMANY || side == COUNTRY_BRITAIN );
 	}
 
+	bool isVehicle(UnitType unitType)
+	{
+		return ( unitType == TANK || unitType == TLAV || unitType == WV );
+	}
+
+	bool isInfantry(UnitType unitType)
+	{
+		return ( unitType == INF );
+	}
+
+	bool isHelo(UnitType unitType)
+	{
+		return ( unitType == ARH || unitType == UHM || unitType == UHH || unitType == LHX );
+	}
+
+	bool isAttackHelo(UnitType unitType)
+	{
+		return ( unitType == ARH || unitType == LHX );
+	}
+
+	bool isLightHelo(UnitType unitType)
+	{
+		return ( unitType == ARH || unitType == UHM || unitType == LHX );
+	}
+
+	bool isHeavyHelo(UnitType unitType)
+	{
+		return ( unitType == UHH );
+	}
 };

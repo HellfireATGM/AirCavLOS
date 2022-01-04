@@ -16,6 +16,7 @@
 #include "IndirectFire.h"
 
 #include <string>
+#include <vector>
 #include <map>
 
 #pragma warning(disable:4996)
@@ -179,7 +180,7 @@ CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 		weaponDataList[w] = 0;
 	for ( int t=0; t<MAXTYPS; t++ )
 		unitDataList[t] = 0;
-	for ( int c=0; c<m_maxCounters; c++ )
+	for ( int c=0; c<MAXCOUNTERS; c++ )
 		counterDataList[c] = 0;
 	mapData = 0;
 	scenarioData = 0;
@@ -249,6 +250,7 @@ void CAirCavLOSDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Radio(pDX, IDC_RADIO_ACTIVE_MAIN1, m_activeUnitWeapon);
 	DDX_Text(pDX, IDC_EDIT_TERR_TER, m_terrainType);
 	DDX_Text(pDX, IDC_EDIT_TERR_ELEV, m_terrainElev);
+	DDX_Text(pDX, IDC_EDIT_TERR_STACK, m_terrainStack);
 	DDX_Check(pDX, IDC_CHECK_CONTOUR_LINES, m_contourLines);
 	DDX_Check(pDX, IDC_CHECK_SMOKE, m_smoke);
 	DDX_Check(pDX, IDC_CHECK_R_N, m_roadN);
@@ -633,7 +635,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionPopUp()
 			}
 			else
 			{
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, 30, true);
+				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, 30, true);
 				counterDataList[m_ActiveUnit]->setIsPopUp(true);
 			}
 			updateActiveUnit();
@@ -934,7 +936,7 @@ void CAirCavLOSDlg::moveMountedUnits()
 		{
 			int col = counterDataList[m_ActiveUnit]->getHexCol();
 			int row = counterDataList[m_ActiveUnit]->getHexRow();
-			counterDataList[id]->moveTo(mapData, col, row, false);
+			counterDataList[id]->moveTo(mapData, counterDataList, col, row, false);
 		}
 	}
 }
@@ -942,7 +944,7 @@ void CAirCavLOSDlg::moveMountedUnits()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 {
 	if (m_ActiveUnit < 0) return;
-	counterDataList[m_ActiveUnit]->moveNorth(mapData, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveNorth(mapData, counterDataList, m_popSmokeWhileMoving);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -956,7 +958,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 {
 	if (m_ActiveUnit < 0) return;
-	counterDataList[m_ActiveUnit]->moveNorthWest(mapData, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveNorthWest(mapData, counterDataList, m_popSmokeWhileMoving);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -970,7 +972,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 {
 	if (m_ActiveUnit < 0) return;
-	counterDataList[m_ActiveUnit]->moveSouthWest(mapData, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveSouthWest(mapData, counterDataList, m_popSmokeWhileMoving);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -984,7 +986,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 {
 	if (m_ActiveUnit < 0) return;
-	counterDataList[m_ActiveUnit]->moveSouth(mapData, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveSouth(mapData, counterDataList, m_popSmokeWhileMoving);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -998,7 +1000,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 {
 	if (m_ActiveUnit < 0) return;
-	counterDataList[m_ActiveUnit]->moveSouthEast(mapData, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveSouthEast(mapData, counterDataList, m_popSmokeWhileMoving);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -1012,7 +1014,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveNe()
 {
 	if (m_ActiveUnit < 0) return;
-	counterDataList[m_ActiveUnit]->moveNorthEast(mapData, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveNorthEast(mapData, counterDataList, m_popSmokeWhileMoving);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -1407,7 +1409,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->EnableWindow(FALSE);
 			GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(FALSE);
 			GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(FALSE);
-      }
+		}
 		else
 		{
 			SetDlgItemText(IDC_BUTTON_ACTION_MOUNT, STR_MOUNT);
@@ -1419,7 +1421,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(TRUE);
-      }
+		}
 		if ( m_activeUnitMounted >= 0 )
 			GetDlgItem(IDC_BUTTON_ACTION_MOUNT)->EnableWindow(TRUE);
 		else
@@ -1556,6 +1558,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		int elev = mapData->getElevation( activeUnitHexRow, activeUnitHexColumn );
 		_itoa_s(elev, buffer, 10);
 		m_terrainElev = (CString)buffer;
+		m_terrainStack = counterDataList[m_ActiveUnit]->getStackingString(mapData, counterDataList, activeUnitHexRow, activeUnitHexColumn);
 		int terrain = mapData->getTerrain( activeUnitHexRow, activeUnitHexColumn );
 		m_terrainType = TerrainStr[terrain];
 		m_contourLines = mapData->getContour( activeUnitHexRow, activeUnitHexColumn );
@@ -2103,7 +2106,7 @@ void CAirCavLOSDlg::OnEnChangeEditActiveLoc()
 		int hexColumn = atoi( sCol );
 		int hexRow = atoi( sRow );
 
-		counterDataList[m_ActiveUnit]->moveTo(mapData, hexColumn, hexRow);
+		counterDataList[m_ActiveUnit]->moveTo(mapData, counterDataList, hexColumn, hexRow);
 		moveMountedUnits();
 		updateActiveUnit();
 	}
@@ -2225,9 +2228,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionLowlevel()
 		if ( unitType == ARH || unitType == UHH || unitType == UHM || unitType == LHX )
 		{
 			if ( counterDataList[m_ActiveUnit]->getHeloOffset() > 0 )
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, 0);
+				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, 0);
 			else
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, 30);
+				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, 30);
 			updateActiveUnit();
 		}
 	}
@@ -2719,22 +2722,40 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 
 void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 {
+	struct hex_loc {
+		hex_loc(int r, int c) : row(r), col(c) {};
+		int row;
+		int col;
+	};
+
 	// remove smoke markers
+	std::vector<hex_loc> removedSmokeHexes;
 	for ( int n=0; n<m_smokeHexList.GetNum(); n++ )
 	{
 		int smokeRow, smokeCol;
 		m_smokeHexList.Get( n, &smokeRow, &smokeCol );
 		
 		// 50% chance for smoke hex to be cleared
+		char smokeStr[128];
 		if ( ( rand() % 100 ) < 50 )
 		{
-			mapData->clearSmoke( smokeRow, smokeCol );
-			m_smokeHexList.Remove( smokeRow, smokeCol );
-
-			char smokeStr[128];
-			sprintf_s( smokeStr, "Remove Smoked hex:  %02d%02d", smokeCol, smokeRow );
-			MessageBox( (CString)smokeStr, (CString)"Smoke Removal", MB_OK );
+			hex_loc hex(smokeRow, smokeCol);
+			removedSmokeHexes.push_back(hex);
+			sprintf_s( smokeStr, "Remove Smoke in hex:  %02d%02d", smokeCol, smokeRow );
+			MessageBox( (CString)smokeStr, (CString)"Smoke Removed", MB_OK );
 		}
+		else
+		{
+			sprintf_s(smokeStr, "Smoke remains in hex:  %02d%02d", smokeCol, smokeRow);
+			MessageBox((CString)smokeStr, (CString)"Smoke Remains", MB_OK);
+		}
+	}
+
+	// clear out the smoke in each selected hex
+	for (auto hex : removedSmokeHexes)
+	{
+		mapData->clearSmoke(hex.row, hex.col);
+		m_smokeHexList.Remove(hex.row, hex.col);
 	}
 	updateActiveUnit();
 }

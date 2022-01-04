@@ -13,6 +13,12 @@ using namespace std;
 #define MAXTYPS   	100
 #define MAXWEAP 	100
 
+#define VEHICLE_STACKING_LIMIT 6
+#define INFANTRY_STACKING_LIMIT 20
+#define HELO_STACKING_LIMIT 2
+#define LIGHT_HELO_STACKING 2
+#define HEAVY_HELO_STACKING 3
+
 #define MAX_BUF_SIZE 4096
 
 // unit types

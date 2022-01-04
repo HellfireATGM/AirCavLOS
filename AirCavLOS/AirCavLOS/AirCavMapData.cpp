@@ -91,17 +91,17 @@ int AirCavMapData::OpenMapDataFile(std::string& file_dir)
 	double horizontal_distance, a, b;
 
 	/* open data file */
-   map = file_dir + "map.dat";
-   dem = file_dir + "dem.txt";
+	map = file_dir + "map.dat";
+	dem = file_dir + "dem.txt";
 
-   map_file_pointer = fopen (map.c_str(), "rb");
+	map_file_pointer = fopen (map.c_str(), "rb");
 	if (map_file_pointer == NULL) 
 	{
-//		printf("file open failed\n");
+		//printf("file open failed\n");
 		return 0;
 	}
-//	else 
-//		printf("file open successful\n");
+	//else 
+	//	printf("file open successful\n");
 
 	a = (SCALE/2.0) * 0.577350269;       /* length of 1/2 hexside */
 	b = a*a + (SCALE/2.0)*(SCALE/2.0);   /* square of distance to farthest edge */

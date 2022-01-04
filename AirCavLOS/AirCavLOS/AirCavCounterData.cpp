@@ -233,7 +233,7 @@ double AirCavCounterData::decrOPs(double op, bool oppCost)
 	return m_OPs;
 }
 
-int AirCavCounterData::moveAction( AirCavMapData *mapData, int col, int row, int from, int popSmoke )
+int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int col, int row, int from, int popSmoke, bool goingToNOE )
 {
 	double OPcost;
 
@@ -242,7 +242,15 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, int col, int row, int
 		return 0;
 
 	CountryType side = m_unitInfo->getCountryType();
-	int unitType = m_unitInfo->getUnitType();
+	UnitType unitType = m_unitInfo->getUnitType();
+
+	// determine if this unit moving into this hex would overstack
+	if (hexStackingFull(mapData, counterData, row, col, false, goingToNOE))
+		return 0;
+
+	bool isInfantryUnit = isInfantry(unitType);
+	bool isHeavyHeloUnit = isHeavyHelo(unitType);
+
 	int nextTerr = mapData->getTerrain( row, col );
 	int currRoad = mapData->getRoad( m_hexRow, m_hexCol );
 	int nextRoad = mapData->getRoad( row, col );
@@ -298,12 +306,12 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, int col, int row, int
 		stream = true;
 
 	// for helicopters at low level, the only cost is the macro cost
-	bool isHelo = false;
+	bool isHeloUnit = false;
 	bool heloAtLowLevel = false;
-	if ( unitType == ARH || unitType == UHM || unitType == UHH || unitType == LHX )
+	if ( isHelo( unitType ) )
 	{
 		// this is a helicopter
-		isHelo = true;
+		isHeloUnit = true;
 
 		// entering Nap of the earth from Low Level
 		if ( from == -1 )
@@ -366,7 +374,7 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, int col, int row, int
 			if ( popSmoke )
 				OPcost += 1.0;
 			// helicopters cannnot enter a smoke hex
-			if ( smokeHex && isHelo )
+			if ( smokeHex && isHeloUnit)
 				return 0;
 			// smoke hex costs extra for all other units
 			if ( smokeHex )
@@ -397,7 +405,7 @@ int AirCavCounterData::fireGun(bool oppFire)
 {
 	double OPcost;
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][GUN];
@@ -425,7 +433,7 @@ int AirCavCounterData::fireMissile(bool oppFire)
 {
 	double OPcost;
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][ATGM];
@@ -453,7 +461,7 @@ int AirCavCounterData::fireRocket(bool oppFire)
 {
 	double OPcost;
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][ROCKET];
@@ -481,7 +489,7 @@ int AirCavCounterData::fireSAM(bool oppFire)
 {
 	double OPcost;
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][SAM];
@@ -509,7 +517,7 @@ int AirCavCounterData::popupFire(bool oppFire)
 {
 	double OPcost;
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][POPUP];
@@ -565,9 +573,9 @@ int AirCavCounterData::oppFire(int weaponType)
 int AirCavCounterData::checkContour(AirCavMapData *mapData, int col, int row, int curOffset)
 {
 	int elevOffset = 0;
-	int unitType = m_unitInfo->getUnitType();
+	UnitType unitType = m_unitInfo->getUnitType();
 	bool heloAtLowLevel = false;
-	if ( unitType == ARH || unitType == UHM || unitType == UHH || unitType == LHX )
+	if ( isHelo( unitType ) )
 	{
 		if ( m_heloOffset > 0 )
 		{
@@ -593,7 +601,7 @@ int AirCavCounterData::checkContour(AirCavMapData *mapData, int col, int row, in
 	return elevOffset;
 }
 
-void AirCavCounterData::setHeloOffset(AirCavMapData *mapData, int elev, bool noCost)
+void AirCavCounterData::setHeloOffset(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int elev, bool noCost)
 {
 	double OPcost;
 
@@ -602,14 +610,14 @@ void AirCavCounterData::setHeloOffset(AirCavMapData *mapData, int elev, bool noC
 		if ( noCost )
 			m_heloOffset = elev;
 		// changing from Low Level to Nap of the Earth (cost is terrain)
-		else if ( moveAction( mapData, m_hexCol, m_hexRow, -1, false ) )
+		else if ( moveAction( mapData, counterData, m_hexCol, m_hexRow, -1, false, true ) )
 			m_heloOffset = elev;
 	}
 	else
 	{
 		// changing from Nap of the Earth to Low Level (cost is macrohex)
 		CountryType side = m_unitInfo->getCountryType();
-		int utype = m_unitInfo->getUnitType();
+		UnitType utype = m_unitInfo->getUnitType();
 		if ( isNATO( side ) )
 			OPcost = US_OP_Cost[utype][MACRO];
 		else
@@ -617,6 +625,12 @@ void AirCavCounterData::setHeloOffset(AirCavMapData *mapData, int elev, bool noC
 
 		if ( OPcost > 0 )
 		{
+			// first check to see if its possible to go to low level
+			if (hexStackingFull(mapData, counterData, m_hexRow, m_hexCol, true))
+			{
+				return;
+			}
+
 			if ( noCost )
 				m_heloOffset = elev;
 			else if ( decrOPs(OPcost) != -1 )
@@ -627,24 +641,27 @@ void AirCavCounterData::setHeloOffset(AirCavMapData *mapData, int elev, bool noC
 	}
 }
 
-void AirCavCounterData::moveTo(AirCavMapData *mapData, int col, int row, bool doCheckContour)
+void AirCavCounterData::moveTo(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int col, int row, bool doCheckContour)
 {
 	if ( mapData->validHex(col, row) )
 	{
+		if (hexStackingFull(mapData, counterData, row, col))
+			return;
+
 		m_hexRow = row;
 		m_hexCol = col;
 		m_elevOffset = doCheckContour ? checkContour(mapData, col, row) : 0;
 	}
 }
 
-void AirCavCounterData::moveNorth(AirCavMapData *mapData, int popSmoke)
+void AirCavCounterData::moveNorth(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
 {
 	int nextRow = m_hexRow-1;
 	int nextCol = m_hexCol;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
-		if ( moveAction( mapData, nextCol, nextRow, SO, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, SO, popSmoke ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;
@@ -652,14 +669,14 @@ void AirCavCounterData::moveNorth(AirCavMapData *mapData, int popSmoke)
 	}
 }
 
-void AirCavCounterData::moveNorthWest(AirCavMapData *mapData, int popSmoke)
+void AirCavCounterData::moveNorthWest(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
 {
 	int nextRow = EVEN(m_hexCol) ? m_hexRow-1 : m_hexRow;
 	int nextCol = m_hexCol - 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
-		if ( moveAction( mapData, nextCol, nextRow, SE, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, SE, popSmoke ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;
@@ -667,14 +684,14 @@ void AirCavCounterData::moveNorthWest(AirCavMapData *mapData, int popSmoke)
 	}
 }
 
-void AirCavCounterData::moveNorthEast(AirCavMapData *mapData, int popSmoke)
+void AirCavCounterData::moveNorthEast(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
 {
 	int nextRow = EVEN(m_hexCol) ? m_hexRow-1 : m_hexRow;
 	int nextCol = m_hexCol + 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
-		if ( moveAction( mapData, nextCol, nextRow, SW, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, SW, popSmoke ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;
@@ -682,14 +699,14 @@ void AirCavCounterData::moveNorthEast(AirCavMapData *mapData, int popSmoke)
 	}
 }
 
-void AirCavCounterData::moveSouth(AirCavMapData *mapData, int popSmoke)
+void AirCavCounterData::moveSouth(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
 {
 	int nextRow = m_hexRow + 1;
 	int nextCol = m_hexCol;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
-		if ( moveAction( mapData, nextCol, nextRow, NO, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, NO, popSmoke ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;
@@ -697,14 +714,14 @@ void AirCavCounterData::moveSouth(AirCavMapData *mapData, int popSmoke)
 	}
 }
 
-void AirCavCounterData::moveSouthWest(AirCavMapData *mapData, int popSmoke)
+void AirCavCounterData::moveSouthWest(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
 {
 	int nextRow = EVEN(m_hexCol) ? m_hexRow : m_hexRow + 1;
 	int nextCol = m_hexCol - 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
-		if ( moveAction( mapData, nextCol, nextRow, NE, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, NE, popSmoke ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;
@@ -712,14 +729,14 @@ void AirCavCounterData::moveSouthWest(AirCavMapData *mapData, int popSmoke)
 	}
 }
 
-void AirCavCounterData::moveSouthEast(AirCavMapData *mapData, int popSmoke)
+void AirCavCounterData::moveSouthEast(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
 {
 	int nextRow = EVEN(m_hexCol) ? m_hexRow : m_hexRow + 1;
 	int nextCol = m_hexCol + 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
-		if ( moveAction( mapData, nextCol, nextRow, NW, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, NW, popSmoke ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;
@@ -729,13 +746,7 @@ void AirCavCounterData::moveSouthEast(AirCavMapData *mapData, int popSmoke)
 
 int AirCavCounterData::isVisible(int terrain, int range, int lowlevel, int weather, int smoke)
 {
-	int unittype = getUnitInfo()->getUnitType();
-	bool lightHelo = false;
-	if ( unittype == ARH || unittype == UHM || unittype == LHX )
-		lightHelo = true;
-	bool heavyHelo = false;
-	if ( unittype == UHH )
-		heavyHelo = true;
+	UnitType unitType = getUnitInfo()->getUnitType();
 
 	int maxFired = 40;
 	int maxLowLevelHeavyHelo = 40;
@@ -761,20 +772,19 @@ int AirCavCounterData::isVisible(int terrain, int range, int lowlevel, int weath
 
 	if ( m_fired && range < maxFired )
 		return 1;
-	else if ( heavyHelo && lowlevel && range < maxLowLevelHeavyHelo )
+	else if ( isHeavyHelo(unitType) && lowlevel && range < maxLowLevelHeavyHelo )
 		return 1;
-	else if ( lightHelo && lowlevel && range < maxLowLevelLightHelo )
+	else if ( isLightHelo(unitType) && lowlevel && range < maxLowLevelLightHelo )
 		return 1;
 	else
 	{
-		int utype = m_unitInfo->getUnitType();
-		int maxRange = ClearObservationTable[utype][terrain];
+		int maxRange = ClearObservationTable[unitType][terrain];
 		if ( weather == WEATHER_RAIN || weather == WEATHER_SNOW || weather == WEATHER_LT_FOG )
-			maxRange = RainObservationTable[utype][terrain];
+			maxRange = RainObservationTable[unitType][terrain];
 		else if ( weather == WEATHER_OVERCAST )
-			maxRange = OvercastObservationTable[utype][terrain];
+			maxRange = OvercastObservationTable[unitType][terrain];
 		else if ( weather == WEATHER_HVY_FOG )
-			maxRange = HeavyFogObservationTable[utype][terrain];
+			maxRange = HeavyFogObservationTable[unitType][terrain];
 		
 		if ( m_moved )
 			maxRange += 2;
@@ -807,7 +817,7 @@ int AirCavCounterData::enterDefilade(int terrain, int toggle)
 	}
 
 	int terrainType = (terrain == CLEAR) ? DEFCLR : DEFBRK;
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][terrainType];
@@ -840,7 +850,7 @@ int AirCavCounterData::evasiveManeuver(int toggle)
 		return 0;
 	}
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][EVM];
@@ -880,7 +890,7 @@ int AirCavCounterData::mountCarrier( void )
 {
 	double OPcost;
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][MOUNT];
@@ -902,7 +912,7 @@ int AirCavCounterData::dismountCarrier( void )
 {
 	double OPcost;
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][DISMOUNT];
@@ -924,7 +934,7 @@ bool AirCavCounterData::canMount( void )
 {
 	double OPcost;
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][MOUNT];
@@ -943,7 +953,7 @@ bool AirCavCounterData::canDismount( void )
 {
 	double OPcost;
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][DISMOUNT];
@@ -962,7 +972,7 @@ int AirCavCounterData::mountUnit( void )
 {
 	double OPcost;
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][MOUNT];
@@ -983,7 +993,7 @@ int AirCavCounterData::dismountUnit( void )
 {
 	double OPcost;
 
-	int utype = m_unitInfo->getUnitType();
+	UnitType utype = m_unitInfo->getUnitType();
 	CountryType side = m_unitInfo->getCountryType();
 	if ( isNATO( side ) )
 		OPcost = US_OP_Cost[utype][DISMOUNT];
@@ -998,4 +1008,94 @@ int AirCavCounterData::dismountUnit( void )
 		}
 	}
 	return 0;
+}
+
+bool AirCavCounterData::hexStackingFull(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int row, int col, bool checkLowLevel, bool isGoingtoNOE)
+{
+	// stacking limits:
+	// - 6 ground vehicles
+	// - 20 infantry teams (1 squad = 2 teams)
+	// - at NOE, helicopter is equal to 2 vehicles, 3 for heavy helo
+	// - at Low Level, limit is 2 helicopters
+	// - ignoring wrecks for now
+	UnitType unitType = m_unitInfo->getUnitType();
+	bool isInfantryUnit = isInfantry(unitType);
+	bool isHeloUnit = isHelo(unitType);
+	bool heloAtLowLevel = false;
+	if (m_heloOffset > 0)
+	{
+		heloAtLowLevel = true;
+	}
+
+	// iterate across all counters and apply each stacking value to its appropriate limit
+	int vehicleStackingCount = 0;
+	int infantryStackingCount = 0;
+	int lowLevelHeloStackingCount = 0;
+	for (int c = 0; c < MAXCOUNTERS; c++)
+	{
+		if (counterData[c] && counterData[c]->getHexCol() == col && counterData[c]->getHexRow() == row)
+		{
+			// don't count mounted units
+			if (counterData[c]->getIsDismounted() == false)
+				continue;
+
+			CString unitName = counterData[c]->getUnitInfo()->getName();
+			UnitType type = counterData[c]->getUnitInfo()->getUnitType();
+			bool isAtLowLevel = (counterData[c]->getHeloOffset() > 0);
+			int unitStackingValue = isHeavyHelo(type) ? 3 : isHelo(type) ? 2 : 1; // helo at NOE depends on type
+			
+			if (isHelo(type) && isAtLowLevel)
+				lowLevelHeloStackingCount += 1;	// helo at low level is just one
+			else if (isInfantry(type) && unitName.Find(_T("Squad")) > 0)
+				infantryStackingCount += unitStackingValue * 2;
+			else if (isInfantry(type))
+				infantryStackingCount += unitStackingValue;
+			else
+				vehicleStackingCount += unitStackingValue;
+		}
+	}
+
+	// determine if hex is already at maximum
+	if (isHeloUnit && (heloAtLowLevel || checkLowLevel) && !isGoingtoNOE)
+		return (lowLevelHeloStackingCount >= HELO_STACKING_LIMIT);
+	else if (isInfantryUnit)
+		return (infantryStackingCount >= INFANTRY_STACKING_LIMIT);
+	else
+		return (vehicleStackingCount >= VEHICLE_STACKING_LIMIT);
+}
+
+CString AirCavCounterData::getStackingString(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int row, int col)
+{
+	int vehicleStackingCount = 0;
+	int infantryStackingCount = 0;
+	int lowLevelHeloStackingCount = 0;
+	for (int c = 0; c < MAXCOUNTERS; c++)
+	{
+		if (counterData[c] && counterData[c]->getHexCol() == col && counterData[c]->getHexRow() == row)
+		{
+			// don't count mounted units
+			if (counterData[c]->getIsDismounted() == false)
+				continue;
+
+			CString unitName = counterData[c]->getUnitInfo()->getName();
+			UnitType type = counterData[c]->getUnitInfo()->getUnitType();
+			bool isInfantryUnit = isInfantry(type);
+			bool isAtLowLevel = (counterData[c]->getHeloOffset() > 0);
+			int unitStackingValue = isHeavyHelo(type) ? 3 : isHelo(type) ? 2 : 1; // helo at NOE depends on type
+
+			if (isHelo(type) && isAtLowLevel)
+				lowLevelHeloStackingCount += 1;	// helo at low level is just one
+			else if (isInfantry(type) && unitName.Find(_T("Squad")) > 0)
+				infantryStackingCount += unitStackingValue * 2;
+			else if (isInfantry(type))
+				infantryStackingCount += unitStackingValue;
+			else
+				vehicleStackingCount += unitStackingValue;
+		}
+	}
+
+	// construct string
+	char buffer[MAX_BUF_SIZE];
+	sprintf_s(buffer, "%d/%d/%d", vehicleStackingCount, infantryStackingCount, lowLevelHeloStackingCount);
+	return (CString)buffer;
 }

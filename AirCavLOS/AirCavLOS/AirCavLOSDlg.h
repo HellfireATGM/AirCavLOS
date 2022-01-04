@@ -117,6 +117,7 @@ public:
 
 	CString m_terrainType;
 	CString m_terrainElev;
+	CString m_terrainStack;
 	int m_contourLines;
 	int m_smoke;
 	int m_roadN;

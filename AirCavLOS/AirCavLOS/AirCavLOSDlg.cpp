@@ -184,6 +184,7 @@ CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 		counterDataList[c] = 0;
 	mapData = 0;
 	scenarioData = 0;
+	m_maxCounters = 0;
 
 	// dialog initialization
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -374,7 +375,11 @@ BOOL CAirCavLOSDlg::OnInitDialog()
 	std::wstring::size_type pos = std::wstring(fileNameBuffer).find_last_of(L"\\/");
 	std::wstring thisPathW = std::wstring(fileNameBuffer).substr(0, pos);
 	std::string thisPath(thisPathW.begin(), thisPathW.end());
+#if _WIN64
 	file_dir = thisPath + "\\..\\..\\";
+#else
+	file_dir = thisPath + "\\..\\";
+#endif
 
 	// create the weapon data
 	std::string weapons = file_dir + weapons_file;
@@ -630,7 +635,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionPopUp()
 		{
 			if ( counterDataList[m_ActiveUnit]->getHeloOffset() > 0 )
 			{
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, 0, true);
+				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, 0, true);
 				counterDataList[m_ActiveUnit]->setIsPopUp(false);
 			}
 			else
@@ -1641,6 +1646,15 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						int range = mapData->CalculateLOS(hexRow, hexColumn, targetUnitOffset,
 							activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, buffer);
 
+						CString unitName = counterDataList[m_ActiveUnit]->getName();
+						CString targetName = counterDataList[c]->getName();
+						if (m_debugLOSMessages)
+						{
+							CString msgstr = (CString)buffer;
+							if (MessageBox((CString)msgstr, _T("Debug LOS from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
+								m_debugLOSMessages = FALSE;
+						}
+
 						// for pop-ups, calculate Helo elev as if it is at low level
 						if (range == 0)
 						{
@@ -1650,18 +1664,17 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 								//  recalculate calculate line-of-sight assuming a pop-up
 								range = mapData->CalculateLOS(hexRow, hexColumn, targetUnitOffset,
 									activeUnitHexRow, activeUnitHexColumn, activeUnitOffset + 30, buffer);
+
 								if (range > 0)
 									popupRange = true;
-							}
-						}
 
-						CString unitName = counterDataList[m_ActiveUnit]->getName();
-						CString targetName = counterDataList[c]->getName();
-						if (m_debugLOSMessages)
-						{
-							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug LOS from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
-								m_debugLOSMessages = FALSE;
+								if (m_debugLOSMessages)
+								{
+									CString msgstr = (CString)buffer;
+									if (MessageBox((CString)msgstr, _T("Debug POPUP LOS from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
+										m_debugLOSMessages = FALSE;
+								}
+							}
 						}
 
 						int thisTerrain = mapData->getTerrain(hexRow, hexColumn);
@@ -1826,6 +1839,15 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset,
 							hexRow, hexColumn, targetUnitOffset, buffer);
 
+						CString unitName = counterDataList[m_ActiveUnit]->getName();
+						CString targetName = counterDataList[c]->getName();
+						if (m_debugLOSMessages)
+						{
+							CString msgstr = (CString)buffer;
+							if (MessageBox((CString)msgstr, _T("Debug LOS from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
+								m_debugLOSMessages = FALSE;
+						}
+
 						// for pop-ups, calculate Helo elev as if it is at low level
 						if (range == 0)
 						{
@@ -1840,15 +1862,13 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 
 							if (range > 0)
 								popupRange = true;
-						}
 
-						CString unitName = counterDataList[m_ActiveUnit]->getName();
-						CString targetName = counterDataList[c]->getName();
-						if (m_debugLOSMessages)
-						{
-							CString msgstr = (CString)buffer;
-							if (MessageBox((CString)msgstr, _T("Debug LOS from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
-								m_debugLOSMessages = FALSE;
+							if (m_debugLOSMessages)
+							{
+								CString msgstr = (CString)buffer;
+								if (MessageBox((CString)msgstr, _T("Debug POPUP LOS from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
+									m_debugLOSMessages = FALSE;
+							}
 						}
 
 						int thisTerrain = mapData->getTerrain(activeUnitHexRow, activeUnitHexColumn);

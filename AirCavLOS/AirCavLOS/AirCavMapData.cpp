@@ -9,10 +9,10 @@
 
 #pragma warning(disable:4996)
 
-#define EPSILON 0.00001
-#define DBLEQUAL(a1, a2) (((a1 - a2) < EPSILON) && ( (a1 - a2) > -EPSILON))
-#define EPSILONTAN 26.0
-#define DBLEQUALTAN(a1, a2) (((a1 - a2) < EPSILONTAN) && ( (a1 - a2) > -EPSILONTAN))
+#define EPSILON 0.00001f
+#define DBLEQUAL(a1, a2) (fabs(a1 - a2) < EPSILON)
+#define EPSILONTAN 1.0f
+#define DBLEQUALTAN(a1, a2) (fabs(a1 - a2) < EPSILONTAN)
 
 char *TerrainString[4] =
 {
@@ -334,7 +334,7 @@ int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, int tgt_x, 
 	double Fvec_x, Fvec_y, Lvec_x, Lvec_y, Rvec_x, Rvec_y;
 	double Fvec, Lvec, Rvec;
 
-	sprintf( logBuffer, "Calculating LOS from %02d%02d to %02d%02d\n", org_y, org_x, tgt_y, tgt_x);
+	sprintf( logBuffer, "Calculating LOS from %02d%02d [%d] to %02d%02d [%d]\n", org_y, org_x, org_elev, tgt_y, tgt_x, tgt_elev);
 	strcpy( logString, logBuffer );
 
 	/* setup initial values */
@@ -545,21 +545,35 @@ top:
 		sprintf( logBuffer, "ERROR: could not find next hex...\n" );
 		strcat( logString, logBuffer );
 	}
+
 	range += 1;
 	if (!clear_LOS)
 	{
 		if (cur_x == tgt_x && cur_y == tgt_y)
+		{
 			clear_LOS = 1;
+			sprintf(logBuffer, "LOS Clear, range = %d\n", range);
+		}
 		else
+		{
 			range = 0;
+			sprintf(logBuffer, "LOS Blocked\n");
+		}
+		strcat(logString, logBuffer);
 		return (range);
 	}
 	else
 	{
 		if (cur_x == tgt_x && cur_y == tgt_y)
+		{
+			sprintf(logBuffer, "LOS Clear, range = %d\n", range);
+			strcat(logString, logBuffer);
 			return (range);
+		}
 		else
+		{
 			goto top;
+		}
 	}
 	return 0;
 }

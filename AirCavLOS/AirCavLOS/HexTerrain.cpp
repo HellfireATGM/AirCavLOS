@@ -26,6 +26,30 @@ HexTerrain::HexTerrain(int x, int y)
 	m_row = x;
 	m_col = y;
 	m_edit = false;
+
+	// MAP data
+	m_road = 0;
+	m_autobahn = 0;
+	m_river = 0;
+	m_contour = 0;
+	m_roadN = 0;
+	m_roadNE = 0;
+	m_roadNW = 0;
+	m_roadS = 0;
+	m_roadSE = 0;
+	m_roadSW = 0;
+	m_autobahnN = 0;
+	m_autobahnNE = 0;
+	m_autobahnNW = 0;
+	m_autobahnS = 0;
+	m_autobahnSE = 0;
+	m_autobahnSW = 0;
+	m_riverN = 0;
+	m_riverNE = 0;
+	m_riverNW = 0;
+	m_riverS = 0;
+	m_riverSE = 0;
+	m_riverSW = 0;
 }
 
 HexTerrain::HexTerrain(int x, int y, MAP map)

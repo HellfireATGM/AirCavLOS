@@ -261,19 +261,21 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 	int currElevation = currHexElevation + m_elevOffset;
 	int nextElevation = nextHexElevation + m_nextElevOffset;
 	int smokeHex = mapData->getSmoke( row, col );
+	int wreckHex = mapData->getWreck( row, col );	// Wreck x2 marker or more does not benefit from Road
+	if ( wreckHex > 1 )	nextRoad = 0;
 
 	// determine whether crossing a road hex
-	if ( from == NO && mapData->getRoadHex(row, col, 0) )
+	if ( from == NO && mapData->getRoadHex(row, col, 0) && wreckHex < 2)
 		nextTerr = ROAD;
-	else if ( from == NW && mapData->getRoadHex(row, col, 1) )
+	else if ( from == NW && mapData->getRoadHex(row, col, 1) && wreckHex < 2)
 		nextTerr = ROAD;
-	else if ( from == SW && mapData->getRoadHex(row, col, 2) )
+	else if ( from == SW && mapData->getRoadHex(row, col, 2) && wreckHex < 2)
 		nextTerr = ROAD;
-	else if ( from == SO && mapData->getRoadHex(row, col, 3) )
+	else if ( from == SO && mapData->getRoadHex(row, col, 3) && wreckHex < 2)
 		nextTerr = ROAD;
-	else if ( from == SE && mapData->getRoadHex(row, col, 4) )
+	else if ( from == SE && mapData->getRoadHex(row, col, 4) && wreckHex < 2)
 		nextTerr = ROAD;
-	else if ( from == NE && mapData->getRoadHex(row, col, 5) )
+	else if ( from == NE && mapData->getRoadHex(row, col, 5) && wreckHex < 2)
 		nextTerr = ROAD;
 
 	// determine whether crossing an autobahn hex

@@ -1027,16 +1027,22 @@ bool AirCavCounterData::hexStackingFull(AirCavMapData *mapData, AirCavCounterDat
 		heloAtLowLevel = true;
 	}
 
-	// iterate across all counters and apply each stacking value to its appropriate limit
-	int vehicleStackingCount = 0;
+	// start the stacking value with any wrecks in the hex (for vehicle stacking only)
+	int vehicleStackingCount = mapData->getWreck(row, col);
 	int infantryStackingCount = 0;
 	int lowLevelHeloStackingCount = 0;
+
+	// iterate across all counters and apply each stacking value to its appropriate limit
 	for (int c = 0; c < MAXCOUNTERS; c++)
 	{
 		if (counterData[c] && counterData[c]->getHexCol() == col && counterData[c]->getHexRow() == row)
 		{
 			// don't count mounted units
 			if (counterData[c]->getIsDismounted() == false)
+				continue;
+
+			// don't count dead units (these will be counted as wrecks)
+			if (counterData[c]->getIsAlive() == false)
 				continue;
 
 			CString unitName = counterData[c]->getUnitInfo()->getName();

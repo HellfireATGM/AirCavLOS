@@ -120,6 +120,7 @@ public:
 	CString m_terrainStack;
 	int m_contourLines;
 	int m_smoke;
+	int m_wreck;
 	int m_roadN;
 	int m_roadNW;
 	int m_roadSW;
@@ -186,6 +187,7 @@ public:
 	afx_msg void OnBnClickedButtonResolveOppfire();
 	afx_msg void OnBnClickedButtonLaysmoke();
 	afx_msg void OnBnClickedCheckSmoke();
+	afx_msg void OnBnClickedCheckWreck();
 	afx_msg void OnBnClickedButtonElevoffset();
 	afx_msg void OnBnClickedButtonListUnits();
 	afx_msg void OnCbnSelchangeComboWeather();

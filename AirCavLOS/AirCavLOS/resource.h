@@ -161,11 +161,12 @@
 #define IDC_CHECK_SMOKE                 1083
 #define IDC_BUTTON_ELEVOFFSET           1084
 #define IDC_NEXT                        1085
-#define IDC_EDIT_TERR_ELEV2             1085
 #define IDC_EDIT_TERR_STACK             1085
 #define IDC_PREVIOUS                    1086
 #define IDC_COMBO_WEATHER               1086
 #define IDC_GOTO                        1087
+#define IDC_CHECK_SMOKE2                1087
+#define IDC_CHECK_WRECK                 1087
 #define IDC_COMBO_INDIRECT              1088
 #define IDC_CHECK_SMOKE_MISSION         1089
 

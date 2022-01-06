@@ -30,6 +30,9 @@ public:
 	int setSmoke( int x, int y, bool toggle = FALSE );
 	void clearSmoke( int x, int y );
 	bool validHex( int col, int row );
+	int getWreck( int x, int y );
+	int setWreck( int x, int y, bool toggle = FALSE );
+	void clearWreck( int x, int y );
 
 private:
 	FILE	*map_file_pointer;

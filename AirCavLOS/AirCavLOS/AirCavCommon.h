@@ -248,6 +248,7 @@ typedef struct {
 	int			vsw, vs, vse;	/* southern hexsides for river */
 	int			unit;		    /* id of unit */
 	int			smoke;			/* 0 = no smoke, 1 = smoke */
+	int			wreck;			/* 0 = no wreck, 1 = wreck */
 } MAP;
 
 /* scenario set up information  */

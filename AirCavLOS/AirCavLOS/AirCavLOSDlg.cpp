@@ -193,6 +193,7 @@ CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 	m_activeUnitWeapon = 0;
 	m_contourLines = 0;
 	m_smoke = 0;
+	m_wreck = 0;
 	m_roadN = 0;
 	m_roadNW = 0;
 	m_roadSW = 0;
@@ -254,6 +255,7 @@ void CAirCavLOSDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_TERR_STACK, m_terrainStack);
 	DDX_Check(pDX, IDC_CHECK_CONTOUR_LINES, m_contourLines);
 	DDX_Check(pDX, IDC_CHECK_SMOKE, m_smoke);
+	DDX_Check(pDX, IDC_CHECK_WRECK, m_wreck);
 	DDX_Check(pDX, IDC_CHECK_R_N, m_roadN);
 	DDX_Check(pDX, IDC_CHECK_R_NW3, m_roadNW);
 	DDX_Check(pDX, IDC_CHECK_R_SW3, m_roadSW);
@@ -329,6 +331,7 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_RESOLVE_OPPFIRE, &CAirCavLOSDlg::OnBnClickedButtonResolveOppfire)
 	ON_BN_CLICKED(IDC_BUTTON_LAYSMOKE, &CAirCavLOSDlg::OnBnClickedButtonLaysmoke)
 	ON_BN_CLICKED(IDC_CHECK_SMOKE, &CAirCavLOSDlg::OnBnClickedCheckSmoke)
+	ON_BN_CLICKED(IDC_CHECK_WRECK, &CAirCavLOSDlg::OnBnClickedCheckWreck)
 	ON_BN_CLICKED(IDC_BUTTON_ELEVOFFSET, &CAirCavLOSDlg::OnBnClickedButtonElevoffset)
 	ON_BN_CLICKED(IDC_BUTTON_LIST_ALL, &CAirCavLOSDlg::OnBnClickedButtonListUnits)
 	ON_CBN_SELCHANGE(IDC_COMBO_WEATHER, &CAirCavLOSDlg::OnCbnSelchangeComboWeather)
@@ -441,6 +444,21 @@ BOOL CAirCavLOSDlg::OnInitDialog()
 	{
 		MessageBox( (CString)"Unable to open map.dat", (CString)"Error", MB_OK );
 		return FALSE;
+	}
+
+	// identify dead units and set wreck values on map
+	for (int c = 0; c < m_maxCounters; c++)
+	{
+		if (counterDataList[c]->getIsAlive() == false)
+		{
+			UnitType unitType = counterDataList[c]->getUnitInfo()->getUnitType();
+			if (unitType != INF)
+			{
+				int hexColumn = counterDataList[c]->getHexCol();
+				int hexRow = counterDataList[c]->getHexRow();
+				mapData->setWreck(hexRow, hexColumn);
+			}
+		}
 	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -946,6 +964,12 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 				int id = counterDataList[t]->getMountedUnit(i);
 				if ( !counterDataList[id]->getIsDismounted() )
 					counterDataList[id]->kill();
+			}
+			// if the target was a vehicle, add a wreck marker to the target hex
+			UnitType tgtUnitType = counterDataList[t]->getUnitInfo()->getUnitType();
+			if (tgtUnitType != INF)
+			{
+				m_wreck = mapData->setWreck(tgtRow, tgtCol);
 			}
 		}
 
@@ -1594,6 +1618,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_terrainType = TerrainStr[activeTerrain];
 		m_contourLines = mapData->getContour( activeUnitHexRow, activeUnitHexColumn );
 		m_smoke = mapData->getSmoke( activeUnitHexRow, activeUnitHexColumn );
+		m_wreck = mapData->getWreck( activeUnitHexRow, activeUnitHexColumn ) > 0 ? 1 : 0;
 		int road = mapData->getRoad( activeUnitHexRow, activeUnitHexColumn );
 		int autobahn = mapData->getAutobahn( activeUnitHexRow, activeUnitHexColumn );
 		m_roadN  = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 0 );
@@ -2499,6 +2524,15 @@ void CAirCavLOSDlg::OnBnClickedCheckSmoke()
 	int row = counterDataList[m_ActiveUnit]->getHexRow();
 	m_smoke = mapData->setSmoke(row, col, true);
 	m_smokeHexList.Add( row, col );
+	UpdateData(FALSE);
+	updateActiveUnit();
+}
+
+void CAirCavLOSDlg::OnBnClickedCheckWreck()
+{
+	int col = counterDataList[m_ActiveUnit]->getHexCol();
+	int row = counterDataList[m_ActiveUnit]->getHexRow();
+	m_wreck = mapData->setWreck(row, col, true);
 	UpdateData(FALSE);
 	updateActiveUnit();
 }

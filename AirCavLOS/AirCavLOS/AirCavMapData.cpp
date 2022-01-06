@@ -180,6 +180,7 @@ int AirCavMapData::OpenMapDataFile(std::string& file_dir)
 					Map[j][i].unit = 0;
 				}
 				Map[j][i].smoke = 0;	// smoke is never persisted, always set to false
+				Map[j][i].wreck = 0;	// wreck is never persisted, always set to false
 			}
 			else
 			{
@@ -190,6 +191,7 @@ int AirCavMapData::OpenMapDataFile(std::string& file_dir)
 				Map[j][i].autobahn = 0;
 				Map[j][i].river = 0;
 				Map[j][i].smoke = 0;
+				Map[j][i].wreck = 0;
 				Map[j][i].rnw = 0;
 				Map[j][i].rn  = 0;
 				Map[j][i].rne = 0;
@@ -726,6 +728,32 @@ int AirCavMapData::setSmoke( int x, int y, bool toggle )
 void AirCavMapData::clearSmoke( int x, int y )
 {
 	Map[y][x].smoke = 0;
+}
+
+int AirCavMapData::getWreck(int x, int y)
+{
+	return Map[y][x].wreck;
+}
+
+int AirCavMapData::setWreck(int x, int y, bool toggle)
+{
+	if (toggle)
+	{
+		if (Map[y][x].wreck)
+			Map[y][x].wreck = 0;
+		else
+			Map[y][x].wreck = 1;
+	}
+	else
+	{
+		Map[y][x].wreck++;	// track multiple wrecks!
+	}
+	return Map[y][x].wreck > 0;
+}
+
+void AirCavMapData::clearWreck(int x, int y)
+{
+	Map[y][x].wreck = 0;
 }
 
 int AirCavMapData::getRoadHex( int x, int y, int which )

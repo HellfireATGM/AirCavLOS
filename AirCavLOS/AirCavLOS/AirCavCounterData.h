@@ -141,7 +141,7 @@ public:
 	void moveSouthWest( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
 	void moveSouthEast( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
 
-	int checkContour(AirCavMapData *mapData, int col, int row, int curOffset = 0);
+	int checkContour(AirCavMapData *mapData, int col, int row, int from, int curOffset = 0);
 	int isVisible(int terrain, int range, int lowlevel, int weather, int smoke = FALSE);
 
 	bool hexStackingFull(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int row, int col, bool checkLowLevel = false, bool isGoingtoNOE = false);

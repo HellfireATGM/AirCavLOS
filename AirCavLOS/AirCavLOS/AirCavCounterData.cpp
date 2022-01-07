@@ -572,7 +572,7 @@ int AirCavCounterData::oppFire(int weaponType)
 	return false;
 }
 
-int AirCavCounterData::checkContour(AirCavMapData *mapData, int col, int row, int curOffset)
+int AirCavCounterData::checkContour(AirCavMapData *mapData, int col, int row, int from, int curOffset)
 {
 	int elevOffset = 0;
 	UnitType unitType = m_unitInfo->getUnitType();
@@ -592,12 +592,47 @@ int AirCavCounterData::checkContour(AirCavMapData *mapData, int col, int row, in
 	// don't check contours for helicopters at low level
 	if ( contour > 0 && !heloAtLowLevel )
 	{
-		ElevOffsetDlg dlg(NULL, m_elevOffset);
-		if ( dlg.DoModal() == IDOK )
+		bool moveViaRoad = false;
+		if (from > 0)
 		{
-			elevOffset = dlg.getOffset();
-			if ( ( elevOffset + nextElev ) < 0 )
+			// determine whether crossing a road or autohex
+			if ((from == NO && mapData->getRoadHex(row, col, 0)) ||
+				(from == NW && mapData->getRoadHex(row, col, 1)) ||
+				(from == SW && mapData->getRoadHex(row, col, 2)) ||
+				(from == SO && mapData->getRoadHex(row, col, 3)) ||
+				(from == SE && mapData->getRoadHex(row, col, 4)) ||
+				(from == NE && mapData->getRoadHex(row, col, 5)))
+			{
+				moveViaRoad = true;
+			}
+
+			if ((from == NO && mapData->getAutobahnHex(row, col, 0)) ||
+				(from == NW && mapData->getAutobahnHex(row, col, 1)) ||
+				(from == SW && mapData->getAutobahnHex(row, col, 2)) ||
+				(from == SO && mapData->getAutobahnHex(row, col, 3)) ||
+				(from == SE && mapData->getAutobahnHex(row, col, 4)) ||
+				(from == NE && mapData->getAutobahnHex(row, col, 5)))
+			{
+				moveViaRoad = true;
+			}
+		}
+
+		// don't bring up the dialog if moving via a road - always stay at the lowest elevation
+		if (moveViaRoad)
+		{
+			elevOffset = -20;
+			if ((elevOffset + nextElev) < 0)
 				elevOffset += 10;
+		}
+		else
+		{
+			ElevOffsetDlg dlg(NULL, m_elevOffset);
+			if (dlg.DoModal() == IDOK)
+			{
+				elevOffset = dlg.getOffset();
+				if ((elevOffset + nextElev) < 0)
+					elevOffset += 10;
+			}
 		}
 	}
 	return elevOffset;
@@ -652,7 +687,7 @@ void AirCavCounterData::moveTo(AirCavMapData *mapData, AirCavCounterData *counte
 
 		m_hexRow = row;
 		m_hexCol = col;
-		m_elevOffset = doCheckContour ? checkContour(mapData, col, row) : 0;
+		m_elevOffset = doCheckContour ? checkContour(mapData, col, row, 0) : 0;
 	}
 }
 
@@ -662,7 +697,7 @@ void AirCavCounterData::moveNorth(AirCavMapData *mapData, AirCavCounterData *cou
 	int nextCol = m_hexCol;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
-		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
+		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, SO);
 		if ( moveAction( mapData, counterData, nextCol, nextRow, SO, popSmoke ) )
 		{
 			m_hexRow = nextRow;
@@ -677,7 +712,7 @@ void AirCavCounterData::moveNorthWest(AirCavMapData *mapData, AirCavCounterData 
 	int nextCol = m_hexCol - 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
-		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
+		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, SE);
 		if ( moveAction( mapData, counterData, nextCol, nextRow, SE, popSmoke ) )
 		{
 			m_hexRow = nextRow;
@@ -692,7 +727,7 @@ void AirCavCounterData::moveNorthEast(AirCavMapData *mapData, AirCavCounterData 
 	int nextCol = m_hexCol + 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
-		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
+		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, SW);
 		if ( moveAction( mapData, counterData, nextCol, nextRow, SW, popSmoke ) )
 		{
 			m_hexRow = nextRow;
@@ -707,7 +742,7 @@ void AirCavCounterData::moveSouth(AirCavMapData *mapData, AirCavCounterData *cou
 	int nextCol = m_hexCol;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
-		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
+		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, NO);
 		if ( moveAction( mapData, counterData, nextCol, nextRow, NO, popSmoke ) )
 		{
 			m_hexRow = nextRow;
@@ -722,7 +757,7 @@ void AirCavCounterData::moveSouthWest(AirCavMapData *mapData, AirCavCounterData 
 	int nextCol = m_hexCol - 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
-		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
+		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, NE);
 		if ( moveAction( mapData, counterData, nextCol, nextRow, NE, popSmoke ) )
 		{
 			m_hexRow = nextRow;
@@ -737,7 +772,7 @@ void AirCavCounterData::moveSouthEast(AirCavMapData *mapData, AirCavCounterData 
 	int nextCol = m_hexCol + 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
-		m_nextElevOffset = checkContour(mapData, nextCol, nextRow);
+		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, NW);
 		if ( moveAction( mapData, counterData, nextCol, nextRow, NW, popSmoke ) )
 		{
 			m_hexRow = nextRow;

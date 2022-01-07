@@ -305,11 +305,11 @@ int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 				y = (MAX_ROWS-r) * demScale + (demScale/2.0);
 
 			if (Map[c][r].elevation < 0)
-				e = 0.0;
-			else if (Map[c][r].river)
-				e = -10.0;
-			else if (Map[c][r].road)
-				e = -20.0;
+				e = 0.0f;
+			else if (Map[c][r].terrain == RIVER)
+				e = -10.0f;
+			else if (Map[c][r].terrain == TOWN)
+				e = 100.0f;
 			else
 				e = (double)Map[c][r].elevation;
 

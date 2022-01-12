@@ -36,6 +36,7 @@ private:
 	int					m_rangeToActiveUnit;
 	int					m_activeUnitRange;
 	int					m_inDefilade;		// TRUE or FALSE
+	int					m_isSuppressed;		// TRUE or FALSE
 	int					m_evasiveManeuver;	// TRUE or FALSE
 	int                 m_elevOffset;       // if not at highest elevation, offset (-10, -20, etc)
 	int                 m_nextElevOffset;   // if not at highest elevation, offset (-10, -20, etc)
@@ -49,6 +50,7 @@ private:
 	int					m_FKNm3;			// Final Kill Number Main Weapon 3
 	int					m_FKNs1;			// Final Kill Number Secondary Weapon 1
 	int					m_FKNs2;			// Final Kill Number Secondary Weapon 2
+	int					m_targetTypeModifier;	// Target Type modifier for calculating suppression
 	int					m_macroMove;		// tally of hexes moved when low level
 	bool				m_actionTaken;		// unit has been activated (opportunity fire does not count)
 
@@ -78,12 +80,14 @@ public:
 	int getNumberOfMountedUnits() { return m_numMountedUnits; }
 	int getMountedUnit( int u ) { return m_mountedUnits[u]; }
 	void setMountedUnit( int u, int m ) { m_mountedUnits[u] = m; m_numMountedUnits++; }
-	void setFinalKillNumbers( int FKNm1, int FKNm2, int FKNm3, int FKNs1, int FKNs2 );
+	void setFinalKillNumbers( int FKNm1, int FKNm2, int FKNm3, int FKNs1, int FKNs2, int targetTypeModifier);
 	void setWpnOppFiring( int wpn ) { m_wpnOppFiring = wpn; } 
 	void setTgtOppFiring( int tgt ) { m_tgtOppFiring = tgt; } 
 	void setDefilade(int def) { m_inDefilade = def; }
 	void setEvading(int evade) { m_evasiveManeuver = evade; }
 	bool getActionTaken() { return m_actionTaken; }
+	void setIsSuppressed(int sup) { m_isSuppressed = sup; }
+	int getIsSuppressed() { return m_isSuppressed; }
 
 	double getOPs() { return m_OPs; }
 	void setOPs(double op) { m_OPs = op; }
@@ -127,6 +131,7 @@ public:
 	int getFKN3() { return m_FKNm3; }
 	int getFKN4() { return m_FKNs1; }
 	int getFKN5() { return m_FKNs2; }
+	int getTargetTypeModifier() { return m_targetTypeModifier; }
 	void setFKN1(int FKN) { m_FKNm1 = FKN; }
 	void setFKN2(int FKN) { m_FKNm2 = FKN; }
 	void setFKN3(int FKN) { m_FKNm3 = FKN; }

@@ -172,6 +172,7 @@ AirCavCounterData::AirCavCounterData(CString name, SideType side, CountryType co
 	m_FKNs2 = 0;
 	m_macroMove = 0;
 	m_actionTaken = false;
+	m_isSuppressed = FALSE;
 }
 
 AirCavCounterData::~AirCavCounterData(void)
@@ -194,6 +195,7 @@ void AirCavCounterData::reset()
     m_tgtOppFiring = -1;
 	m_macroMove = 0;
 	m_actionTaken = false;
+	m_isSuppressed = FALSE;
 }
 
 void AirCavCounterData::resetActive()
@@ -212,6 +214,7 @@ void AirCavCounterData::resetActive()
     m_tgtOppFiring = -1;
 	m_macroMove = 0;
 	m_actionTaken = false;
+	m_isSuppressed = FALSE;
 }
 
 double AirCavCounterData::incrOPs(double op)
@@ -375,6 +378,9 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 			// creating smoke hex costs extra
 			if ( popSmoke )
 				OPcost += 1.0;
+			// being suppressed costs extra
+			if (m_isSuppressed)
+				OPcost += 1.0;
 			// helicopters cannnot enter a smoke hex
 			if ( smokeHex && isHeloUnit)
 				return 0;
@@ -415,6 +421,9 @@ int AirCavCounterData::fireGun(bool oppFire)
 		OPcost = Sov_OP_Cost[utype][GUN];
 	if ( oppFire )
 		OPcost += 1;
+	// being suppressed costs extra
+	if (m_isSuppressed)
+		OPcost += 1.0;
 	if ( OPcost > 0 )
 	{
 		if ( decrOPs(OPcost, oppFire) != -1 )
@@ -443,6 +452,9 @@ int AirCavCounterData::fireMissile(bool oppFire)
 		OPcost = Sov_OP_Cost[utype][ATGM];
 	if ( oppFire )
 		OPcost += 1;
+	// being suppressed costs extra
+	if (m_isSuppressed)
+		OPcost += 1.0;
 	if ( OPcost > 0 )
 	{
 		if ( decrOPs(OPcost, oppFire) != -1 )
@@ -471,6 +483,9 @@ int AirCavCounterData::fireRocket(bool oppFire)
 		OPcost = Sov_OP_Cost[utype][ROCKET];
 	if ( oppFire )
 		OPcost += 1;
+	// being suppressed costs extra
+	if (m_isSuppressed)
+		OPcost += 1.0;
 	if ( OPcost > 0 )
 	{
 		if ( decrOPs(OPcost, oppFire) != -1 )
@@ -499,6 +514,9 @@ int AirCavCounterData::fireSAM(bool oppFire)
 		OPcost = Sov_OP_Cost[utype][SAM];
 	if ( oppFire )
 		OPcost += 1;
+	// being suppressed costs extra
+	if (m_isSuppressed)
+		OPcost += 1.0;
 	if ( OPcost > 0 )
 	{
 		if ( decrOPs(OPcost, oppFire) != -1 )
@@ -834,13 +852,14 @@ int AirCavCounterData::isVisible(int terrain, int range, int lowlevel, int weath
 	}
 }
 
-void AirCavCounterData::setFinalKillNumbers( int FKNm1, int FKNm2, int FKNm3, int FKNs1, int FKNs2 )
+void AirCavCounterData::setFinalKillNumbers( int FKNm1, int FKNm2, int FKNm3, int FKNs1, int FKNs2, int targetTypeModifier)
 {
 	m_FKNm1 = FKNm1;
 	m_FKNm2 = FKNm2;
 	m_FKNm3 = FKNm3;
 	m_FKNs1 = FKNs1;
 	m_FKNs2 = FKNs2;
+	m_targetTypeModifier = targetTypeModifier;
 }
 
 int AirCavCounterData::enterDefilade(int terrain, int toggle)

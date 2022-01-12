@@ -148,6 +148,7 @@ public:
 	int m_activeUnitMounted;
 	int m_activeUnitDismounted;
 	int m_activeUnitLowLevel;
+	int m_activeUnitIsSuppressed;
 	int m_debugLOSMessages;
 	int m_debugFKNMessages;
 
@@ -180,6 +181,7 @@ public:
 	afx_msg void OnBnClickedButtonActionDefilade();
 	afx_msg void OnBnClickedCheckActiveEvading();
 	afx_msg void OnBnClickedCheckActiveInDef();
+	afx_msg void OnBnClickedButtonActiveSuppressed();
 	afx_msg void OnBnClickedButtonActionMount();
 	afx_msg void OnBnClickedButtonActionLowlevel();
 	afx_msg void OnBnClickedButtonActionOppfire();

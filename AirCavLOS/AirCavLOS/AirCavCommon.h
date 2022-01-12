@@ -186,18 +186,21 @@ typedef struct
 typedef struct
 {
 	char			name[32];
-	int				main1;
-	int				main2;
-	int				main3;
-	int				secn1;
-	int				secn2;
-    UnitType		type;
-	TargetType		armor;
-	int				evm;
-	int				sm;
-	int				dm;
-    int             nr;			// number of rockets carried
-    int             nm;			// number of missiles carried
+	int				main1;			// main weapon 1
+	int				main2;			// main weapon 2
+	int				main3;			// main weapon 3
+	int				secn1;			// secondary weapon 1
+	int				secn2;			// secondary weapon 2
+    UnitType		type;			// unit type
+	TargetType		armor;			// target type
+	int				evm;			// evasive manuever modifier
+	int				sm;				// suppression modifier
+	int				dm;				// defilade modifier
+    int             ammo_m1;		// ammo - main weapon 1
+	int             ammo_m2;		// ammo - main weapon 2
+	int             ammo_m3;		// ammo - main weapon 3
+	int             ammo_s1;		// ammo - secondary weapon 1
+	int             ammo_s2;		// ammo - secondary weapon 2
 } Type;
 
 /*  weapon definitions  */

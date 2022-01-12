@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by AirCavLOS.rc
 //
+#define IDOK2                           3
 #define IDM_ABOUTBOX                    0x0010
 #define IDD_ABOUTBOX                    100
 #define IDS_ABOUTBOX                    101
@@ -14,7 +15,9 @@
 #define IDD_DIALOG_OPPFIRE              139
 #define IDD_DIALOG_KILL                 140
 #define IDD_DIALOG_UNIT_DETAILS         141
+#define IDD_DIALOG_KILL2                141
 #define IDD_DIALOG_INDIRECT_FIRE        145
+#define IDD_DIALOG_KILL_SUP             146
 #define IDC_LIST_UNITS                  1000
 #define IDC_BUTTON_ACTION_PASS          1001
 #define IDC_BUTTON_ACTION_FIRE          1002
@@ -165,16 +168,16 @@
 #define IDC_PREVIOUS                    1086
 #define IDC_COMBO_WEATHER               1086
 #define IDC_GOTO                        1087
-#define IDC_CHECK_SMOKE2                1087
 #define IDC_CHECK_WRECK                 1087
 #define IDC_COMBO_INDIRECT              1088
+#define IDC_CHECK_ACTIVE_SUPPRESSED     1088
 #define IDC_CHECK_SMOKE_MISSION         1089
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        150
+#define _APS_NEXT_RESOURCE_VALUE        152
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1090
 #define _APS_NEXT_SYMED_VALUE           101

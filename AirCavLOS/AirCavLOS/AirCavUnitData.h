@@ -13,7 +13,7 @@ public:
 					AirCavWeaponData *swpn1, AirCavWeaponData *swpn2);
 	AirCavUnitData(CString name, UnitType type, TargetType TT, 
 					AirCavWeaponData *mwpn1, AirCavWeaponData *mwpn2, AirCavWeaponData *mwpn3,
-					AirCavWeaponData *swpn1, AirCavWeaponData *swpn2, int evm, int sm, int dm, int nr, int nm);
+					AirCavWeaponData *swpn1, AirCavWeaponData *swpn2, int evm, int sm, int dm, int ammo_m1, int ammo_m2, int ammo_m3, int ammo_s1, int ammo_s2);
 public:
 	~AirCavUnitData(void);
 
@@ -26,13 +26,16 @@ private:
 	int					m_EVM;				// evasive maneuver modifier
 	int					m_SM;				// suppression modifier
 	int					m_DM;				// defilade modifier
-	int					m_nRockets;			// number of Rockets carried
-	int					m_nMissiles;		// number of Missiles carried
 	AirCavWeaponData	*m_mainWpn1;		// main weapon 1
 	AirCavWeaponData	*m_mainWpn2;		// main weapon 2
 	AirCavWeaponData	*m_mainWpn3;		// main weapon 3
 	AirCavWeaponData	*m_secondaryWpn1;	// secondary weapon 1
 	AirCavWeaponData	*m_secondaryWpn2;	// secondary weapon 2
+	int					m_nAmmoMainWpn1;		// ammo count for main weapon 1
+	int					m_nAmmoMainWpn2;		// ammo count for main weapon 2
+	int					m_nAmmoMainWpn3;		// ammo count for main weapon 3
+	int					m_nAmmoSecondaryWpn1;	// ammo count for secondary weapon 1
+	int					m_nAmmoSecondaryWpn2;	// ammo count for secondary weapon 2
 
 // methods
 public:
@@ -43,18 +46,27 @@ public:
 	void setTargetType(TargetType targetType) { m_TT = targetType; }
 	CountryType getCountryType() { return m_country; }
 	void setCountryType(CountryType countryType) { m_country = countryType; }
+
 	AirCavWeaponData *getMainWeapon1() { return m_mainWpn1; }
 	AirCavWeaponData *getMainWeapon2() { return m_mainWpn2; }
 	AirCavWeaponData *getMainWeapon3() { return m_mainWpn3; }
 	AirCavWeaponData *getSecondaryWeapon1() { return m_secondaryWpn1; }
 	AirCavWeaponData *getSecondaryWeapon2() { return m_secondaryWpn2; }
+
 	int getEVM() { return m_EVM; }
 	int getSM() { return m_SM; }
 	int getDM() { return m_DM; }
-	void setNumberRockets( int nr ) { m_nRockets = nr; }
-	void setNumberMissiles( int nm ) { m_nMissiles = nm; }
-	int getNumberRockets() { return m_nRockets; }
-	int getNumberMissiles() { return m_nMissiles; }
+
+	void setAmmoMainWeapon1(int n) { m_nAmmoMainWpn1 = n; }
+	void setAmmoMainWeapon2(int n) { m_nAmmoMainWpn2 = n; }
+	void setAmmoMainWeapon3(int n) { m_nAmmoMainWpn3 = n; }
+	void setAmmoSecondaryWeapon1(int n) { m_nAmmoSecondaryWpn1 = n; }
+	void setAmmoSecondaryWeapon2(int n) { m_nAmmoSecondaryWpn2 = n; }
+	int getAmmoMainWeapon1() { return m_nAmmoMainWpn1; }
+	int getAmmoMainWeapon2() { return m_nAmmoMainWpn2; }
+	int getAmmoMainWeapon3() { return m_nAmmoMainWpn3; }
+	int getAmmoSecondaryWeapon1() { return m_nAmmoSecondaryWpn1; }
+	int getAmmoSecondaryWeapon2() { return m_nAmmoSecondaryWpn2; }
 
 	CString getUnitTypeString( UnitType unitType );
 	CString getTargetTypeString( TargetType targetType );
@@ -62,5 +74,5 @@ public:
 	CString getSideTypeString(SideType sideType);
 
 	int CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke, 
-							int range, int opp, char *log );
+							int range, int opp, int sup, char *log, int &ttMod);
 };

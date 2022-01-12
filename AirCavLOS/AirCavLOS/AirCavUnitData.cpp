@@ -37,7 +37,8 @@ AirCavUnitData::AirCavUnitData(void)
 
 AirCavUnitData::AirCavUnitData(CString name, UnitType type, TargetType TT, 
 					AirCavWeaponData *mwpn1, AirCavWeaponData *mwpn2, AirCavWeaponData *mwpn3,
-					AirCavWeaponData *swpn1, AirCavWeaponData *swpn2, int evm, int sm, int dm, int nr, int nm)
+					AirCavWeaponData *swpn1, AirCavWeaponData *swpn2, int evm, int sm, int dm, 
+					int ammo_m1, int ammo_m2, int ammo_m3, int ammo_s1, int ammo_s2)
 {
 	m_name = name;
 	m_type = type;
@@ -45,13 +46,16 @@ AirCavUnitData::AirCavUnitData(CString name, UnitType type, TargetType TT,
 	m_EVM = evm;
 	m_SM = sm;
 	m_DM = dm;
-	m_nRockets = nr;
-	m_nMissiles = nm;
 	m_mainWpn1 = mwpn1;
 	m_mainWpn2 = mwpn2;
 	m_mainWpn3 = mwpn3;
 	m_secondaryWpn1 = swpn1;
 	m_secondaryWpn2 = swpn2;
+	m_nAmmoMainWpn1 = ammo_m1;
+	m_nAmmoMainWpn2 = ammo_m2;
+	m_nAmmoMainWpn3 = ammo_m3;
+	m_nAmmoSecondaryWpn1 = ammo_s1;
+	m_nAmmoSecondaryWpn2 = ammo_s2;
 }
 
 AirCavUnitData::AirCavUnitData(Type unit, AirCavWeaponData *mwpn1, AirCavWeaponData *mwpn2, 
@@ -63,13 +67,16 @@ AirCavUnitData::AirCavUnitData(Type unit, AirCavWeaponData *mwpn1, AirCavWeaponD
 	m_EVM = unit.evm;
 	m_SM = unit.sm;
 	m_DM = unit.dm;
-	m_nRockets = unit.nr;
-	m_nMissiles = unit.nm;
 	m_mainWpn1 = mwpn1;
 	m_mainWpn2 = mwpn2;
 	m_mainWpn3 = mwpn3;
 	m_secondaryWpn1 = swpn1;
 	m_secondaryWpn2 = swpn2;
+	m_nAmmoMainWpn1 = unit.ammo_m1;
+	m_nAmmoMainWpn2 = unit.ammo_m2;
+	m_nAmmoMainWpn3 = unit.ammo_m3;
+	m_nAmmoSecondaryWpn1 = unit.ammo_s1;
+	m_nAmmoSecondaryWpn2 = unit.ammo_s2;
 }
 
 AirCavUnitData::~AirCavUnitData(void)
@@ -97,7 +104,7 @@ CString AirCavUnitData::getSideTypeString(SideType sideType)
 }
 
 int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke, 
-								 int range, int opp, char *logString )
+								 int range, int opp, int sup, char *logString, int &ttMod )
 {
 	char logBuffer[256];
 	AirCavWeaponData *mainWpn;
@@ -209,9 +216,11 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 	if ( BKN == 0 )
 		return 0;
 
+	sprintf(logBuffer, "Suppression Modifier = %d\n", sup);
+	strcat(logString, logBuffer);
+
 	targetTable tt = mainWpn->getTargetTable();
 	int targetType = tgt->getUnitInfo()->getTargetType();
-	int ttMod;
 	switch( targetType )
 	{
 		case TT_A:
@@ -302,7 +311,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 	sprintf( logBuffer, "Evasive Maneuver Modifier = %d\n", evasiveMod );
 	strcat( logString, logBuffer );
 
-	int FKN = BKN + ttMod + terrainMod + oppFireMod + movingMod + aerialMod + defiladeMod + evasiveMod;
+	int FKN = BKN + ttMod + sup + terrainMod + oppFireMod + movingMod + aerialMod + defiladeMod + evasiveMod;
 	sprintf( logBuffer, "Final Kill Number = %d\n", FKN );
 	strcat( logString, logBuffer );
 

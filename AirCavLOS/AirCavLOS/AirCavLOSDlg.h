@@ -198,4 +198,6 @@ public:
 	afx_msg void OnBnClickedCheckPopSmoke();
 	afx_msg void OnBnClickedButtonSaveProgress();
 	afx_msg void OnBnClickedButtonAbout();
+	afx_msg void OnBnClickedCheckIgnoreWater();
+	afx_msg void OnBnClickedCheckIgnoreAutobahn();
 };

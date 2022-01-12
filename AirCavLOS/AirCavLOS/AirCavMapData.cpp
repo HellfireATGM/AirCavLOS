@@ -79,6 +79,8 @@ extern void CalcAdj (int dir, int cur_y, int cur_x, int *y, int *x)
 AirCavMapData::AirCavMapData(void)
 {
 	map_file_pointer = 0;
+	m_ignoreWaterFeatures = false;
+	m_ignoreAutobahn = false;
 }
 
 AirCavMapData::~AirCavMapData(void)
@@ -644,6 +646,9 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 
 int AirCavMapData::getTerrain( int x, int y )
 {
+	if (m_ignoreWaterFeatures && Map[y][x].terrain == RIVER)
+		return CLEAR;
+
 	return Map[y][x].terrain;
 }
 
@@ -696,11 +701,15 @@ int AirCavMapData::getRoad( int x, int y )
 
 int AirCavMapData::getAutobahn( int x, int y )
 {
+	if (m_ignoreAutobahn && Map[y][x].autobahn)
+		return 0;
 	return Map[y][x].autobahn;
 }
 
 int AirCavMapData::getRiver( int x, int y )
 {
+	if (m_ignoreWaterFeatures && Map[y][x].river)
+		return 0;
 	return Map[y][x].river;
 }
 
@@ -778,7 +787,10 @@ int AirCavMapData::getRoadHex( int x, int y, int which )
 
 int AirCavMapData::getAutobahnHex( int x, int y, int which )
 {
-	switch( which )
+	if (m_ignoreAutobahn)
+		return 0;
+
+	switch (which)
 	{
 		case 0: return Map[y][x].an;
 			break;
@@ -798,6 +810,9 @@ int AirCavMapData::getAutobahnHex( int x, int y, int which )
 
 int AirCavMapData::getStreamHex( int x, int y, int which )
 {
+	if (m_ignoreWaterFeatures)
+		return 0;
+
 	switch( which )
 	{
 		case 0: return Map[y][x].vn;

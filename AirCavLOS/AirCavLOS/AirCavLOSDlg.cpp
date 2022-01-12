@@ -344,6 +344,8 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_CHECK_POP_SMOKE, &CAirCavLOSDlg::OnBnClickedCheckPopSmoke)
 	ON_BN_CLICKED(IDC_BUTTON_SAVE_PROGRESS, &CAirCavLOSDlg::OnBnClickedButtonSaveProgress)
 	ON_BN_CLICKED(IDC_BUTTON_ABOUT, &CAirCavLOSDlg::OnBnClickedButtonAbout)
+	ON_BN_CLICKED(IDC_CHECK_IGNORE_WATER, &CAirCavLOSDlg::OnBnClickedCheckIgnoreWater)
+	ON_BN_CLICKED(IDC_CHECK_IGNORE_AUTOBAHN, &CAirCavLOSDlg::OnBnClickedCheckIgnoreAutobahn)
 END_MESSAGE_MAP()
 
 
@@ -3384,4 +3386,18 @@ void CAirCavLOSDlg::OnBnClickedButtonAbout()
 {
 	CAboutDlg dlgAbout;
 	dlgAbout.DoModal();
+}
+
+
+void CAirCavLOSDlg::OnBnClickedCheckIgnoreWater()
+{
+	mapData->setIgnoreWaterFeatures();
+	updateActiveUnit();
+}
+
+
+void CAirCavLOSDlg::OnBnClickedCheckIgnoreAutobahn()
+{
+	mapData->setIgnoreAutobahn();
+	updateActiveUnit();
 }

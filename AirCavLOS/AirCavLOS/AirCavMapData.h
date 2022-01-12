@@ -33,6 +33,21 @@ public:
 	int getWreck( int x, int y );
 	int setWreck( int x, int y, bool toggle = FALSE );
 	void clearWreck( int x, int y );
+	
+	void setIgnoreWaterFeatures()
+	{
+		if (m_ignoreWaterFeatures)
+			m_ignoreWaterFeatures = false;
+		else
+			m_ignoreWaterFeatures = true;
+	}
+	void setIgnoreAutobahn()
+	{
+		if (m_ignoreAutobahn)
+			m_ignoreAutobahn = false;
+		else
+			m_ignoreAutobahn = true;
+	}
 
 private:
 	FILE	*map_file_pointer;
@@ -41,6 +56,9 @@ private:
 
 	std::string map;
 	std::string dem;
+
+	bool m_ignoreWaterFeatures;
+	bool m_ignoreAutobahn;
 };
 
 

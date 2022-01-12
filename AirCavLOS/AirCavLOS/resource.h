@@ -172,6 +172,9 @@
 #define IDC_COMBO_INDIRECT              1088
 #define IDC_CHECK_ACTIVE_SUPPRESSED     1088
 #define IDC_CHECK_SMOKE_MISSION         1089
+#define IDC_CHECK_IGNORE_WATER          1089
+#define IDC_CHECK_IGNORE_AUTOBAHNS      1090
+#define IDC_CHECK_IGNORE_AUTOBAHN       1090
 
 // Next default values for new objects
 // 

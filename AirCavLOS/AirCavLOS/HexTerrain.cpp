@@ -225,17 +225,17 @@ int HexTerrain::getRoadHex(int which)
 {
 	switch( which )
 	{
-		case 0: return m_roadN;
+		case DIRECTION_NO: return m_roadN;
 			break;
-		case 1: return m_roadNW;
+		case DIRECTION_NW: return m_roadNW;
 			break;
-		case 2: return m_roadSW;
+		case DIRECTION_SW: return m_roadSW;
 			break;
-		case 3: return m_roadS;
+		case DIRECTION_SO: return m_roadS;
 			break;
-		case 4: return m_roadSE;
+		case DIRECTION_SE: return m_roadSE;
 			break;
-		case 5: return m_roadNE;
+		case DIRECTION_NE: return m_roadNE;
 			break;
 	}
 	return 0;
@@ -245,17 +245,17 @@ int HexTerrain::getAutobahnHex(int which)
 {
 	switch( which )
 	{
-		case 0: return m_autobahnN;
+		case DIRECTION_NO: return m_autobahnN;
 			break;
-		case 1: return m_autobahnNW;
+		case DIRECTION_NW: return m_autobahnNW;
 			break;
-		case 2: return m_autobahnSW;
+		case DIRECTION_SW: return m_autobahnSW;
 			break;
-		case 3: return m_autobahnS;
+		case DIRECTION_SO: return m_autobahnS;
 			break;
-		case 4: return m_autobahnSE;
+		case DIRECTION_SE: return m_autobahnSE;
 			break;
-		case 5: return m_autobahnNE;
+		case DIRECTION_NE: return m_autobahnNE;
 			break;
 	}
 	return 0;
@@ -265,17 +265,17 @@ int HexTerrain::getRiverHex(int which)
 {
 	switch( which )
 	{
-		case 0: return m_riverN;
+		case DIRECTION_NO: return m_riverN;
 			break;
-		case 1: return m_riverNW;
+		case DIRECTION_NW: return m_riverNW;
 			break;
-		case 2: return m_riverSW;
+		case DIRECTION_SW: return m_riverSW;
 			break;
-		case 3: return m_riverS;
+		case DIRECTION_SO: return m_riverS;
 			break;
-		case 4: return m_riverSE;
+		case DIRECTION_SE: return m_riverSE;
 			break;
-		case 5: return m_riverNE;
+		case DIRECTION_NE: return m_riverNE;
 			break;
 	}
 	return 0;

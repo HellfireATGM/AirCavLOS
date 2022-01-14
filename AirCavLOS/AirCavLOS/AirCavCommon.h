@@ -122,12 +122,13 @@ enum RoadType
 
 #define Deg2Rad  0.017453292
 
-#define NO 1                   /* north */
-#define NE 2                   /* northeast */
-#define SE 3                   /* southeast */
-#define SO 4                   /* south */
-#define SW 5                   /* southwest */
-#define NW 6                   /* northwest */
+#define DIRECTION_UNDEF 0                   /* undefined */
+#define DIRECTION_NO    1                   /* north */
+#define DIRECTION_NE    2                   /* northeast */
+#define DIRECTION_SE    3                   /* southeast */
+#define DIRECTION_SO    4                   /* south */
+#define DIRECTION_SW    5                   /* southwest */
+#define DIRECTION_NW    6                   /* northwest */
 
 #define NOT_ACTIVE 	0
 #define ACTIVE		1

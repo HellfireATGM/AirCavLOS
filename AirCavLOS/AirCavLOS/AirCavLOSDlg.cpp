@@ -1770,24 +1770,24 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_wreck = mapData->getWreck( activeUnitHexRow, activeUnitHexColumn ) > 0 ? 1 : 0;
 		int road = mapData->getRoad( activeUnitHexRow, activeUnitHexColumn );
 		int autobahn = mapData->getAutobahn( activeUnitHexRow, activeUnitHexColumn );
-		m_roadN  = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 0 );
-		m_roadNW = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 1 );
-		m_roadSW = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 2 );
-		m_roadS  = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 3 );
-		m_roadSE = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 4 );
-		m_roadNE = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 5 );
-		m_autobahnN  = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 0 );
-		m_autobahnNW = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 1 );
-		m_autobahnSW = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 2 );
-		m_autobahnS  = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 3 );
-		m_autobahnSE = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 4 );
-		m_autobahnNE = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 5 );
-		m_streamN  = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 0 );
-		m_streamNW = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 1 );
-		m_streamSW = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 2 );
-		m_streamS  = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 3 );
-		m_streamSE = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 4 );
-		m_streamNE = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 5 );
+		m_roadN  = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NO);
+		m_roadNW = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NW);
+		m_roadSW = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SW);
+		m_roadS  = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SO);
+		m_roadSE = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SE);
+		m_roadNE = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NE);
+		m_autobahnN  = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NO);
+		m_autobahnNW = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NW);
+		m_autobahnSW = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SW);
+		m_autobahnS  = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SO);
+		m_autobahnSE = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SE);
+		m_autobahnNE = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NE);
+		m_streamN  = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NO);
+		m_streamNW = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NW);
+		m_streamSW = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SW);
+		m_streamS  = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SO);
+		m_streamSE = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SE);
+		m_streamNE = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NE);
 
 		// for every other unit, calculate which have LOS to this unit
 		if ( rebuildList )
@@ -2760,7 +2760,7 @@ void CAirCavLOSDlg::OnBnClickedButtonElevoffset()
 	int col = counterDataList[m_ActiveUnit]->getHexCol();
 	int row = counterDataList[m_ActiveUnit]->getHexRow();
 	int curOffset = counterDataList[m_ActiveUnit]->getElevOffset() / -10;
-	int activeUnitOffset = counterDataList[m_ActiveUnit]->checkContour(mapData, col, row, -1, curOffset);
+	int activeUnitOffset = counterDataList[m_ActiveUnit]->checkContour(mapData, col, row, DIRECTION_UNDEF, curOffset);
 	counterDataList[m_ActiveUnit]->setElevOffset(activeUnitOffset);
 	UpdateData(FALSE);
 	updateActiveUnit();
@@ -2862,7 +2862,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 			if ( spread )
 			{
 				int aR, aC;
-				for ( int adjHex = NO; adjHex <= NW; adjHex++ )
+				for ( int adjHex = DIRECTION_NO; adjHex <= DIRECTION_NW; adjHex++ )
 				{
 					// set adjacent hexes
 					CalcAdj( adjHex, m_lastArtilleryRow, m_lastArtilleryCol, &aR, &aC );
@@ -2873,7 +2873,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 					if ( spread == 2 )
 					{
 						int aaR, aaC;
-						for ( int nextAdjHex = NO; nextAdjHex <= NW; nextAdjHex++ )
+						for ( int nextAdjHex = DIRECTION_NO; nextAdjHex <= DIRECTION_NW; nextAdjHex++ )
 						{
 							// set adjacent hexes
 							CalcAdj( nextAdjHex, aR, aC, &aaR, &aaC );
@@ -2895,7 +2895,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 		if ( spread )
 		{
 			int aR, aC;
-			for ( int adjHex = NO; adjHex <= NW; adjHex++ )
+			for ( int adjHex = DIRECTION_NO; adjHex <= DIRECTION_NW; adjHex++ )
 			{
 				// set adjacent hexes
 				CalcAdj( adjHex, m_lastArtilleryRow, m_lastArtilleryCol, &aR, &aC );
@@ -2903,7 +2903,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 				if ( spread == 2 )
 				{
 					int aaR, aaC;
-					for ( int nextAdjHex = NO; nextAdjHex <= NW; nextAdjHex++ )
+					for ( int nextAdjHex = DIRECTION_NO; nextAdjHex <= DIRECTION_NW; nextAdjHex++ )
 					{
 						// set adjacent hexes
 						CalcAdj( nextAdjHex, aR, aC, &aaR, &aaC );
@@ -3039,7 +3039,7 @@ void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 		{
 			hex_loc hex(smokeRow, smokeCol);
 			removedSmokeHexes.push_back(hex);
-			sprintf_s( smokeStr, "Remove Smoke in hex:  %02d%02d", smokeCol, smokeRow );
+			sprintf_s( smokeStr, "*** Remove Smoke from hex:  %02d%02d ***", smokeCol, smokeRow );
 			MessageBox( (CString)smokeStr, (CString)"Smoke Removed", MB_OK );
 		}
 		else
@@ -3064,9 +3064,9 @@ void CAirCavLOSDlg::OnBnClickedCheckPopSmoke()
 	if ( unitType == ARH || unitType == UHH || unitType == UHM || unitType == LHX )
 		MessageBox( (CString)"Helicopters cannot lay smoke", (CString)"Pop Smoke", MB_OK );
 	else if (!counterDataList[m_ActiveUnit]->getIsDismounted())
-      MessageBox((CString)"A mounted unit cannot pop smoke", (CString)"Pop Smoke", MB_OK);
-   else
-      UpdateData(TRUE);
+		MessageBox((CString)"A mounted unit cannot pop smoke", (CString)"Pop Smoke", MB_OK);
+	else
+		UpdateData(TRUE);
 }
 
 bool CAirCavLOSDlg::readWeaponTextFile( FILE *fptr )

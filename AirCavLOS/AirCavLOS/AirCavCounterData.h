@@ -45,12 +45,31 @@ private:
 	int					m_mountedUnits[6];	// units mounted on this one
 	int					m_isDismounted;		// this unit has dismounted from its carrying unit
 	int					m_carriedByUnit;	// unit carrying this one
+
 	int					m_FKNm1;			// Final Kill Number Main Weapon 1
 	int					m_FKNm2;			// Final Kill Number Main Weapon 2
 	int					m_FKNm3;			// Final Kill Number Main Weapon 3
 	int					m_FKNs1;			// Final Kill Number Secondary Weapon 1
 	int					m_FKNs2;			// Final Kill Number Secondary Weapon 2
-	int					m_targetTypeModifier;	// Target Type modifier for calculating suppression
+
+	int					m_ttModm1;			// Target Type modifier Main Weapon 1
+	int					m_ttModm2;			// Target Type modifier Main Weapon 2
+	int					m_ttModm3;			// Target Type modifier Main Weapon 3
+	int					m_ttMods1;			// Target Type modifier Secondary Weapon 1
+	int					m_ttMods2;			// Target Type modifier Secondary Weapon 2
+
+	int					m_nAmmoMainWpn1;			// current ammo count for main weapon 1
+	int					m_nAmmoMainWpn2;			// current ammo count for main weapon 2
+	int					m_nAmmoMainWpn3;			// current ammo count for main weapon 3
+	int					m_nAmmoSecondaryWpn1;		// current ammo count for secondary weapon 1
+	int					m_nAmmoSecondaryWpn2;		// current ammo count for secondary weapon 2
+
+	int					m_nFullAmmoMainWpn1;		// full ammo count for main weapon 1
+	int					m_nFullAmmoMainWpn2;		// full ammo count for main weapon 2
+	int					m_nFullAmmoMainWpn3;		// full ammo count for main weapon 3
+	int					m_nFullAmmoSecondaryWpn1;	// full ammo count for secondary weapon 1
+	int					m_nFullAmmoSecondaryWpn2;	// full ammo count for secondary weapon 2
+
 	int					m_macroMove;		// tally of hexes moved when low level
 	bool				m_actionTaken;		// unit has been activated (opportunity fire does not count)
 
@@ -80,7 +99,7 @@ public:
 	int getNumberOfMountedUnits() { return m_numMountedUnits; }
 	int getMountedUnit( int u ) { return m_mountedUnits[u]; }
 	void setMountedUnit( int u, int m ) { m_mountedUnits[u] = m; m_numMountedUnits++; }
-	void setFinalKillNumbers( int FKNm1, int FKNm2, int FKNm3, int FKNs1, int FKNs2, int targetTypeModifier);
+	void setFinalKillNumbers( int FKNm1, int FKNm2, int FKNm3, int FKNs1, int FKNs2, int ttm1, int ttm2, int ttm3, int tts1, int tts2 );
 	void setWpnOppFiring( int wpn ) { m_wpnOppFiring = wpn; } 
 	void setTgtOppFiring( int tgt ) { m_tgtOppFiring = tgt; } 
 	void setDefilade(int def) { m_inDefilade = def; }
@@ -126,17 +145,36 @@ public:
 	void setIsPopUp(bool p) { if (p) {fire();nomove();} else {nofire(); move();} m_isPopUp = p; }
 	int getWpnOppFiring() { return m_wpnOppFiring; }
 	int getTgtOppFiring() { return m_tgtOppFiring; }
+
 	int getFKN1() { return m_FKNm1; }
 	int getFKN2() { return m_FKNm2; }
 	int getFKN3() { return m_FKNm3; }
 	int getFKN4() { return m_FKNs1; }
 	int getFKN5() { return m_FKNs2; }
-	int getTargetTypeModifier() { return m_targetTypeModifier; }
+
+	int getTTModm1() { return m_ttModm1; }
+	int getTTModm2() { return m_ttModm2; }
+	int getTTModm3() { return m_ttModm3; }
+	int getTTMods1() { return m_ttMods1; }
+	int getTTMods2() { return m_ttMods2; }
+
 	void setFKN1(int FKN) { m_FKNm1 = FKN; }
 	void setFKN2(int FKN) { m_FKNm2 = FKN; }
 	void setFKN3(int FKN) { m_FKNm3 = FKN; }
 	void setFKN4(int FKN) { m_FKNs1 = FKN; }
 	void setFKN5(int FKN) { m_FKNs2 = FKN; }
+
+	void setAmmoMainWeapon1(int n) { m_nAmmoMainWpn1 = n; }
+	void setAmmoMainWeapon2(int n) { m_nAmmoMainWpn2 = n; }
+	void setAmmoMainWeapon3(int n) { m_nAmmoMainWpn3 = n; }
+	void setAmmoSecondaryWeapon1(int n) { m_nAmmoSecondaryWpn1 = n; }
+	void setAmmoSecondaryWeapon2(int n) { m_nAmmoSecondaryWpn2 = n; }
+
+	int getAmmoMainWeapon1() { return m_nAmmoMainWpn1; }
+	int getAmmoMainWeapon2() { return m_nAmmoMainWpn2; }
+	int getAmmoMainWeapon3() { return m_nAmmoMainWpn3; }
+	int getAmmoSecondaryWeapon1() { return m_nAmmoSecondaryWpn1; }
+	int getAmmoSecondaryWeapon2() { return m_nAmmoSecondaryWpn2; }
 
 	void moveTo(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int col, int row, bool doCheckContour = true);
 	void moveNorth( AirCavMapData *mapData, AirCavCounterData *counterDataList[MAXCOUNTERS], int popSmoke );

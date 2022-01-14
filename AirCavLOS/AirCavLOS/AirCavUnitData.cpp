@@ -121,7 +121,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 		mainWpn = getMainWeapon1();
 		CString wpnName = mainWpn->getName();
 		if ( wpnName == "None" )
-			return 0;
+			return -1;
 		int length = wpnName.GetLength() + 1;
 		for (int i = 0; i < length; i++)
 			wName[i] = wpnName.GetAt(i);
@@ -133,7 +133,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 		mainWpn = getMainWeapon2();
 		CString wpnName = mainWpn->getName();
 		if ( wpnName == "None" )
-			return 0;
+			return -1;
 		int length = wpnName.GetLength() + 1;
 		for (int i = 0; i < length; i++)
 			wName[i] = wpnName.GetAt(i);
@@ -145,7 +145,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 		mainWpn = getMainWeapon3();
 		CString wpnName = mainWpn->getName();
 		if ( wpnName == "None" )
-			return 0;
+			return -1;
 		int length = wpnName.GetLength() + 1;
 		for (int i = 0; i < length; i++)
 			wName[i] = wpnName.GetAt(i);
@@ -157,7 +157,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 		mainWpn = getSecondaryWeapon1();
 		CString wpnName = mainWpn->getName();
 		if ( wpnName == "None" )
-			return 0;
+			return -1;
 		int length = wpnName.GetLength() + 1;
 		for (int i = 0; i < length; i++)
 			wName[i] = wpnName.GetAt(i);
@@ -169,7 +169,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 		mainWpn = getSecondaryWeapon2();
 		CString wpnName = mainWpn->getName();
 		if ( wpnName == "None" )
-			return 0;
+			return -1;
 		int length = wpnName.GetLength() + 1;
 		for (int i = 0; i < length; i++)
 			wName[i] = wpnName.GetAt(i);

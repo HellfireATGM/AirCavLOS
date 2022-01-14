@@ -170,6 +170,16 @@ AirCavCounterData::AirCavCounterData(CString name, SideType side, CountryType co
 	m_FKNm3 = 0;
 	m_FKNs1 = 0;
 	m_FKNs2 = 0;
+	m_ttModm1 = 0;
+	m_ttModm2 = 0;
+	m_ttModm3 = 0;
+	m_ttMods1 = 0;
+	m_ttMods2 = 0;
+	m_nAmmoMainWpn1 = m_nFullAmmoMainWpn1 = unitinfo->getAmmoMainWeapon1();
+	m_nAmmoMainWpn2 = m_nFullAmmoMainWpn2 = unitinfo->getAmmoMainWeapon2();
+	m_nAmmoMainWpn3 = m_nFullAmmoMainWpn3 = unitinfo->getAmmoMainWeapon3();
+	m_nAmmoSecondaryWpn1 = m_nFullAmmoSecondaryWpn1 = unitinfo->getAmmoSecondaryWeapon1();
+	m_nAmmoSecondaryWpn2 = m_nFullAmmoSecondaryWpn2 = unitinfo->getAmmoSecondaryWeapon2();
 	m_macroMove = 0;
 	m_actionTaken = false;
 	m_isSuppressed = FALSE;
@@ -196,6 +206,11 @@ void AirCavCounterData::reset()
 	m_macroMove = 0;
 	m_actionTaken = false;
 	m_isSuppressed = FALSE;
+	m_nAmmoMainWpn1 = m_nFullAmmoMainWpn1;
+	m_nAmmoMainWpn2 = m_nFullAmmoMainWpn2;
+	m_nAmmoMainWpn3 = m_nFullAmmoMainWpn3;
+	m_nAmmoSecondaryWpn1 = m_nFullAmmoSecondaryWpn1;
+	m_nAmmoSecondaryWpn2 = m_nFullAmmoSecondaryWpn2;
 }
 
 void AirCavCounterData::resetActive()
@@ -852,14 +867,18 @@ int AirCavCounterData::isVisible(int terrain, int range, int lowlevel, int weath
 	}
 }
 
-void AirCavCounterData::setFinalKillNumbers( int FKNm1, int FKNm2, int FKNm3, int FKNs1, int FKNs2, int targetTypeModifier)
+void AirCavCounterData::setFinalKillNumbers( int FKNm1, int FKNm2, int FKNm3, int FKNs1, int FKNs2, int ttm1, int ttm2, int ttm3, int tts1, int tts2 )
 {
 	m_FKNm1 = FKNm1;
 	m_FKNm2 = FKNm2;
 	m_FKNm3 = FKNm3;
 	m_FKNs1 = FKNs1;
 	m_FKNs2 = FKNs2;
-	m_targetTypeModifier = targetTypeModifier;
+	m_ttModm1 = ttm1;
+	m_ttModm2 = ttm2;
+	m_ttModm3 = ttm3;
+	m_ttMods1 = tts1;
+	m_ttMods2 = tts2;
 }
 
 int AirCavCounterData::enterDefilade(int terrain, int toggle)

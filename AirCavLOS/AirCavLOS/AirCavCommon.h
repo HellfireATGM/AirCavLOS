@@ -36,6 +36,7 @@ enum UnitType
 };
 
 // target types
+#define MAXTARGETTYPES 6
 enum TargetType
 {
 	TT_A = 0,	// very heavy armor (advanced tank)

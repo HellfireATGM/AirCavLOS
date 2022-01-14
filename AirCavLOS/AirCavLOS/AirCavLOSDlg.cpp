@@ -979,7 +979,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		if ( FKNpercent > 100 ) FKNpercent = 100;
 
 		// suppression is FKN minus the target type modifier
-		SUP = FKN + targetTypeModifier;
+		SUP = FKN - targetTypeModifier;
 
 		// calculate suppression value
 		SUPpercent = SUP * 10;
@@ -1023,7 +1023,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		int result = IDCANCEL;
 		if (nonHelicopterTarget && weaponCanSuppress)
 		{
-			sprintf_s(buffer2, "SUP: %d [%d%%]   KILL: %d [%d%%]", SUP, SUPpercent, FKN, FKNpercent);
+			sprintf_s(buffer2, "KILL: %d [%d%%]   SUP: %d [%d%%]", FKN, FKNpercent, SUP, SUPpercent);
 			KillSuppressDialog dlg;
 			dlg.setFKNText1((CString)buffer1);
 			dlg.setFKNText2((CString)buffer2);
@@ -2659,7 +2659,7 @@ void CAirCavLOSDlg::resolveFirePass(int firePass)
 		if ( FKNpercent > 100 ) FKNpercent = 100;
 
 		// suppression is FKN minus the target type modifier
-		SUP = FKN + targetTypeModifier;
+		SUP = FKN - targetTypeModifier;
 
 		// calculate suppression value
 		SUPpercent = SUP * 10;
@@ -2700,7 +2700,7 @@ void CAirCavLOSDlg::resolveFirePass(int firePass)
 		int result = IDCANCEL;
 		if (nonHelicopterTarget && weaponCanSuppress)
 		{
-			sprintf_s(buffer2, "SUP: %d [%d%%]   KILL: %d [%d%%]", SUP, SUPpercent, FKN, FKNpercent);
+			sprintf_s(buffer2, "KILL: %d [%d%%]   SUP: %d [%d%%]", FKN, FKNpercent, SUP, SUPpercent);
 			KillSuppressDialog dlg;
 			dlg.setFKNText1((CString)buffer1);
 			dlg.setFKNText2((CString)buffer2);

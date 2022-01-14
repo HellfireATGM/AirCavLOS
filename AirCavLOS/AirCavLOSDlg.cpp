@@ -717,27 +717,27 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		case 0:			// main weapon 1
 			wpn = counterDataList[m_ActiveUnit]->getUnitInfo()->getMainWeapon1();
 			wpnType = wpn->getType();
-			nAmmoRemaining = counterDataList[m_ActiveUnit]->getUnitInfo()->getAmmoMainWeapon1();
+			nAmmoRemaining = counterDataList[m_ActiveUnit]->getAmmoMainWeapon1();
 			break;
 		case 1:			// main weapon 2
 			wpn = counterDataList[m_ActiveUnit]->getUnitInfo()->getMainWeapon2();
 			wpnType = wpn->getType();
-			nAmmoRemaining = counterDataList[m_ActiveUnit]->getUnitInfo()->getAmmoMainWeapon2();
+			nAmmoRemaining = counterDataList[m_ActiveUnit]->getAmmoMainWeapon2();
 			break;
 		case 2:			// main weapon 3
 			wpn = counterDataList[m_ActiveUnit]->getUnitInfo()->getMainWeapon3();
 			wpnType = wpn->getType();
-			nAmmoRemaining = counterDataList[m_ActiveUnit]->getUnitInfo()->getAmmoMainWeapon3();
+			nAmmoRemaining = counterDataList[m_ActiveUnit]->getAmmoMainWeapon3();
 			break;
 		case 3:			// secondary weapon 1
 			wpn = counterDataList[m_ActiveUnit]->getUnitInfo()->getSecondaryWeapon1();
 			wpnType = wpn->getType();
-			nAmmoRemaining = counterDataList[m_ActiveUnit]->getUnitInfo()->getAmmoSecondaryWeapon1();
+			nAmmoRemaining = counterDataList[m_ActiveUnit]->getAmmoSecondaryWeapon1();
 			break;
 		case 4:			// secondary weapon 2
 			wpn = counterDataList[m_ActiveUnit]->getUnitInfo()->getSecondaryWeapon2();
 			wpnType = wpn->getType();
-			nAmmoRemaining = counterDataList[m_ActiveUnit]->getUnitInfo()->getAmmoSecondaryWeapon2();
+			nAmmoRemaining = counterDataList[m_ActiveUnit]->getAmmoSecondaryWeapon2();
 			break;
 		default:
 			return;
@@ -754,12 +754,31 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 	if ( counterDataList[m_ActiveUnit]->getHeloOffset() != 0 )
 		isNapOfEarth = true;
 
-	// get target type modifier for guns and rockets only and only if not firing on helicopter (since they cannot be suppressed)
+	// get target type modifier for guns and rockets only and only if not firing on helicopter (helicopters cannot be suppressed)
 	int targetTypeModifier = 0;
 	UnitType targetUnitType = counterDataList[tgt]->getUnitInfo()->getUnitType();
 	bool nonHelicopterTarget = targetUnitType != ARH && targetUnitType != UHH && targetUnitType != UHM && targetUnitType != LHX;
 	if (nonHelicopterTarget)
-		targetTypeModifier = counterDataList[tgt]->getTargetTypeModifier();
+	{
+		switch (m_activeUnitWeapon)
+		{
+		case 0:			// main weapon 1
+			targetTypeModifier = counterDataList[m_ActiveUnit]->getTTModm1();
+			break;
+		case 1:			// main weapon 2
+			targetTypeModifier = counterDataList[m_ActiveUnit]->getTTModm2();
+			break;
+		case 2:			// main weapon 3
+			targetTypeModifier = counterDataList[m_ActiveUnit]->getTTModm3();
+			break;
+		case 3:			// secondary weapon 1
+			targetTypeModifier = counterDataList[m_ActiveUnit]->getTTMods1();
+			break;
+		case 4:			// secondary weapon 2
+			targetTypeModifier = counterDataList[m_ActiveUnit]->getTTMods2();
+			break;
+		}
+	}
 
 	// get the target unit's location
 	int tgtCol = counterDataList[tgt]->getHexCol();
@@ -864,19 +883,19 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 				switch (m_activeUnitWeapon)
 				{
 				case 0:			// main weapon 1
-					counterDataList[m_ActiveUnit]->getUnitInfo()->setAmmoMainWeapon1(--nAmmoRemaining);
+					counterDataList[m_ActiveUnit]->setAmmoMainWeapon1(--nAmmoRemaining);
 					break;
 				case 1:			// main weapon 2
-					counterDataList[m_ActiveUnit]->getUnitInfo()->setAmmoMainWeapon2(--nAmmoRemaining);
+					counterDataList[m_ActiveUnit]->setAmmoMainWeapon2(--nAmmoRemaining);
 					break;
 				case 2:			// main weapon 3
-					counterDataList[m_ActiveUnit]->getUnitInfo()->setAmmoMainWeapon3(--nAmmoRemaining);
+					counterDataList[m_ActiveUnit]->setAmmoMainWeapon3(--nAmmoRemaining);
 					break;
 				case 3:			// secondary weapon 1
-					counterDataList[m_ActiveUnit]->getUnitInfo()->setAmmoSecondaryWeapon1(--nAmmoRemaining);
+					counterDataList[m_ActiveUnit]->setAmmoSecondaryWeapon1(--nAmmoRemaining);
 					break;
 				case 4:			// secondary weapon 2
-					counterDataList[m_ActiveUnit]->getUnitInfo()->setAmmoSecondaryWeapon2(--nAmmoRemaining);
+					counterDataList[m_ActiveUnit]->setAmmoSecondaryWeapon2(--nAmmoRemaining);
 					break;
 				}
 			}
@@ -1679,7 +1698,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_activeUnitMainWpn1 = mainWpn1->getName();
 		if ( mainWpn1->getType() == ATGM || mainWpn1->getType() == SAM || mainWpn1->getType() == ROCKET )
 		{
-			int ammoRemaining = counterDataList[m_ActiveUnit]->getUnitInfo()->getAmmoMainWeapon1();
+			int ammoRemaining = counterDataList[m_ActiveUnit]->getAmmoMainWeapon1();
 			if ( ammoRemaining < 1 )
 				m_activeUnitMainWpn1 += " [OUT]";
 			else
@@ -1694,7 +1713,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_activeUnitMainWpn2 = mainWpn2->getName();
 		if ( mainWpn2->getType() == ATGM || mainWpn2->getType() == SAM || mainWpn2->getType() == ROCKET )
 		{
-			int ammoRemaining = counterDataList[m_ActiveUnit]->getUnitInfo()->getAmmoMainWeapon2();
+			int ammoRemaining = counterDataList[m_ActiveUnit]->getAmmoMainWeapon2();
 			if ( ammoRemaining < 1 )
 				m_activeUnitMainWpn2 += " [OUT]";
 			else
@@ -1709,7 +1728,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_activeUnitMainWpn3 = mainWpn3->getName();
 		if ( mainWpn3->getType() == ATGM || mainWpn3->getType() == SAM || mainWpn3->getType() == ROCKET )
 		{
-			int ammoRemaining = counterDataList[m_ActiveUnit]->getUnitInfo()->getAmmoMainWeapon3();
+			int ammoRemaining = counterDataList[m_ActiveUnit]->getAmmoMainWeapon3();
 			if ( ammoRemaining < 1 )
 				m_activeUnitMainWpn3 += " [OUT]";
 			else
@@ -1724,7 +1743,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_activeUnitSecondaryWpn1 = secondaryWpn1->getName();
 		if ( secondaryWpn1->getType() == ATGM || secondaryWpn1->getType() == SAM || secondaryWpn1->getType() == ROCKET )
 		{
-			int ammoRemaining = counterDataList[m_ActiveUnit]->getUnitInfo()->getAmmoSecondaryWeapon1();
+			int ammoRemaining = counterDataList[m_ActiveUnit]->getAmmoSecondaryWeapon1();
 			if ( ammoRemaining < 1 )
 				m_activeUnitSecondaryWpn1 += " [OUT]";
 			else
@@ -1739,7 +1758,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_activeUnitSecondaryWpn2 = secondaryWpn2->getName();
 		if ( secondaryWpn2->getType() == ATGM || secondaryWpn2->getType() == SAM || secondaryWpn2->getType() == ROCKET )
 		{
-			int ammoRemaining = counterDataList[m_ActiveUnit]->getUnitInfo()->getAmmoSecondaryWeapon2();
+			int ammoRemaining = counterDataList[m_ActiveUnit]->getAmmoSecondaryWeapon2();
 			if ( ammoRemaining < 1 )
 				m_activeUnitSecondaryWpn2 += " [OUT]";
 			else
@@ -1770,24 +1789,24 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_wreck = mapData->getWreck( activeUnitHexRow, activeUnitHexColumn ) > 0 ? 1 : 0;
 		int road = mapData->getRoad( activeUnitHexRow, activeUnitHexColumn );
 		int autobahn = mapData->getAutobahn( activeUnitHexRow, activeUnitHexColumn );
-		m_roadN  = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 0 );
-		m_roadNW = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 1 );
-		m_roadSW = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 2 );
-		m_roadS  = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 3 );
-		m_roadSE = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 4 );
-		m_roadNE = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, 5 );
-		m_autobahnN  = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 0 );
-		m_autobahnNW = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 1 );
-		m_autobahnSW = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 2 );
-		m_autobahnS  = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 3 );
-		m_autobahnSE = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 4 );
-		m_autobahnNE = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, 5 );
-		m_streamN  = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 0 );
-		m_streamNW = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 1 );
-		m_streamSW = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 2 );
-		m_streamS  = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 3 );
-		m_streamSE = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 4 );
-		m_streamNE = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, 5 );
+		m_roadN  = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NO);
+		m_roadNW = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NW);
+		m_roadSW = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SW);
+		m_roadS  = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SO);
+		m_roadSE = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SE);
+		m_roadNE = mapData->getRoadHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NE);
+		m_autobahnN  = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NO);
+		m_autobahnNW = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NW);
+		m_autobahnSW = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SW);
+		m_autobahnS  = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SO);
+		m_autobahnSE = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SE);
+		m_autobahnNE = mapData->getAutobahnHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NE);
+		m_streamN  = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NO);
+		m_streamNW = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NW);
+		m_streamSW = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SW);
+		m_streamS  = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SO);
+		m_streamSE = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_SE);
+		m_streamNE = mapData->getStreamHex( activeUnitHexRow, activeUnitHexColumn, DIRECTION_NE);
 
 		// for every other unit, calculate which have LOS to this unit
 		if ( rebuildList )
@@ -1902,15 +1921,15 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						if (activelowLevel && activeSmoke)
 							activeSmoke = 0;
 						
-						int targetTypeModifier = 0;
+						int ttModm1 = 0, ttModm2 = 0, ttModm3 = 0, ttMods1 = 0, ttMods2 = 0;
 						if (range && counterDataList[c]->isVisible(targetTerrain, range, targetlowLevel, m_Weather, activeSmoke))
 						{
 							//  calculate final kill number
 							int oppfire = counterDataList[m_ActiveUnit]->getIsOppFiring();
 							int supfire = counterDataList[m_ActiveUnit]->getIsSuppressed() ? counterDataList[m_ActiveUnit]->getUnitInfo()->getSM() : 0;
 							int mFKN1 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN(
-								MAIN1, counterDataList[c], targetTerrain, targetSmoke, range, oppfire, supfire, buffer, targetTypeModifier);
-							if (m_debugFKNMessages)
+								MAIN1, counterDataList[c], targetTerrain, targetSmoke, range, oppfire, supfire, buffer, ttModm1);
+							if (mFKN1 >= 0 && m_debugFKNMessages)
 							{
 								CString msgstr = (CString)buffer;
 								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
@@ -1918,8 +1937,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							}
 
 							int mFKN2 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN(
-								MAIN2, counterDataList[c], targetTerrain, targetSmoke, range, oppfire, supfire, buffer, targetTypeModifier);
-							if (m_debugFKNMessages)
+								MAIN2, counterDataList[c], targetTerrain, targetSmoke, range, oppfire, supfire, buffer, ttModm2);
+							if (mFKN2 >= 0 && m_debugFKNMessages)
 							{
 								CString msgstr = (CString)buffer;
 								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
@@ -1927,8 +1946,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							}
 
 							int mFKN3 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN(
-								MAIN3, counterDataList[c], targetTerrain, targetSmoke, range, oppfire, supfire, buffer, targetTypeModifier);
-							if (m_debugFKNMessages)
+								MAIN3, counterDataList[c], targetTerrain, targetSmoke, range, oppfire, supfire, buffer, ttModm3);
+							if (mFKN3 >= 0 && m_debugFKNMessages)
 							{
 								CString msgstr = (CString)buffer;
 								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
@@ -1936,8 +1955,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							}
 
 							int sFKN1 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN(
-								SECONDARY1, counterDataList[c], targetTerrain, targetSmoke, range, oppfire, supfire, buffer, targetTypeModifier);
-							if (m_debugFKNMessages)
+								SECONDARY1, counterDataList[c], targetTerrain, targetSmoke, range, oppfire, supfire, buffer, ttMods1);
+							if (sFKN1 >= 0 && m_debugFKNMessages)
 							{
 								CString msgstr = (CString)buffer;
 								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
@@ -1945,8 +1964,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							}
 
 							int sFKN2 = counterDataList[m_ActiveUnit]->getUnitInfo()->CalculateFKN(
-								SECONDARY2, counterDataList[c], targetTerrain, targetSmoke, range, oppfire, supfire, buffer, targetTypeModifier);
-							if (m_debugFKNMessages)
+								SECONDARY2, counterDataList[c], targetTerrain, targetSmoke, range, oppfire, supfire, buffer, ttMods2);
+							if (sFKN2 >= 0 && m_debugFKNMessages)
 							{
 								CString msgstr = (CString)buffer;
 								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + unitName + _T(" to ") + targetName, MB_OKCANCEL) == IDCANCEL)
@@ -1955,7 +1974,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 
 							// only update FKN numbers for the active target
 							if (m_ActiveTarget == c)
-								counterDataList[m_ActiveUnit]->setFinalKillNumbers(mFKN1, mFKN2, mFKN3, sFKN1, sFKN2, targetTypeModifier);
+								counterDataList[m_ActiveUnit]->setFinalKillNumbers(mFKN1, mFKN2, mFKN3, sFKN1, sFKN2, ttModm1, ttModm2, ttModm3, ttMods1, ttMods2);
 
 							char sName[32], sType[32];
 							int length;
@@ -1970,13 +1989,13 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							if (popupRange)
 							{
 								numPopupSightings++;
-								sprintf_s(buffer, "%s [%s] [POPUP] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+								sprintf_s(buffer, "%s [%s] [POPUP]  Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
 									sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								popupSightedUnits.insert(std::make_pair(c, buffer));
 							}
 							else
 							{
-								sprintf_s(buffer, "%s [%s] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+								sprintf_s(buffer, "%s [%s]  Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
 									sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								if (rebuildList)
 									m_SightedUnitsListBox.AddString(CString(buffer));
@@ -2099,15 +2118,15 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						if (targetlowLevel && targetSmoke)
 							targetSmoke = 0;
 
-						int targetTypeModifier = 0;
+						int ttModm1 = 0, ttModm2 = 0, ttModm3 = 0, ttMods1 = 0, ttMods2 = 0;
 						int oppfire = counterDataList[c]->getIsOppFiring();
 						int supfire = counterDataList[c]->getIsSuppressed() ? counterDataList[c]->getUnitInfo()->getSM() : 0;
 						if (range && counterDataList[m_ActiveUnit]->isVisible(activeTerrain, range, activelowLevel, m_Weather, activeSmoke))
 						{
 							//  calculate final kill number
 							int mFKN1 = counterDataList[c]->getUnitInfo()->CalculateFKN(
-								MAIN1, counterDataList[m_ActiveUnit], activeTerrain, activeSmoke, range, oppfire, supfire, buffer, targetTypeModifier);
-							if (m_debugFKNMessages)
+								MAIN1, counterDataList[m_ActiveUnit], activeTerrain, activeSmoke, range, oppfire, supfire, buffer, ttModm1);
+							if (mFKN1 >= 0 && m_debugFKNMessages)
 							{
 								CString msgstr = (CString)buffer;
 								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
@@ -2115,8 +2134,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							}
 
 							int mFKN2 = counterDataList[c]->getUnitInfo()->CalculateFKN(
-								MAIN2, counterDataList[m_ActiveUnit], activeTerrain, activeSmoke, range, oppfire, supfire, buffer, targetTypeModifier);
-							if (m_debugFKNMessages)
+								MAIN2, counterDataList[m_ActiveUnit], activeTerrain, activeSmoke, range, oppfire, supfire, buffer, ttModm2);
+							if (mFKN2 >= 0 && m_debugFKNMessages)
 							{
 								CString msgstr = (CString)buffer;
 								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
@@ -2124,8 +2143,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							}
 
 							int mFKN3 = counterDataList[c]->getUnitInfo()->CalculateFKN(
-								MAIN3, counterDataList[m_ActiveUnit], activeTerrain, activeSmoke, range, oppfire, supfire, buffer, targetTypeModifier);
-							if (m_debugFKNMessages)
+								MAIN3, counterDataList[m_ActiveUnit], activeTerrain, activeSmoke, range, oppfire, supfire, buffer, ttModm3);
+							if (mFKN3 >= 0 && m_debugFKNMessages)
 							{
 								CString msgstr = (CString)buffer;
 								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
@@ -2133,8 +2152,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							}
 
 							int sFKN1 = counterDataList[c]->getUnitInfo()->CalculateFKN(
-								SECONDARY1, counterDataList[m_ActiveUnit], activeTerrain, activeSmoke, range, oppfire, supfire, buffer, targetTypeModifier);
-							if (m_debugFKNMessages)
+								SECONDARY1, counterDataList[m_ActiveUnit], activeTerrain, activeSmoke, range, oppfire, supfire, buffer, ttMods1);
+							if (sFKN1 >= 0 && m_debugFKNMessages)
 							{
 								CString msgstr = (CString)buffer;
 								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
@@ -2142,15 +2161,15 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							}
 
 							int sFKN2 = counterDataList[c]->getUnitInfo()->CalculateFKN(
-								SECONDARY2, counterDataList[m_ActiveUnit], activeTerrain, activeSmoke, range, oppfire, supfire, buffer, targetTypeModifier);
-							if (m_debugFKNMessages)
+								SECONDARY2, counterDataList[m_ActiveUnit], activeTerrain, activeSmoke, range, oppfire, supfire, buffer, ttMods2);
+							if (sFKN2 >= 0 && m_debugFKNMessages)
 							{
 								CString msgstr = (CString)buffer;
 								if (MessageBox((CString)msgstr, _T("Debug FKN from ") + targetName + _T(" to ") + unitName, MB_OKCANCEL) == IDCANCEL)
 									m_debugFKNMessages = FALSE;
 							}
 
-							counterDataList[c]->setFinalKillNumbers(mFKN1, mFKN2, mFKN3, sFKN1, sFKN2, targetTypeModifier);
+							counterDataList[c]->setFinalKillNumbers(mFKN1, mFKN2, mFKN3, sFKN1, sFKN2, ttModm1, ttModm2, ttModm3, ttMods1, ttMods2);
 
 							char sName[32], sType[32];
 							int length;
@@ -2165,13 +2184,13 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							if (popupRange)
 							{
 								numPopupSightings++;
-								sprintf_s(buffer, "%s [%s] [POPUP] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+								sprintf_s(buffer, "%s [%s] [POPUP]  Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
 									sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								popupSightingUnits.insert(std::make_pair(c, buffer));
 							}
 							else
 							{
-								sprintf_s(buffer, "%s [%s] Hex: %02d%02d Range: %d  m1: %d  m2: %d  m3: %d  s1: %d  s2: %d",
+								sprintf_s(buffer, "%s [%s]  Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
 									sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								if (rebuildList)
 									m_SightingUnitsListBox.AddString(CString(buffer));
@@ -2567,12 +2586,31 @@ void CAirCavLOSDlg::resolveFirePass(int firePass)
 				}
 		}
 
-		// get target type modifier for guns and rockets only and only if not firing on helicopter (since they cannot be suppressed)
+		// get target type modifier for guns and rockets only and only if not firing on helicopter (helicopters cannot be suppressed)
 		int targetTypeModifier = 0;
 		UnitType targetUnitType = counterDataList[tgt]->getUnitInfo()->getUnitType();
 		bool nonHelicopterTarget = targetUnitType != ARH && targetUnitType != UHH && targetUnitType != UHM && targetUnitType != LHX;
 		if (nonHelicopterTarget)
-			targetTypeModifier = counterDataList[tgt]->getTargetTypeModifier();
+		{
+			switch (wpnOppFiring)
+			{
+			case 0:			// main weapon 1
+				targetTypeModifier = counterDataList[firingUnit]->getTTModm1();
+				break;
+			case 1:			// main weapon 2
+				targetTypeModifier = counterDataList[firingUnit]->getTTModm2();
+				break;
+			case 2:			// main weapon 3
+				targetTypeModifier = counterDataList[firingUnit]->getTTModm3();
+				break;
+			case 3:			// secondary weapon 1
+				targetTypeModifier = counterDataList[firingUnit]->getTTMods1();
+				break;
+			case 4:			// secondary weapon 2
+				targetTypeModifier = counterDataList[firingUnit]->getTTMods2();
+				break;
+			}
+		}
 
 		// is helicopter firing
 		bool isHelicopterFiring = false;
@@ -2760,7 +2798,7 @@ void CAirCavLOSDlg::OnBnClickedButtonElevoffset()
 	int col = counterDataList[m_ActiveUnit]->getHexCol();
 	int row = counterDataList[m_ActiveUnit]->getHexRow();
 	int curOffset = counterDataList[m_ActiveUnit]->getElevOffset() / -10;
-	int activeUnitOffset = counterDataList[m_ActiveUnit]->checkContour(mapData, col, row, curOffset);
+	int activeUnitOffset = counterDataList[m_ActiveUnit]->checkContour(mapData, col, row, DIRECTION_UNDEF, curOffset);
 	counterDataList[m_ActiveUnit]->setElevOffset(activeUnitOffset);
 	UpdateData(FALSE);
 	updateActiveUnit();
@@ -2862,7 +2900,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 			if ( spread )
 			{
 				int aR, aC;
-				for ( int adjHex = NO; adjHex <= NW; adjHex++ )
+				for ( int adjHex = DIRECTION_NO; adjHex <= DIRECTION_NW; adjHex++ )
 				{
 					// set adjacent hexes
 					CalcAdj( adjHex, m_lastArtilleryRow, m_lastArtilleryCol, &aR, &aC );
@@ -2873,7 +2911,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 					if ( spread == 2 )
 					{
 						int aaR, aaC;
-						for ( int nextAdjHex = NO; nextAdjHex <= NW; nextAdjHex++ )
+						for ( int nextAdjHex = DIRECTION_NO; nextAdjHex <= DIRECTION_NW; nextAdjHex++ )
 						{
 							// set adjacent hexes
 							CalcAdj( nextAdjHex, aR, aC, &aaR, &aaC );
@@ -2895,7 +2933,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 		if ( spread )
 		{
 			int aR, aC;
-			for ( int adjHex = NO; adjHex <= NW; adjHex++ )
+			for ( int adjHex = DIRECTION_NO; adjHex <= DIRECTION_NW; adjHex++ )
 			{
 				// set adjacent hexes
 				CalcAdj( adjHex, m_lastArtilleryRow, m_lastArtilleryCol, &aR, &aC );
@@ -2903,7 +2941,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 				if ( spread == 2 )
 				{
 					int aaR, aaC;
-					for ( int nextAdjHex = NO; nextAdjHex <= NW; nextAdjHex++ )
+					for ( int nextAdjHex = DIRECTION_NO; nextAdjHex <= DIRECTION_NW; nextAdjHex++ )
 					{
 						// set adjacent hexes
 						CalcAdj( nextAdjHex, aR, aC, &aaR, &aaC );
@@ -3039,7 +3077,7 @@ void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 		{
 			hex_loc hex(smokeRow, smokeCol);
 			removedSmokeHexes.push_back(hex);
-			sprintf_s( smokeStr, "Remove Smoke in hex:  %02d%02d", smokeCol, smokeRow );
+			sprintf_s( smokeStr, "*** Remove Smoke from hex:  %02d%02d ***", smokeCol, smokeRow );
 			MessageBox( (CString)smokeStr, (CString)"Smoke Removed", MB_OK );
 		}
 		else
@@ -3064,9 +3102,9 @@ void CAirCavLOSDlg::OnBnClickedCheckPopSmoke()
 	if ( unitType == ARH || unitType == UHH || unitType == UHM || unitType == LHX )
 		MessageBox( (CString)"Helicopters cannot lay smoke", (CString)"Pop Smoke", MB_OK );
 	else if (!counterDataList[m_ActiveUnit]->getIsDismounted())
-      MessageBox((CString)"A mounted unit cannot pop smoke", (CString)"Pop Smoke", MB_OK);
-   else
-      UpdateData(TRUE);
+		MessageBox((CString)"A mounted unit cannot pop smoke", (CString)"Pop Smoke", MB_OK);
+	else
+		UpdateData(TRUE);
 }
 
 bool CAirCavLOSDlg::readWeaponTextFile( FILE *fptr )

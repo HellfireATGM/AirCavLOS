@@ -34,36 +34,36 @@ extern void CalcAdj (int dir, int cur_y, int cur_x, int *y, int *x)
 {
 	switch (dir)
 	{
-		case NO:
+		case DIRECTION_NO:
 			*x = cur_x;
 			*y = cur_y - 1;
 			break;
-		case NE:
+		case DIRECTION_NE:
 			if (EVEN(cur_x))
 				*y = cur_y - 1;
 			else
 				*y = cur_y;
 			*x = cur_x + 1;
 			break;
-		case SE:
+		case DIRECTION_SE:
 			if (EVEN(cur_x))
 				*y = cur_y;
 			else
 				*y = cur_y + 1;
 			*x = cur_x + 1;
 			break;
-		case SO:
+		case DIRECTION_SO:
 			*x = cur_x;
 			*y = cur_y + 1;
 			break;
-		case SW:
+		case DIRECTION_SW:
 			if (EVEN(cur_x))
 				*y = cur_y;
 			else
 				*y = cur_y + 1;
 			*x = cur_x - 1;
 			break;
-		case NW:
+		case DIRECTION_NW:
 			if (EVEN(cur_x))
 				*y = cur_y - 1;
 			else
@@ -351,17 +351,17 @@ int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, int tgt_x, 
 
 	/* determine which direction the vector is facing */
 	if (LOS_vec_y > 0 && LOS_vec_x > 0)
-		{ Ldir = NE;   Fdir = SE;   Rdir = SO; }
+		{ Ldir = DIRECTION_NE;   Fdir = DIRECTION_SE;   Rdir = DIRECTION_SO; }
 	else if (LOS_vec_y > 0 && LOS_vec_x < 0)
-		{ Ldir = SO;   Fdir = SW;   Rdir = NW; }
+		{ Ldir = DIRECTION_SO;   Fdir = DIRECTION_SW;   Rdir = DIRECTION_NW; }
 	else if (LOS_vec_y > 0 && LOS_vec_x == 0)
-		{ Ldir = SE;   Fdir = SO;   Rdir = SW; }
+		{ Ldir = DIRECTION_SE;   Fdir = DIRECTION_SO;   Rdir = DIRECTION_SW; }
 	else if (LOS_vec_y <= 0 && LOS_vec_x > 0)
-		{ Ldir = NO;   Fdir = NE;   Rdir = SE; }
+		{ Ldir = DIRECTION_NO;   Fdir = DIRECTION_NE;   Rdir = DIRECTION_SE; }
 	else if (LOS_vec_y <= 0 && LOS_vec_x < 0)
-		{ Ldir = SW;   Fdir = NW;   Rdir = NO; }
+		{ Ldir = DIRECTION_SW;   Fdir = DIRECTION_NW;   Rdir = DIRECTION_NO; }
 	else if (LOS_vec_y < 0 && LOS_vec_x == 0)
-		{ Ldir = NW;   Fdir = NO;   Rdir = NE; }
+		{ Ldir = DIRECTION_NW;   Fdir = DIRECTION_NO;   Rdir = DIRECTION_NE; }
 	else
 	   return(0);		// same hex, just return 0
 
@@ -664,24 +664,27 @@ int AirCavMapData::getElevation( int x, int y )
 			Map[y][x].road = dlg.getRoad();
 			Map[y][x].autobahn = dlg.getAutobahn();
 			Map[y][x].river = dlg.getRiver();
-			Map[y][x].rn = dlg.getRoadHex(0);
-			Map[y][x].rnw = dlg.getRoadHex(1);
-			Map[y][x].rsw = dlg.getRoadHex(2);
-			Map[y][x].rs = dlg.getRoadHex(3);
-			Map[y][x].rse = dlg.getRoadHex(4);
-			Map[y][x].rne = dlg.getRoadHex(5);
-			Map[y][x].an = dlg.getAutobahnHex(0);
-			Map[y][x].anw = dlg.getAutobahnHex(1);
-			Map[y][x].asw = dlg.getAutobahnHex(2);
-			Map[y][x].as = dlg.getAutobahnHex(3);
-			Map[y][x].ase = dlg.getAutobahnHex(4);
-			Map[y][x].ane = dlg.getAutobahnHex(5);
-			Map[y][x].vn = dlg.getRiverHex(0);
-			Map[y][x].vnw = dlg.getRiverHex(1);
-			Map[y][x].vsw = dlg.getRiverHex(2);
-			Map[y][x].vs = dlg.getRiverHex(3);
-			Map[y][x].vse = dlg.getRiverHex(4);
-			Map[y][x].vne = dlg.getRiverHex(5);
+
+			Map[y][x].rn = dlg.getRoadHex(DIRECTION_NO);
+			Map[y][x].rnw = dlg.getRoadHex(DIRECTION_NW);
+			Map[y][x].rsw = dlg.getRoadHex(DIRECTION_SW);
+			Map[y][x].rs = dlg.getRoadHex(DIRECTION_SO);
+			Map[y][x].rse = dlg.getRoadHex(DIRECTION_SE);
+			Map[y][x].rne = dlg.getRoadHex(DIRECTION_NE);
+
+			Map[y][x].an = dlg.getAutobahnHex(DIRECTION_NO);
+			Map[y][x].anw = dlg.getAutobahnHex(DIRECTION_NW);
+			Map[y][x].asw = dlg.getAutobahnHex(DIRECTION_SW);
+			Map[y][x].as = dlg.getAutobahnHex(DIRECTION_SO);
+			Map[y][x].ase = dlg.getAutobahnHex(DIRECTION_SE);
+			Map[y][x].ane = dlg.getAutobahnHex(DIRECTION_NE);
+
+			Map[y][x].vn = dlg.getRiverHex(DIRECTION_NO);
+			Map[y][x].vnw = dlg.getRiverHex(DIRECTION_NW);
+			Map[y][x].vsw = dlg.getRiverHex(DIRECTION_SW);
+			Map[y][x].vs = dlg.getRiverHex(DIRECTION_SO);
+			Map[y][x].vse = dlg.getRiverHex(DIRECTION_SE);
+			Map[y][x].vne = dlg.getRiverHex(DIRECTION_NE);
 		}
 	}
 	return Map[y][x].elevation;
@@ -767,17 +770,17 @@ int AirCavMapData::getRoadHex( int x, int y, int which )
 {
 	switch( which )
 	{
-		case 0: return Map[y][x].rn;
+		case DIRECTION_NO: return Map[y][x].rn;
 			break;
-		case 1: return Map[y][x].rnw;
+		case DIRECTION_NW: return Map[y][x].rnw;
 			break;
-		case 2: return Map[y][x].rsw;
+		case DIRECTION_SW: return Map[y][x].rsw;
 			break;
-		case 3: return Map[y][x].rs;
+		case DIRECTION_SO: return Map[y][x].rs;
 			break;
-		case 4: return Map[y][x].rse;
+		case DIRECTION_SE: return Map[y][x].rse;
 			break;
-		case 5: return Map[y][x].rne;
+		case DIRECTION_NE: return Map[y][x].rne;
 			break;
 	}
 	return 0;
@@ -790,17 +793,17 @@ int AirCavMapData::getAutobahnHex( int x, int y, int which )
 
 	switch (which)
 	{
-		case 0: return Map[y][x].an;
+		case DIRECTION_NO: return Map[y][x].an;
 			break;
-		case 1: return Map[y][x].anw;
+		case DIRECTION_NW: return Map[y][x].anw;
 			break;
-		case 2: return Map[y][x].asw;
+		case DIRECTION_SW: return Map[y][x].asw;
 			break;
-		case 3: return Map[y][x].as;
+		case DIRECTION_SO: return Map[y][x].as;
 			break;
-		case 4: return Map[y][x].ase;
+		case DIRECTION_SE: return Map[y][x].ase;
 			break;
-		case 5: return Map[y][x].ane;
+		case DIRECTION_NE: return Map[y][x].ane;
 			break;
 	}
 	return 0;
@@ -813,17 +816,17 @@ int AirCavMapData::getStreamHex( int x, int y, int which )
 
 	switch( which )
 	{
-		case 0: return Map[y][x].vn;
+		case DIRECTION_NO: return Map[y][x].vn;
 			break;
-		case 1: return Map[y][x].vnw;
+		case DIRECTION_NW: return Map[y][x].vnw;
 			break;
-		case 2: return Map[y][x].vsw;
+		case DIRECTION_SW: return Map[y][x].vsw;
 			break;
-		case 3: return Map[y][x].vs;
+		case DIRECTION_SO: return Map[y][x].vs;
 			break;
-		case 4: return Map[y][x].vse;
+		case DIRECTION_SE: return Map[y][x].vse;
 			break;
-		case 5: return Map[y][x].vne;
+		case DIRECTION_NE: return Map[y][x].vne;
 			break;
 	}
 	return 0;
@@ -840,24 +843,27 @@ int AirCavMapData::editTerrainData( int x, int y )
 		Map[y][x].road = dlg.getRoad();
 		Map[y][x].autobahn = dlg.getAutobahn();
 		Map[y][x].river = dlg.getRiver();
-		Map[y][x].rn = dlg.getRoadHex(0);
-		Map[y][x].rnw = dlg.getRoadHex(1);
-		Map[y][x].rsw = dlg.getRoadHex(2);
-		Map[y][x].rs = dlg.getRoadHex(3);
-		Map[y][x].rse = dlg.getRoadHex(4);
-		Map[y][x].rne = dlg.getRoadHex(5);
-		Map[y][x].an = dlg.getAutobahnHex(0);
-		Map[y][x].anw = dlg.getAutobahnHex(1);
-		Map[y][x].asw = dlg.getAutobahnHex(2);
-		Map[y][x].as = dlg.getAutobahnHex(3);
-		Map[y][x].ase = dlg.getAutobahnHex(4);
-		Map[y][x].ane = dlg.getAutobahnHex(5);
-		Map[y][x].vn = dlg.getRiverHex(0);
-		Map[y][x].vnw = dlg.getRiverHex(1);
-		Map[y][x].vsw = dlg.getRiverHex(2);
-		Map[y][x].vs = dlg.getRiverHex(3);
-		Map[y][x].vse = dlg.getRiverHex(4);
-		Map[y][x].vne = dlg.getRiverHex(5);
+
+		Map[y][x].rn = dlg.getRoadHex(DIRECTION_NO);
+		Map[y][x].rnw = dlg.getRoadHex(DIRECTION_NW);
+		Map[y][x].rsw = dlg.getRoadHex(DIRECTION_SW);
+		Map[y][x].rs = dlg.getRoadHex(DIRECTION_SO);
+		Map[y][x].rse = dlg.getRoadHex(DIRECTION_SE);
+		Map[y][x].rne = dlg.getRoadHex(DIRECTION_NE);
+
+		Map[y][x].an = dlg.getAutobahnHex(DIRECTION_NO);
+		Map[y][x].anw = dlg.getAutobahnHex(DIRECTION_NW);
+		Map[y][x].asw = dlg.getAutobahnHex(DIRECTION_SW);
+		Map[y][x].as = dlg.getAutobahnHex(DIRECTION_SO);
+		Map[y][x].ase = dlg.getAutobahnHex(DIRECTION_SE);
+		Map[y][x].ane = dlg.getAutobahnHex(DIRECTION_NE);
+
+		Map[y][x].vn = dlg.getRiverHex(DIRECTION_NO);
+		Map[y][x].vnw = dlg.getRiverHex(DIRECTION_NW);
+		Map[y][x].vsw = dlg.getRiverHex(DIRECTION_SW);
+		Map[y][x].vs = dlg.getRiverHex(DIRECTION_SO);
+		Map[y][x].vse = dlg.getRiverHex(DIRECTION_SE);
+		Map[y][x].vne = dlg.getRiverHex(DIRECTION_NE);
 	}
 	return 1;
 }

@@ -2760,7 +2760,7 @@ void CAirCavLOSDlg::OnBnClickedButtonElevoffset()
 	int col = counterDataList[m_ActiveUnit]->getHexCol();
 	int row = counterDataList[m_ActiveUnit]->getHexRow();
 	int curOffset = counterDataList[m_ActiveUnit]->getElevOffset() / -10;
-	int activeUnitOffset = counterDataList[m_ActiveUnit]->checkContour(mapData, col, row, curOffset);
+	int activeUnitOffset = counterDataList[m_ActiveUnit]->checkContour(mapData, col, row, -1, curOffset);
 	counterDataList[m_ActiveUnit]->setElevOffset(activeUnitOffset);
 	UpdateData(FALSE);
 	updateActiveUnit();

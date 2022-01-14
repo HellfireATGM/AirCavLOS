@@ -115,6 +115,8 @@ public:
 
 	int m_popSmokeWhileMoving;
 
+	bool m_normalMap;
+
 	CString m_terrainType;
 	CString m_terrainElev;
 	CString m_terrainStack;
@@ -200,4 +202,5 @@ public:
 	afx_msg void OnBnClickedButtonAbout();
 	afx_msg void OnBnClickedCheckIgnoreWater();
 	afx_msg void OnBnClickedCheckIgnoreAutobahn();
+	afx_msg void OnBnClickedCheckRotateMap();
 };

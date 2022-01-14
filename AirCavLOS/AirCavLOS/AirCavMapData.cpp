@@ -96,14 +96,11 @@ int AirCavMapData::OpenMapDataFile(std::string& file_dir)
 	map = file_dir + "map.dat";
 	dem = file_dir + "dem.txt";
 
-	map_file_pointer = fopen (map.c_str(), "rb");
-	if (map_file_pointer == NULL) 
+	errno_t err = fopen_s(&map_file_pointer, map.c_str(), "rb");
+	if (err != 0 || map_file_pointer == NULL) 
 	{
-		//printf("file open failed\n");
 		return 0;
 	}
-	//else 
-	//	printf("file open successful\n");
 
 	a = (SCALE/2.0) * 0.577350269;       /* length of 1/2 hexside */
 	b = a*a + (SCALE/2.0)*(SCALE/2.0);   /* square of distance to farthest edge */
@@ -232,12 +229,13 @@ int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 	int i,j, h = 0;
 
 	/* reopen the old file, write new data and close data file */
+	errno_t err;
 	if (map_file_pointer)
-		map_file_pointer = freopen (map.c_str(), "wb", map_file_pointer);
+		err = freopen_s (&map_file_pointer, map.c_str(), "wb", map_file_pointer);
 	else
-		map_file_pointer = fopen (map.c_str(), "wb");
+		err = fopen_s (&map_file_pointer, map.c_str(), "wb");
 
-	if (map_file_pointer == NULL) 
+	if (err != 0 || map_file_pointer == NULL)
 		return 0;
 
 	for (i=0; i < NROW; i++)
@@ -284,9 +282,9 @@ int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 
 	// write out the DEM
 	FILE *dem_file_pointer;
-	dem_file_pointer = fopen (dem.c_str(), "w");
+	err = fopen_s (&dem_file_pointer, dem.c_str(), "w");
 
-	if (dem_file_pointer == NULL) 
+	if (err != 0 || dem_file_pointer == NULL) 
 		return 0;
 
 	double demScale = SCALE;

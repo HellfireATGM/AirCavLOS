@@ -186,6 +186,7 @@ CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 	mapData = 0;
 	scenarioData = 0;
 	m_maxCounters = 0;
+	m_normalMap = true;
 
 	// dialog initialization
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -310,6 +311,12 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_ACTION_MOVE_S, &CAirCavLOSDlg::OnBnClickedButtonActionMoveS)
 	ON_BN_CLICKED(IDC_BUTTON_ACTION_MOVE_SE, &CAirCavLOSDlg::OnBnClickedButtonActionMoveSe)
 	ON_BN_CLICKED(IDC_BUTTON_ACTION_MOVE_NE, &CAirCavLOSDlg::OnBnClickedButtonActionMoveNe)
+	ON_BN_CLICKED(IDC_BUTTON_ACTION_MOVE_N2, &CAirCavLOSDlg::OnBnClickedButtonActionMoveN)
+	ON_BN_CLICKED(IDC_BUTTON_ACTION_MOVE_NW2, &CAirCavLOSDlg::OnBnClickedButtonActionMoveNw)
+	ON_BN_CLICKED(IDC_BUTTON_ACTION_MOVE_SW2, &CAirCavLOSDlg::OnBnClickedButtonActionMoveSw)
+	ON_BN_CLICKED(IDC_BUTTON_ACTION_MOVE_S2, &CAirCavLOSDlg::OnBnClickedButtonActionMoveS)
+	ON_BN_CLICKED(IDC_BUTTON_ACTION_MOVE_SE2, &CAirCavLOSDlg::OnBnClickedButtonActionMoveSe)
+	ON_BN_CLICKED(IDC_BUTTON_ACTION_MOVE_NE2, &CAirCavLOSDlg::OnBnClickedButtonActionMoveNe)
 	ON_LBN_SELCHANGE(IDC_LIST_SIGHTED_UNITS, &CAirCavLOSDlg::OnLbnSelchangeListSightedUnits)
 	ON_LBN_SELCHANGE(IDC_LIST_UNITS, &CAirCavLOSDlg::OnLbnSelchangeListUnits)
 	ON_BN_CLICKED(IDC_BUTTON_MAKE_ACTIVE, &CAirCavLOSDlg::OnBnClickedButtonMakeActive)
@@ -346,6 +353,7 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_ABOUT, &CAirCavLOSDlg::OnBnClickedButtonAbout)
 	ON_BN_CLICKED(IDC_CHECK_IGNORE_WATER, &CAirCavLOSDlg::OnBnClickedCheckIgnoreWater)
 	ON_BN_CLICKED(IDC_CHECK_IGNORE_AUTOBAHN, &CAirCavLOSDlg::OnBnClickedCheckIgnoreAutobahn)
+	ON_BN_CLICKED(IDC_CHECK_ROTATE_MAP, &CAirCavLOSDlg::OnBnClickedCheckRotateMap)
 END_MESSAGE_MAP()
 
 
@@ -392,8 +400,9 @@ BOOL CAirCavLOSDlg::OnInitDialog()
 
 	// create the weapon data
 	std::string weapons = file_dir + weapons_file;
-	FILE *weaponFile = fopen (weapons.c_str(), "rt");
-	if ( ! weaponFile )
+	FILE *weaponFile;
+	errno_t err = fopen_s(&weaponFile, weapons.c_str(), "rt");
+	if ( err != 0 || !weaponFile )
 	{
 		MessageBox((CString)"Unable to open weapons.txt", (CString)"Error", MB_OK);
 		return FALSE;
@@ -403,8 +412,9 @@ BOOL CAirCavLOSDlg::OnInitDialog()
 
 	// create the unit data
 	std::string units = file_dir + units_file;
-	FILE *unitFile = fopen (units.c_str(), "rt");
-	if ( ! unitFile )
+	FILE *unitFile;
+	err = fopen_s(&unitFile, units.c_str(), "rt");
+	if ( err != 0 || !unitFile )
 	{
 		MessageBox((CString)"Unable to open units.txt", (CString)"Error", MB_OK);
 		return FALSE;
@@ -1564,24 +1574,48 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		{
 			SetDlgItemText(IDC_BUTTON_ACTION_MOUNT, STR_DISMOUNT);
 			// mounted units cannot move themselves
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_N)->EnableWindow(FALSE);
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_S)->EnableWindow(FALSE);
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_NE)->EnableWindow(FALSE);
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW)->EnableWindow(FALSE);
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE)->EnableWindow(FALSE);
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->EnableWindow(FALSE);
+			if (m_normalMap)
+			{
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_N)->EnableWindow(FALSE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_S)->EnableWindow(FALSE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_NE)->EnableWindow(FALSE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW)->EnableWindow(FALSE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE)->EnableWindow(FALSE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->EnableWindow(FALSE);
+			}
+			else
+			{
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_N2)->EnableWindow(FALSE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_S2)->EnableWindow(FALSE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_NE2)->EnableWindow(FALSE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW2)->EnableWindow(FALSE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE2)->EnableWindow(FALSE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW2)->EnableWindow(FALSE);
+			}
 			GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(FALSE);
 			GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(FALSE);
 		}
 		else
 		{
 			SetDlgItemText(IDC_BUTTON_ACTION_MOUNT, STR_MOUNT);
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_N)->EnableWindow(TRUE);
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_S)->EnableWindow(TRUE);
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_NE)->EnableWindow(TRUE);
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW)->EnableWindow(TRUE);
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE)->EnableWindow(TRUE);
-			GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->EnableWindow(TRUE);
+			if (m_normalMap)
+			{
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_N)->EnableWindow(TRUE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_S)->EnableWindow(TRUE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_NE)->EnableWindow(TRUE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW)->EnableWindow(TRUE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE)->EnableWindow(TRUE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->EnableWindow(TRUE);
+			}
+			else
+			{
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_N2)->EnableWindow(TRUE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_S2)->EnableWindow(TRUE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_NE2)->EnableWindow(TRUE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW2)->EnableWindow(TRUE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE2)->EnableWindow(TRUE);
+				GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW2)->EnableWindow(TRUE);
+			}
 			GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(TRUE);
 		}
@@ -3209,8 +3243,9 @@ FILE * CAirCavLOSDlg::openScenarioTextFile(std::string file_dir, int scen)
 	char which[5];
 	itoa(scen, which, 10);
 	std::string whichFile = file_dir + (std::string)"scenario" + std::string(which) + (std::string)".txt";
-	FILE *scenarioFile = fopen (whichFile.c_str(), "rt");
-	if ( ! scenarioFile )
+	FILE *scenarioFile;
+	errno_t err = fopen_s(&scenarioFile, whichFile.c_str(), "rt");
+	if ( err != 0 || !scenarioFile )
 	{
 		CString msg("Unable to open ");
 		msg += (CString)whichFile.c_str();
@@ -3399,5 +3434,43 @@ void CAirCavLOSDlg::OnBnClickedCheckIgnoreWater()
 void CAirCavLOSDlg::OnBnClickedCheckIgnoreAutobahn()
 {
 	mapData->setIgnoreAutobahn();
+	updateActiveUnit();
+}
+
+
+void CAirCavLOSDlg::OnBnClickedCheckRotateMap()
+{
+	if (m_normalMap)
+	{
+		m_normalMap = false;
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_N)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_S)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_NE)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_N2)->ShowWindow(SW_SHOWNORMAL);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_S2)->ShowWindow(SW_SHOWNORMAL);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_NE2)->ShowWindow(SW_SHOWNORMAL);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW2)->ShowWindow(SW_SHOWNORMAL);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE2)->ShowWindow(SW_SHOWNORMAL);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW2)->ShowWindow(SW_SHOWNORMAL);
+	}
+	else
+	{
+		m_normalMap = true;
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_N)->ShowWindow(SW_SHOWNORMAL);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_S)->ShowWindow(SW_SHOWNORMAL);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_NE)->ShowWindow(SW_SHOWNORMAL);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW)->ShowWindow(SW_SHOWNORMAL);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE)->ShowWindow(SW_SHOWNORMAL);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW)->ShowWindow(SW_SHOWNORMAL);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_N2)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_S2)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_NE2)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_NW2)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_SE2)->ShowWindow(SW_HIDE);
+		GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW2)->ShowWindow(SW_HIDE);
+	}
 	updateActiveUnit();
 }

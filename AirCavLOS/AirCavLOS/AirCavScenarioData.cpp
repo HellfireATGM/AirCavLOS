@@ -70,20 +70,28 @@ static bool replaceString(std::string& str, const std::string& from, const std::
 
 int AirCavScenarioData::saveScenario(std::string& file_dir, AirCavCounterData *counterDataList[MAXCOUNTERS])
 {
-	auto t = std::time(nullptr);
-	auto tm = *std::localtime(&t);
+	__time64_t long_time;
+	_time64(&long_time);
+
+	struct tm newtime;
+	errno_t err = _localtime64_s(&newtime, &long_time);
+
 	std::ostringstream oss;
-	oss << std::put_time(&tm, "%m-%d-%Y_%H-%M-%S");
+	oss << std::put_time(&newtime, "%m-%d-%Y__%H-%M-%S");
 	auto str = oss.str();
 
-	std::string whichFile = file_dir + (std::string)"scenario" + std::string("11_") + str + (std::string)".txt";
-	FILE *scenarioFile = fopen(whichFile.c_str(), "wt");
-	if (!scenarioFile)
+	std::string whichFile = file_dir + (std::string)"scenario" + std::string("11__") + str + (std::string)".txt";
+	FILE *scenarioFile;
+	err = fopen_s(&scenarioFile, whichFile.c_str(), "wt");
+	if (err != 0 || !scenarioFile)
 	{
 		return 0;
 	}
 
-	fprintf(scenarioFile, "Scenario 11: In-Progress\n");
+	std::string scenarioName(scenarioData[m_currentScenario].scenarioname);
+	replaceString(scenarioName, "In-Progress [", "");
+	replaceString(scenarioName, "]", "");
+	fprintf(scenarioFile, "In-Progress [%s]\n", scenarioName.c_str());
 	fprintf(scenarioFile, "#\n");
 	fprintf(scenarioFile, "# name     side   country  unit type           col  row  elev  op   carrier  mounted\n");
 	fprintf(scenarioFile, "#\n");

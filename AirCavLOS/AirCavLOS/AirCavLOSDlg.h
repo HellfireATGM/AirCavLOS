@@ -49,7 +49,8 @@ public:
 	CListBox			m_OutputLogListBox;
 
 	std::vector<int>	m_FiringUnitsList;
-	RowCol				m_smokeHexList;
+	RowCol				m_vehicleSmokeHexList;
+	RowCol				m_artillerySmokeHexList;
 
 	bool				m_shutdown;
 

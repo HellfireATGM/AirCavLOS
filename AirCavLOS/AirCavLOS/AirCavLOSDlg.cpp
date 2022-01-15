@@ -115,20 +115,21 @@ Type    Types[MAXTYPS] =
 
 Artillery ArtilleryTypes[MAXINDIRECT] = 
 {
-//  name                        T   S   S   M   M    A   B   C   D   E   F     W   T    A
-//                              y   c   c   i   a                              d   n    d
-//                              p   n   d   n   x                              s        j
+//  name                        T   S   S   M   M    A   B   C   D   E   F     W   T   A   S
+//                              y   c   c   i   a                              d   n   d   u
+//                              p   n   d   n   x                              s       j   p
 
-	{ "U.S. 81mm Mortar",       0,  3,  5,  2, 45,  -9, -9, -9, -7, -4, -1,   -3, -4,   0 }, // 0
-	{ "U.S. 4.2\" Mortar",      0,  3,  5,  4, 46,  -9, -9, -6, -4, -3, -1,   -2, -2,  -5 }, // 1
-	{ "U.S. 160mm Mortar",      0,  2,  4,  0,  0,  -8, -7, -6, -4, -2, -1,   -9, -2,  -4 }, // 2
-	{ "U.S. 105mm Howitzer",    1,  3,  5,  0,  0,  -9, -7, -7, -5, -3, -1,   -1, -2,  -4 }, // 3
-	{ "U.S. 155mm Howitzer",    1,  3,  5,  0,  0,  -8, -7, -6, -4, -1, -1,   -9, -1,  -3 }, // 4
-	{ "U.S. 203mm Rocket",      2,  3,  0,  0,  0,  -7, -6, -5, -4, -1, -1,   -9, -1,   0 }, // 5
-	{ "Soviet 120mm Mortar",    0,  3,  3,  0,  0,   0,  0, -7, -4, -3, -1,   -1, -2,  -5 }, // 6
-	{ "Soviet 122mm Howitzer",  1,  4,  4,  0,  0,  -8, -7, -6, -4, -2, -1,   -1, -2,  -5 }, // 7
-	{ "Soviet 152mm Howitzer",  1,  4,  4,  0,  0,  -8, -7, -5, -3, -1, -1,   -9, -1,  -3 }, // 8
-	{ "Soviet 122mm Rocket",    2,  4,  4,  0,  0,  -8, -7, -5, -3, -1, -1,   -9, -2,   0 }  // 9
+	{ "U.S. 81mm Mortar",       0,  3,  5,  2, 45,  10, 10, 10, -7, -4, -2,   -3, -4,  0,  0 }, // 0
+	{ "U.S. 4.2\" Mortar",      0,  3,  5,  4, 46,  10, 10, -6, -4, -3, -1,   -2, -2, -5,  0 }, // 1
+	{ "U.S. 160mm Mortar",      0,  2,  4,  0,  0,  -8, -7, -6, -4, -2, -1,   10, -2, -4,  0 }, // 2
+	{ "U.S. 105mm Howitzer",    1,  3,  5,  0,  0,  -9, -7, -7, -5, -3, -1,   -1, -2, -4,  0 }, // 3
+	{ "U.S. 155mm Howitzer",    1,  3,  5,  0,  0,  -8, -7, -6, -4, -1, -1,   10, -1, -3,  1 }, // 4
+	{ "U.S. 203mm Rocket",      2,  3,  0,  0,  0,  -7, -6, -5, -4, -1, -1,   10, -1,  0,  1 }, // 5
+
+	{ "Soviet 120mm Mortar",    0,  3,  3,  0,  0,  10, 10, -7, -4, -3, -1,   -1, -2, -5,  0 }, // 6
+	{ "Soviet 122mm Howitzer",  1,  4,  4,  0,  0,  -8, -7, -6, -4, -2, -1,   -1, -2, -5,  0 }, // 7
+	{ "Soviet 152mm Howitzer",  1,  4,  4,  0,  0,  -8, -7, -5, -3, -1, -1,   10, -1, -3,  1 }, // 8
+	{ "Soviet 122mm Rocket",    2,  4,  4,  0,  0,  -8, -7, -5, -3, -1, -1,   10, -2,  0,  1 }  // 9
 };
 
 // --------------------------------------------------------------------------------------
@@ -1105,7 +1106,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 	{
 		int activeUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
 		int activeUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
-		m_smokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
+		m_vehicleSmokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
 	}
 }
 
@@ -1126,7 +1127,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 	{
 		int activeUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
 		int activeUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
-		m_smokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
+		m_vehicleSmokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
 	}
 }
 
@@ -1147,7 +1148,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 	{
 		int activeUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
 		int activeUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
-		m_smokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
+		m_vehicleSmokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
 	}
 }
 
@@ -1168,7 +1169,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 	{
 		int activeUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
 		int activeUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
-		m_smokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
+		m_vehicleSmokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
 	}
 }
 
@@ -1189,7 +1190,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 	{
 		int activeUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
 		int activeUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
-		m_smokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
+		m_vehicleSmokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
 	}
 }
 
@@ -1210,7 +1211,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNe()
 	{
 		int activeUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
 		int activeUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
-		m_smokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
+		m_vehicleSmokeHexList.Add( activeUnitHexRow, activeUnitHexColumn );
 	}
 }
 
@@ -2883,7 +2884,7 @@ void CAirCavLOSDlg::OnBnClickedButtonLaysmoke()
 	int col = counterDataList[m_ActiveUnit]->getHexCol();
 	int row = counterDataList[m_ActiveUnit]->getHexRow();
 	counterDataList[m_ActiveUnit]->laySmoke(mapData, col, row);
-	m_smokeHexList.Add( row, col );
+	m_vehicleSmokeHexList.Add( row, col );
 	updateActiveUnit();
 }
 
@@ -2892,7 +2893,12 @@ void CAirCavLOSDlg::OnBnClickedCheckSmoke()
 	int col = counterDataList[m_ActiveUnit]->getHexCol();
 	int row = counterDataList[m_ActiveUnit]->getHexRow();
 	m_smoke = mapData->setSmoke(row, col, true);
-	m_smokeHexList.Add( row, col );
+
+	if (MessageBox((CString)"OK for Artillery Smoke, Cancel for Vehicle Smoke", (CString)"Smoke!", MB_OKCANCEL) == IDOK)
+		m_artillerySmokeHexList.Add( row, col );
+	else
+		m_vehicleSmokeHexList.Add( row, col );
+
 	UpdateData(FALSE);
 	updateActiveUnit();
 }
@@ -3007,9 +3013,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 			char smokeStr[128];
 			// set target hex
 			mapData->setSmoke( m_lastArtilleryRow, m_lastArtilleryCol );
-			m_smokeHexList.Add( m_lastArtilleryRow, m_lastArtilleryCol );
+			m_artillerySmokeHexList.Add( m_lastArtilleryRow, m_lastArtilleryCol );
 			sprintf_s( smokeStr, "Smoked hex:  %02d%02d", m_lastArtilleryCol, m_lastArtilleryRow );
-			MessageBox( (CString)smokeStr, (CString)"Smoke", MB_OK );
+			MessageBox( (CString)smokeStr, (CString)"Artillery Smoke", MB_OK );
 			if ( spread )
 			{
 				int aR, aC;
@@ -3018,9 +3024,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 					// set adjacent hexes
 					CalcAdj( adjHex, m_lastArtilleryRow, m_lastArtilleryCol, &aR, &aC );
 					mapData->setSmoke( aR, aC );
-					m_smokeHexList.Add( aR, aC );
+					m_artillerySmokeHexList.Add( aR, aC );
 					sprintf_s( smokeStr, "Smoked hex:  %02d%02d", aC, aR );
-					MessageBox( (CString)smokeStr, (CString)"Smoke", MB_OK );
+					MessageBox( (CString)smokeStr, (CString)"Artillery Smoke", MB_OK );
 					if ( spread == 2 )
 					{
 						int aaR, aaC;
@@ -3029,9 +3035,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 							// set adjacent hexes
 							CalcAdj( nextAdjHex, aR, aC, &aaR, &aaC );
 							mapData->setSmoke( aaR, aaC );
-							m_smokeHexList.Add( aaR, aaC );
+							m_artillerySmokeHexList.Add( aaR, aaC );
 							sprintf_s( smokeStr, "Smoked hex:  %02d%02d", aaC, aaR );
-							MessageBox( (CString)smokeStr, (CString)"Smoke", MB_OK );
+							MessageBox( (CString)smokeStr, (CString)"Artillery Smoke", MB_OK );
 						}
 					}
 				}
@@ -3082,6 +3088,10 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 				int row = counterDataList[c]->getHexRow();
 				if ( col == targetCol && row == targetRow )
 				{
+					// don't apply indirect fire to mounted units
+					if (counterDataList[c]->getIsDismounted() == false)
+						continue;
+
 					int ttModifier = 0;
 
 					AirCavUnitData *unitInfo = counterDataList[c]->getUnitInfo();
@@ -3107,7 +3117,17 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 							ttModifier = ArtilleryTypes[m_lastArtilleryUnit].tt_F;
 							break;
 					}
-					if ( terrainModifier == -9 )
+
+					// targetModifer == 10 means apply -5 modifier, suppress instead of kill
+					bool willSuppressNotKill = false;
+					if ( ttModifier == 10 )
+					{
+						willSuppressNotKill = true;
+						ttModifier = -5;
+					}
+
+					// terrainModifier == 10 means +1 on infantry, -1 vs all others
+					if ( terrainModifier == 10 )
 					{
 						UnitType unitType = unitInfo->getUnitType();
 						if ( unitType == INF )
@@ -3115,6 +3135,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 						else
 							terrainModifier = -1;
 					}
+
 					int FKN = 10 + terrainModifier + ttModifier + adjModifier;
 					if ( FKN < 0 ) FKN = 0;
 					if ( FKN > 10 ) FKN = 10;
@@ -3143,13 +3164,50 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 					char buffer2[MAX_BUF_SIZE];
 					sprintf_s( buffer2, "FKN: %d [%d%%]", FKN, FKNpercent );
 
-					KillDialog dlg;
-					dlg.setFKNText1( (CString)buffer1 );
-					dlg.setFKNText2( (CString)buffer2 );
-					if ( dlg.DoModal() == IDOK )
+					// launch the appropriate dialog
+					int result = IDCANCEL;
+					if (willSuppressNotKill)
+					{
+						sprintf_s(buffer2, "KILL: %d [%d%%]   SUP: %d [%d%%]", 0, 0, FKN, FKNpercent);
+						KillSuppressDialog dlg;
+						dlg.setFKNText1((CString)buffer1);
+						dlg.setFKNText2((CString)buffer2);
+						result = dlg.DoModal();
+					}
+					else
+					{
+						sprintf_s(buffer2, "KILL: %d [%d%%]", FKN, FKNpercent);
+						KillDialog dlg;
+						dlg.setFKNText1((CString)buffer1);
+						dlg.setFKNText2((CString)buffer2);
+						result = dlg.DoModal();
+					}
+
+					// apply the results
+					if (result == IDOK2)
+					{
+						// suppress this unit
+						counterDataList[c]->setIsSuppressed(TRUE);
+
+						// infantry will go into defilade if suppressed
+						UnitType targetUnitType = counterDataList[c]->getUnitInfo()->getUnitType();
+						if (targetUnitType == INF)
+							counterDataList[c]->setDefilade(TRUE);
+
+						// set suppressed any mounted units as well, but don't set them to defilade
+						int numMountedUnits = counterDataList[c]->getNumberOfMountedUnits();
+						for (int i = 0; i<numMountedUnits; i++)
+						{
+							int id = counterDataList[c]->getMountedUnit(i);
+							if (counterDataList[id]->getIsDismounted() == false)
+								counterDataList[id]->setIsSuppressed(TRUE);
+						}
+					}
+					else if ( result == IDOK )
 					{
 						// kill this unit
 						counterDataList[c]->kill();
+
 						// kill any mounted units as well
 						int numMountedUnits = counterDataList[c]->getNumberOfMountedUnits();
 						for (int i=0; i<numMountedUnits; i++ )
@@ -3157,6 +3215,29 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 							int id = counterDataList[c]->getMountedUnit(i);
 							if ( !counterDataList[id]->getIsDismounted() )
 								counterDataList[id]->kill();
+						}
+					}
+					else
+					{
+						// its a miss, but check for automatic suppression
+						if ( ArtilleryTypes[m_lastArtilleryUnit].auto_suppress == 1 )
+						{
+							// suppress this unit
+							counterDataList[c]->setIsSuppressed(TRUE);
+
+							// infantry will go into defilade if suppressed
+							UnitType targetUnitType = counterDataList[c]->getUnitInfo()->getUnitType();
+							if (targetUnitType == INF)
+								counterDataList[c]->setDefilade(TRUE);
+
+							// set suppressed any mounted units as well, but don't set them to defilade
+							int numMountedUnits = counterDataList[c]->getNumberOfMountedUnits();
+							for (int i = 0; i<numMountedUnits; i++)
+							{
+								int id = counterDataList[c]->getMountedUnit(i);
+								if (counterDataList[id]->getIsDismounted() == false)
+									counterDataList[id]->setIsSuppressed(TRUE);
+							}
 						}
 					}
 				}
@@ -3177,34 +3258,72 @@ void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 		int col;
 	};
 
-	// remove smoke markers
-	std::vector<hex_loc> removedSmokeHexes;
-	for ( int n=0; n<m_smokeHexList.GetNum(); n++ )
+	// remove vehicle smoke markers
+	std::vector<hex_loc> removedVehicleSmokeHexes;
+	for ( int n=0; n<m_vehicleSmokeHexList.GetNum(); n++ )
 	{
 		int smokeRow, smokeCol;
-		m_smokeHexList.Get( n, &smokeRow, &smokeCol );
+		m_vehicleSmokeHexList.Get( n, &smokeRow, &smokeCol );
 		
-		// 50% chance for smoke hex to be cleared
+		// 40% chance for vehicle smoke hex to be cleared
 		char smokeStr[128];
-		if ( ( rand() % 100 ) < 50 )
+		char titleStr[128];
+		int chance = (rand() % 100);
+		if ( chance < 40 )
 		{
 			hex_loc hex(smokeRow, smokeCol);
-			removedSmokeHexes.push_back(hex);
-			sprintf_s( smokeStr, "*** Remove Smoke from hex:  %02d%02d ***", smokeCol, smokeRow );
-			MessageBox( (CString)smokeStr, (CString)"Smoke Removed", MB_OK );
+			removedVehicleSmokeHexes.push_back(hex);
+			sprintf_s(smokeStr, "*** Remove Smoke from hex:  %02d%02d ***", smokeCol, smokeRow);
+			sprintf_s(titleStr, "Vehicle Smoke Removed [%02d]", chance);
+			MessageBox( (CString)smokeStr, (CString)titleStr, MB_OK );
 		}
 		else
 		{
 			sprintf_s(smokeStr, "Smoke remains in hex:  %02d%02d", smokeCol, smokeRow);
-			MessageBox((CString)smokeStr, (CString)"Smoke Remains", MB_OK);
+			sprintf_s(titleStr, "Vehicle Smoke Remains [%02d]", chance);
+			MessageBox((CString)smokeStr, (CString)titleStr, MB_OK);
 		}
 	}
 
-	// clear out the smoke in each selected hex
-	for (auto hex : removedSmokeHexes)
+	// clear out the vehicle smoke in each selected hex
+	for (auto hex : removedVehicleSmokeHexes)
 	{
 		mapData->clearSmoke(hex.row, hex.col);
-		m_smokeHexList.Remove(hex.row, hex.col);
+		m_vehicleSmokeHexList.Remove(hex.row, hex.col);
+	}
+
+	// remove artillery smoke markers
+	std::vector<hex_loc> removedArtillerySmokeHexes;
+	for (int n = 0; n<m_artillerySmokeHexList.GetNum(); n++)
+	{
+		int smokeRow, smokeCol;
+		m_artillerySmokeHexList.Get(n, &smokeRow, &smokeCol);
+
+		// 30% chance for artillery smoke hex to be cleared
+		char smokeStr[128];
+		char titleStr[128];
+		int chance = (rand() % 100);
+		if ( chance < 30)
+		{
+			hex_loc hex(smokeRow, smokeCol);
+			removedArtillerySmokeHexes.push_back(hex);
+			sprintf_s(smokeStr, "*** Remove Smoke from hex:  %02d%02d ***", smokeCol, smokeRow);
+			sprintf_s(titleStr, "Artillery Smoke Removed [%02d]", chance);
+			MessageBox((CString)smokeStr, (CString)titleStr, MB_OK);
+		}
+		else
+		{
+			sprintf_s(smokeStr, "Smoke remains in hex:  %02d%02d", smokeCol, smokeRow);
+			sprintf_s(titleStr, "Artillery Smoke Remains [%02d]", chance);
+			MessageBox((CString)smokeStr, (CString)titleStr, MB_OK);
+		}
+	}
+
+	// clear out the artillery smoke in each selected hex
+	for (auto hex : removedArtillerySmokeHexes)
+	{
+		mapData->clearSmoke(hex.row, hex.col);
+		m_artillerySmokeHexList.Remove(hex.row, hex.col);
 	}
 	updateActiveUnit();
 }

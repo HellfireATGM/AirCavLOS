@@ -219,20 +219,21 @@ typedef struct
 
 typedef struct {
 	char	name[32];			// unit name
-	int		type;				// 0=Mortar, 1=Artillery, 2=Rocket, number of spread hexes = 0, 1, 2
+	int		type;				// 0=Mortar, 1=Artillery, 2=Rocket, number of spread hexes = 0, 1, 2 (for SMOKE ONLY)
 	int		scatter_normal;
 	int		scatter_dedicated;
 	int		min_range;
 	int		max_range;
-	int		tt_A;
-	int		tt_B;
+	int		tt_A;				// NOTES (see Tables 15.21 and 15.22): 
+	int		tt_B;				// 10 = "S"  "Use -5 as modifier; a successfull roll suppressed instead of kills"
 	int		tt_C;
 	int		tt_D;
 	int		tt_E;
 	int		tt_F;
-	int		Wds;
+	int		Wds;				// 10 = "+"  "+1 vs infantry, -1 vs all others"
 	int		Tn;
-	int		AdjH;
+	int		AdjH;				// units in adjacent hexes are attacked, apply this modifier (10 means No Effect)
+	int		auto_suppress;		// automatic suppression
 } Artillery;
 	
 /*  map definitions  */

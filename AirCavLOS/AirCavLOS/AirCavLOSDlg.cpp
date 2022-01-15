@@ -820,8 +820,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		char buffer[MAX_BUF_SIZE];
 		int activeUnitOffset = counterDataList[m_ActiveUnit]->getElevOffset();
 		int targetUnitOffset = counterDataList[tgt]->getElevOffset();
-		int rocketRange = mapData->CalculateLOS( unitRow, unitCol, targetUnitOffset,
-						tgtRow, tgtCol, activeUnitOffset, buffer );
+		int rocketRange = mapData->CalculateLOS( unitRow, unitCol, targetUnitOffset, tgtRow, tgtCol, activeUnitOffset, buffer );
 		int wpnAdjustedMaxRange = wpn->getMaxRange() / 2;
 		if ( rocketRange > wpnAdjustedMaxRange )
 			return;
@@ -1356,7 +1355,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 		SideType thisSide = counterDataList[c]->getSideType();
 
 		// found a target
-		if ( thisUnitsActualName == activeUnitsActualName && activeSide != thisSide )
+		if (thisUnitsActualName == activeUnitsActualName && activeSide != thisSide)
 		{
 			// use popup to figure out which weapon is fired
 			AirCavWeaponData *wpn1, *wpn2, *wpn3, *wpn4, *wpn5;
@@ -1371,11 +1370,71 @@ void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 			wpn3Type = wpn3->getType();
 			wpn4Type = wpn4->getType();
 			wpn5Type = wpn5->getType();
+			int wpn1Ammo = counterDataList[c]->getAmmoMainWeapon1();
+			int wpn2Ammo = counterDataList[c]->getAmmoMainWeapon2();
+			int wpn3Ammo = counterDataList[c]->getAmmoMainWeapon3();
+			int wpn4Ammo = counterDataList[c]->getAmmoSecondaryWeapon1();
+			int wpn5Ammo = counterDataList[c]->getAmmoSecondaryWeapon2();
+
 			CString wpnName1 = wpn1->getName();
+			if (wpn1Type == ATGM || wpn1Type == SAM || wpn1Type == ROCKET)
+			{
+				if (wpn1Ammo < 1)
+					wpnName1 += " [OUT]";
+				else
+				{
+					std::string ammoStr = " [" + std::to_string(wpn1Ammo) + "]";
+					wpnName1 += CString(ammoStr.c_str());
+				}
+			}
+			
 			CString wpnName2 = wpn2->getName();
+			if (wpn2Type == ATGM || wpn2Type == SAM || wpn2Type == ROCKET)
+			{
+				if (wpn2Ammo < 1)
+					wpnName2 += " [OUT]";
+				else
+				{
+					std::string ammoStr = " [" + std::to_string(wpn2Ammo) + "]";
+					wpnName2 += CString(ammoStr.c_str());
+				}
+			}
+
 			CString wpnName3 = wpn3->getName();
+			if (wpn3Type == ATGM || wpn3Type == SAM || wpn3Type == ROCKET)
+			{
+				if (wpn3Ammo < 1)
+					wpnName3 += " [OUT]";
+				else
+				{
+					std::string ammoStr = " [" + std::to_string(wpn3Ammo) + "]";
+					wpnName3 += CString(ammoStr.c_str());
+				}
+			}
+
 			CString wpnName4 = wpn4->getName();
+			if (wpn4Type == ATGM || wpn4Type == SAM || wpn4Type == ROCKET)
+			{
+				if (wpn4Ammo < 1)
+					wpnName4 += " [OUT]";
+				else
+				{
+					std::string ammoStr = " [" + std::to_string(wpn4Ammo) + "]";
+					wpnName4 += CString(ammoStr.c_str());
+				}
+			}
+
 			CString wpnName5 = wpn5->getName();
+			if (wpn5Type == ATGM || wpn5Type == SAM || wpn5Type == ROCKET)
+			{
+				if (wpn5Ammo < 1)
+					wpnName5 += " [OUT]";
+				else
+				{
+					std::string ammoStr = " [" + std::to_string(wpn5Ammo) + "]";
+					wpnName5 += CString(ammoStr.c_str());
+				}
+			}
 
 			AFX_MANAGE_STATE(AfxGetStaticModuleState());
 			OppFireDialog dlg;
@@ -1474,6 +1533,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 				}
 				else if ( wpnType == GUN )
 					canOppFire = counterDataList[c]->oppFire(GUN);
+				else if (wpnType == ROCKET)
+					canOppFire = counterDataList[c]->oppFire(ROCKET);
 				else if ( wpnType == ATGM || wpnType == SAM )
 					canOppFire = counterDataList[c]->oppFire(ATGM);
 
@@ -2637,11 +2698,30 @@ void CAirCavLOSDlg::resolveFirePass(int firePass)
 			char buffer[MAX_BUF_SIZE];
 			int activeUnitOffset = counterDataList[firingUnit]->getElevOffset();
 			int targetUnitOffset = counterDataList[tgt]->getElevOffset();
-			int rocketRange = mapData->CalculateLOS( unitRow, unitCol, targetUnitOffset,
-							tgtRow, tgtCol, activeUnitOffset, buffer );
+			int rocketRange = mapData->CalculateLOS( unitRow, unitCol, targetUnitOffset, tgtRow, tgtCol, activeUnitOffset, buffer );
 			int wpnAdjustedMaxRange = wpnData->getMaxRange() / 2;
 			if ( rocketRange > wpnAdjustedMaxRange )
 				return;
+		}
+
+		int nAmmoRemaining = 0;
+		switch (wpnOppFiring)
+		{
+			case 0:			// main weapon 1
+				nAmmoRemaining = counterDataList[firingUnit]->getAmmoMainWeapon1();
+				break;
+			case 1:			// main weapon 2
+				nAmmoRemaining = counterDataList[firingUnit]->getAmmoMainWeapon2();
+				break;
+			case 2:			// main weapon 3
+				nAmmoRemaining = counterDataList[firingUnit]->getAmmoMainWeapon3();
+				break;
+			case 3:			// secondary weapon 1
+				nAmmoRemaining = counterDataList[firingUnit]->getAmmoSecondaryWeapon1();
+				break;
+			case 4:			// secondary weapon 2
+				nAmmoRemaining = counterDataList[firingUnit]->getAmmoSecondaryWeapon2();
+				break;
 		}
 
 		// Helicopter firing rockets at nap-of-earth are minus one
@@ -2673,6 +2753,39 @@ void CAirCavLOSDlg::resolveFirePass(int firePass)
 		if ( wpnType == SAM ) wpnType = ATGM;			// SAMs are treated as missiles
 		if ( wpnType != firePass )
 			continue;
+
+		// decrement ammo
+		int weaponType = wpnData->getType();
+		if (weaponType == ATGM || weaponType == SAM || weaponType == ROCKET)
+		{
+			// expend the ammunition in the case of SAMS, Rockets and ATGMs
+			if (nAmmoRemaining > 0)
+			{
+				switch (wpnOppFiring)
+				{
+				case 0:			// main weapon 1
+					counterDataList[firingUnit]->setAmmoMainWeapon1(--nAmmoRemaining);
+					break;
+				case 1:			// main weapon 2
+					counterDataList[firingUnit]->setAmmoMainWeapon2(--nAmmoRemaining);
+					break;
+				case 2:			// main weapon 3
+					counterDataList[firingUnit]->setAmmoMainWeapon3(--nAmmoRemaining);
+					break;
+				case 3:			// secondary weapon 1
+					counterDataList[firingUnit]->setAmmoSecondaryWeapon1(--nAmmoRemaining);
+					break;
+				case 4:			// secondary weapon 2
+					counterDataList[firingUnit]->setAmmoSecondaryWeapon2(--nAmmoRemaining);
+					break;
+				}
+			}
+			else
+			{
+				CString msgstr = (CString)"The selected weapon is out of ammo!";
+				MessageBox((LPCTSTR)msgstr);
+			}
+		}
 
 		CString wpnName = wpnData->getName();
 

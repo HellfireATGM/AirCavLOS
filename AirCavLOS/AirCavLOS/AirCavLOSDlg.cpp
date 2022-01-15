@@ -1970,13 +1970,13 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						{
 							// a unit can only be observed from 5 hexes away if it is in smoke hex and not low level and it has fired
 							if (!targetlowLevel && targetSmoke && range > 5)
-							continue;
+								continue;
 						}
 						else
 						{
 							// if it has not fired, a unit can only be observed from 1 hex away if it is in smoke hex and not low level
 							if (!targetlowLevel && targetSmoke && range > 1)
-							continue;
+								continue;
 						}
 
 						// ignore smoke in the active hex if it is a helo at low level
@@ -2167,13 +2167,13 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						{
 							// a unit can only be observed from 5 hexes away if it is in smoke hex and not low level and it has fired
 							if (!activelowLevel && activeSmoke && range > 5)
-							continue;
+								continue;
 						}
 						else
 						{
 							// if it has not fired, a unit can only be observed from 1 hex away if it is in smoke hex and not low level
 							if (!activelowLevel && activeSmoke && range > 1)
-							continue;
+								continue;
 						}
 
 						// ignore smoke in the target hex if it is a helo at low level
@@ -2892,13 +2892,21 @@ void CAirCavLOSDlg::OnBnClickedCheckSmoke()
 {
 	int col = counterDataList[m_ActiveUnit]->getHexCol();
 	int row = counterDataList[m_ActiveUnit]->getHexRow();
-	m_smoke = mapData->setSmoke(row, col, true);
-
-	if (MessageBox((CString)"OK for Artillery Smoke, Cancel for Vehicle Smoke", (CString)"Smoke!", MB_OKCANCEL) == IDOK)
-		m_artillerySmokeHexList.Add( row, col );
+	int smokeExists = mapData->getSmoke(row, col);
+	if (smokeExists)
+	{
+		m_artillerySmokeHexList.Remove(row, col);
+		m_vehicleSmokeHexList.Remove(row, col);
+		mapData->clearSmoke(row, col);
+	}
 	else
-		m_vehicleSmokeHexList.Add( row, col );
-
+	{
+		if (MessageBox((CString)"OK for Artillery Smoke, Cancel for Vehicle Smoke", (CString)"Smoke!", MB_OKCANCEL) == IDOK)
+			m_artillerySmokeHexList.Add(row, col);
+		else
+			m_vehicleSmokeHexList.Add(row, col);
+		m_smoke = mapData->setSmoke(row, col, true);
+	}
 	UpdateData(FALSE);
 	updateActiveUnit();
 }
@@ -2907,7 +2915,15 @@ void CAirCavLOSDlg::OnBnClickedCheckWreck()
 {
 	int col = counterDataList[m_ActiveUnit]->getHexCol();
 	int row = counterDataList[m_ActiveUnit]->getHexRow();
-	m_wreck = mapData->setWreck(row, col, true);
+	int wreckExists = mapData->getWreck(row, col);
+	if (wreckExists)
+	{
+		mapData->clearWreck(row, col);
+	}
+	else
+	{
+		m_wreck = mapData->setWreck(row, col, true);
+	}
 	UpdateData(FALSE);
 	updateActiveUnit();
 }

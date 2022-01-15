@@ -451,7 +451,7 @@ BOOL CAirCavLOSDlg::OnInitDialog()
 	SetWindowText((LPCTSTR)scenarioData->getName( scenarioToPlay ));
 
 	// initialization of available counters
-	m_ActiveUnit = -1;
+	m_ActiveUnit = m_originalActiveUnit = -1;
 	for ( int c=0; c<m_maxCounters; c++ )
 		m_AvailableUnitsListBox.AddString(CString(counterDataList[c]->getName()));
 
@@ -1544,9 +1544,14 @@ void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 				{
 					// new Active unit is the one that fired, target is the current Active Unit
 					counterDataList[c]->setTgtOppFiring(m_ActiveUnit);
-					m_ActiveUnit = c;
+					
+					// remember the original Active unit
+					if (m_FiringUnitsList.empty())
+						m_originalActiveUnit = m_ActiveUnit;
 
-					m_FiringUnitsList.push_back(m_ActiveUnit);
+					// set new active unit, so other units can opp fire on this one
+					m_ActiveUnit = c;
+					m_FiringUnitsList.push_back(c);
 				}
 				else
 				{
@@ -2571,10 +2576,21 @@ void CAirCavLOSDlg::OnBnClickedButtonActionLowlevel()
 
 void CAirCavLOSDlg::resolveOpportunityFire()
 {
-	// first gun armed weapons, then ATGMs
-	resolveFirePass(GUN);
-	resolveFirePass(ATGM);
+	// first gun armed weapons
+	int lastUnitToKillGuns = resolveFirePass(GUN);
+	if (lastUnitToKillGuns != m_originalActiveUnit)
+		m_ActiveUnit = lastUnitToKillGuns;
+	else
+		m_ActiveUnit = m_originalActiveUnit;
 
+	// next missile-type weapons (ATGM, ROCKET, SAM)
+	int lastUnitToKillATGM = resolveFirePass(ATGM);
+	if (lastUnitToKillATGM != m_originalActiveUnit)
+		m_ActiveUnit = lastUnitToKillATGM;
+	else
+		m_ActiveUnit = m_originalActiveUnit;
+
+	// clear the list
 	size_t listSize = m_FiringUnitsList.size();
 	for ( size_t c=0; c<listSize; c++ )
 	{
@@ -2583,13 +2599,16 @@ void CAirCavLOSDlg::resolveOpportunityFire()
 		counterDataList[firingUnit]->setIsOppFiring(FALSE);
 		counterDataList[firingUnit]->setEvading(0);
 	}
+	m_FiringUnitsList.clear();
 
 	updateActiveUnit();
 	m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
 }
 
-void CAirCavLOSDlg::resolveFirePass(int firePass)
+int CAirCavLOSDlg::resolveFirePass(int firePass)
 {
+	int lastActiveUnit = m_originalActiveUnit;
+
 	size_t listSize = m_FiringUnitsList.size();
 	for ( size_t c=0; c<listSize; c++ )
 	{
@@ -2644,7 +2663,7 @@ void CAirCavLOSDlg::resolveFirePass(int firePass)
 				{
 					CString msgstr = (CString)"SAMs cannot be fired at nap-of-earth helicopters";
 					MessageBox((LPCTSTR)msgstr);
-					return;
+					return lastActiveUnit;
 				}
 		}
 
@@ -2702,7 +2721,7 @@ void CAirCavLOSDlg::resolveFirePass(int firePass)
 			int rocketRange = mapData->CalculateLOS( unitRow, unitCol, targetUnitOffset, tgtRow, tgtCol, activeUnitOffset, buffer );
 			int wpnAdjustedMaxRange = wpnData->getMaxRange() / 2;
 			if ( rocketRange > wpnAdjustedMaxRange )
-				return;
+				return lastActiveUnit;
 		}
 
 		int nAmmoRemaining = 0;
@@ -2833,6 +2852,7 @@ void CAirCavLOSDlg::resolveFirePass(int firePass)
 		{
 			// suppress this unit
 			counterDataList[tgt]->setIsSuppressed(TRUE);
+
 			// infantry will go into defilade if suppressed
 			if (targetUnitType == INF)
 				counterDataList[tgt]->setDefilade(TRUE);
@@ -2841,6 +2861,7 @@ void CAirCavLOSDlg::resolveFirePass(int firePass)
 		{
 			// kill this unit
 			counterDataList[tgt]->kill();
+
 			// kill any mounted units as well
 			int numMountedUnits = counterDataList[tgt]->getNumberOfMountedUnits();
 			for (int i=0; i<numMountedUnits; i++ )
@@ -2849,10 +2870,12 @@ void CAirCavLOSDlg::resolveFirePass(int firePass)
 				if ( !counterDataList[id]->getIsDismounted() )
 					counterDataList[id]->kill();
 			}
-			// firing unit becomes the active unit
-			m_ActiveUnit = firingUnit;
+
+			// in the event of a kill, the firing unit becomes the active unit
+			lastActiveUnit = firingUnit;
 		}
 	}
+	return lastActiveUnit;
 }
 
 void CAirCavLOSDlg::OnBnClickedButtonResetFiring()

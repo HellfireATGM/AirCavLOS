@@ -40,6 +40,7 @@ public:
 	int					m_maxUnits;
 	int					m_maxWeapons;
 	int					m_ActiveUnit;
+	int					m_originalActiveUnit;
 	int					m_ActiveTarget;
 	int					m_Weather;
 	CListBox			m_AvailableUnitsListBox;
@@ -160,7 +161,7 @@ public:
 	void writeToLog( char *buffer );
 	void moveMountedUnits();
 	void resolveOpportunityFire();
-	void resolveFirePass(int firePass);
+	int resolveFirePass(int firePass);
 	bool readWeaponTextFile( FILE * );
 	bool readUnitTextFile( FILE * );
 

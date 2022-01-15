@@ -2576,14 +2576,21 @@ void CAirCavLOSDlg::OnBnClickedButtonActionLowlevel()
 
 void CAirCavLOSDlg::resolveOpportunityFire()
 {
-	// first gun armed weapons
+	// first pass - gun armed weapons
 	int lastUnitToKillGuns = resolveFirePass(GUN);
 	if (lastUnitToKillGuns != m_originalActiveUnit)
 		m_ActiveUnit = lastUnitToKillGuns;
 	else
 		m_ActiveUnit = m_originalActiveUnit;
 
-	// next missile-type weapons (ATGM, ROCKET, SAM)
+	// second pass - non-ATGM missile-type weapons (ROCKET, SAM)
+	int lastUnitToKillRocket= resolveFirePass(ROCKET);
+	if (lastUnitToKillRocket != m_originalActiveUnit)
+		m_ActiveUnit = lastUnitToKillRocket;
+	else
+		m_ActiveUnit = m_originalActiveUnit;
+
+	// third pass - ATGMs
 	int lastUnitToKillATGM = resolveFirePass(ATGM);
 	if (lastUnitToKillATGM != m_originalActiveUnit)
 		m_ActiveUnit = lastUnitToKillATGM;
@@ -2608,6 +2615,7 @@ void CAirCavLOSDlg::resolveOpportunityFire()
 int CAirCavLOSDlg::resolveFirePass(int firePass)
 {
 	int lastActiveUnit = m_originalActiveUnit;
+	std::vector<int> unitsKilledThisPass;
 
 	size_t listSize = m_FiringUnitsList.size();
 	for ( size_t c=0; c<listSize; c++ )
@@ -2618,8 +2626,18 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 
 		// get the firing unit, make sure it is alive - it may have died in a previous pass
 		int firingUnit = m_FiringUnitsList[c];
-		if ( counterDataList[firingUnit]->getIsAlive() == DEAD && firePass == ATGM )
-			continue;
+		if ( counterDataList[firingUnit]->getIsAlive() == DEAD )
+		{
+			// however, if the unit died in this pass, it can still fire
+			bool killedThisPass = false;
+			for ( auto u : unitsKilledThisPass )
+			{
+				if ( firingUnit == u )
+					killedThisPass = true;
+			}
+			if ( killedThisPass == false )
+				continue;
+		}
 
 		CString sightingUnitName = counterDataList[firingUnit]->getName();
 		CString sightingUnitType = counterDataList[firingUnit]->getUnitInfo()->getName();
@@ -2658,13 +2676,15 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 		if ( wpnType == SAM )
 		{
 			UnitType tgtunitType = counterDataList[tgt]->getUnitInfo()->getUnitType();
-			if ( tgtunitType == ARH || tgtunitType == UHH || tgtunitType == UHM || tgtunitType == LHX )
-				if (counterDataList[tgt]->getHeloOffset() == 0 && firePass == ATGM)
+			if (tgtunitType == ARH || tgtunitType == UHH || tgtunitType == UHM || tgtunitType == LHX)
+			{
+				if (counterDataList[tgt]->getHeloOffset() == 0)
 				{
 					CString msgstr = (CString)"SAMs cannot be fired at nap-of-earth helicopters";
 					MessageBox((LPCTSTR)msgstr);
 					return lastActiveUnit;
 				}
+			}
 		}
 
 		// get target type modifier for guns and rockets only and only if not firing on helicopter (helicopters cannot be suppressed)
@@ -2769,8 +2789,7 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 
 		// only allow weapons of the selected pass to fire
 		bool weaponCanSuppress = (wpnType != ATGM && wpnType != SAM);
-		if ( wpnType == ROCKET ) wpnType = ATGM;		// ROCKETs are treated as missiles
-		if ( wpnType == SAM ) wpnType = ATGM;			// SAMs are treated as missiles
+		if ( wpnType == SAM ) wpnType = ROCKET;			// SAMs are treated as missiles
 		if ( wpnType != firePass )
 			continue;
 
@@ -2873,6 +2892,9 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 
 			// in the event of a kill, the firing unit becomes the active unit
 			lastActiveUnit = firingUnit;
+
+			// track killed units during this pass
+			unitsKilledThisPass.push_back(tgt);
 		}
 	}
 	return lastActiveUnit;

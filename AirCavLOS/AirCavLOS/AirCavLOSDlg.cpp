@@ -665,8 +665,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionPopUp()
 		UpdateData(TRUE);
 
 		// only for Attack Helicopters
-		UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-		if ( unitType == ARH || unitType == LHX )
+		if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isAttackHelicopter() )
 		{
 			if ( counterDataList[m_ActiveUnit]->getHeloOffset() > 0 )
 			{
@@ -745,20 +744,14 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 	}
 
 	// is helicopter firing
-	bool isHelicopterFiring = false;
-	UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-	if ( unitType == ARH || unitType == UHH || unitType == UHM || unitType == LHX )
-		isHelicopterFiring = true;
+	bool isHelicopterFiring = counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter();
 
-	// helicopter at low level
-	bool isNapOfEarth = false;
-	if ( counterDataList[m_ActiveUnit]->getHeloOffset() != 0 )
-		isNapOfEarth = true;
+	// is helicopter at nap of earth
+	bool isNapOfEarth = (counterDataList[m_ActiveUnit]->getHeloOffset() == 0);
 
 	// get target type modifier for guns and rockets only and only if not firing on helicopter (helicopters cannot be suppressed)
 	int targetTypeModifier = 0;
-	UnitType targetUnitType = counterDataList[tgt]->getUnitInfo()->getUnitType();
-	bool nonHelicopterTarget = targetUnitType != ARH && targetUnitType != UHH && targetUnitType != UHM && targetUnitType != LHX;
+	bool nonHelicopterTarget = !counterDataList[tgt]->getUnitInfo()->isHelicopter();
 	if (nonHelicopterTarget)
 	{
 		switch (m_activeUnitWeapon)
@@ -786,7 +779,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 	int tgtRow = counterDataList[tgt]->getHexRow();
 
 	// make sure there is a line of sight for helicopters - it might need to do a popup first
-	if (isHelicopterFiring && !isNapOfEarth)
+	if (isHelicopterFiring && isNapOfEarth)
 	{
 		int activeUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
 		int activeUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
@@ -857,14 +850,15 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 	// cannot fire SAMs at nap-of-earth helicopters, only low level
 	if ( wpnType == SAM )
 	{
-		UnitType tgtunitType = counterDataList[tgt]->getUnitInfo()->getUnitType();
-		if ( tgtunitType == ARH || tgtunitType == UHH || tgtunitType == UHM || tgtunitType == LHX )
+		if ( counterDataList[tgt]->getUnitInfo()->isHelicopter() )
+		{
 			if ( counterDataList[tgt]->getHeloOffset() == 0 )
 			{
 				CString msgstr = (CString)"Cannot fire SAM at a nap-of-earth helicopter!";
 				MessageBox((LPCTSTR)msgstr);
 				return;
 			}
+		}
 	}
 
 	// figure out if there enough OPs and enough ammo to fire the selected weapon
@@ -1042,14 +1036,16 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		{
 			// suppress this unit
 			counterDataList[t]->setIsSuppressed(TRUE);
+
 			// infantry will go into defilade if suppressed
-			if (targetUnitType == INF)
+			if ( counterDataList[tgt]->getUnitInfo()->getUnitType() == INF )
 				counterDataList[tgt]->setDefilade(TRUE);
 		}
 		else if (result == IDOK)
 		{
 			// kill this unit
 			counterDataList[t]->kill();
+
 			// kill any mounted units as well
 			int numMountedUnits = counterDataList[t]->getNumberOfMountedUnits();
 			for (int i=0; i<numMountedUnits; i++ )
@@ -1058,9 +1054,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 				if ( !counterDataList[id]->getIsDismounted() )
 					counterDataList[id]->kill();
 			}
-			// if the target was a vehicle, add a wreck marker to the target hex
-			UnitType tgtUnitType = counterDataList[t]->getUnitInfo()->getUnitType();
-			if (tgtUnitType != INF)
+
+			// if the target was a vehicle or helicopter, add a wreck marker to the target hex
+			if ( counterDataList[t]->getUnitInfo()->getUnitType() != INF )
 			{
 				m_wreck = mapData->setWreck(tgtRow, tgtCol);
 			}
@@ -1300,8 +1296,7 @@ void CAirCavLOSDlg::OnBnClickedButtonMakeActive()
 	m_popSmokeWhileMoving = false;
 
 	// disable pop smoke button for Helicopters
-	UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-	if ( unitType == ARH || unitType == UHH || unitType == UHM || unitType == LHX )
+	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() )
 		GetDlgItem(IDC_CHECK_POP_SMOKE)->EnableWindow(FALSE);
 	else
 		GetDlgItem(IDC_CHECK_POP_SMOKE)->EnableWindow(TRUE);
@@ -1653,7 +1648,6 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_activeUnitMounted = counterDataList[m_ActiveUnit]->getIsCarriedBy();
 		m_activeUnitDismounted = counterDataList[m_ActiveUnit]->getIsDismounted();
 		m_activeUnitLowLevel = ( counterDataList[m_ActiveUnit]->getHeloOffset() > 0 ) ? 1 : 0;
-		m_activeUnitLowLevel = (counterDataList[m_ActiveUnit]->getHeloOffset() > 0) ? 1 : 0;
 		m_activeUnitIsSuppressed = counterDataList[m_ActiveUnit]->getIsSuppressed();
 
 		if ( m_activeUnitMounted >= 0 && !m_activeUnitDismounted )
@@ -1724,24 +1718,24 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_activeUnitUnitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitTypeString(unitType);
 
 		// only helicopters have the option for low level
-		if ( unitType != ARH && unitType != UHH && unitType != UHM && unitType != LHX )
-		{
-			GetDlgItem(IDC_CHECK_ACTIVE_LOWLEVEL)->EnableWindow(FALSE);
-			GetDlgItem(IDC_BUTTON_ACTION_LOWLEVEL)->EnableWindow(FALSE);
-			GetDlgItem(IDC_CHECK_ACTIVE_SUPPRESSED)->EnableWindow(TRUE);
-		}
-		else
+		if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() )
 		{
 			GetDlgItem(IDC_CHECK_ACTIVE_LOWLEVEL)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_ACTION_LOWLEVEL)->EnableWindow(TRUE);
 			GetDlgItem(IDC_CHECK_ACTIVE_SUPPRESSED)->EnableWindow(FALSE);
 		}
+		else
+		{
+			GetDlgItem(IDC_CHECK_ACTIVE_LOWLEVEL)->EnableWindow(FALSE);
+			GetDlgItem(IDC_BUTTON_ACTION_LOWLEVEL)->EnableWindow(FALSE);
+			GetDlgItem(IDC_CHECK_ACTIVE_SUPPRESSED)->EnableWindow(TRUE);
+		}
 
 		// only attack/recon helicopters have the option for popups
-		if ( unitType != ARH && unitType != LHX )
-			GetDlgItem(IDC_BUTTON_ACTION_PASS)->EnableWindow(FALSE);
-		else
+		if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isAttackHelicopter() )
 			GetDlgItem(IDC_BUTTON_ACTION_PASS)->EnableWindow(TRUE);
+		else
+			GetDlgItem(IDC_BUTTON_ACTION_PASS)->EnableWindow(FALSE);
 
 		// target type
 		TargetType targetType = counterDataList[m_ActiveUnit]->getUnitInfo()->getTargetType();
@@ -1888,13 +1882,13 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		activeUnitOffset += activeUnitHeloOffset;
 		if ( activeUnitHeloOffset > 0 )
 		{
-			if (unitType == ARH || unitType == LHX)
+			if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isAttackHelicopter() )
 				SetDlgItemText(IDC_BUTTON_ACTION_PASS, STR_POPDOWN);
 			SetDlgItemText(IDC_BUTTON_ACTION_LOWLEVEL, STR_NOE);
 		}
 		else
 		{
-			if (unitType == ARH || unitType == LHX)
+			if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isAttackHelicopter() )
 				SetDlgItemText(IDC_BUTTON_ACTION_PASS, STR_POPUP);
 			SetDlgItemText(IDC_BUTTON_ACTION_LOWLEVEL, STR_LL);
 		}
@@ -1944,10 +1938,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						// for pop-ups, calculate Helo elev as if it is at low level
 						if (range == 0)
 						{
-							UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-
 							// this calculation is only required for an active unit attack helicopter at nap-of-earth observing a target
-							if (activeUnitHeloOffset == 0 && (unitType == ARH || unitType == LHX))
+							if ( activeUnitHeloOffset == 0 && counterDataList[m_ActiveUnit]->getUnitInfo()->isAttackHelicopter() )
 							{
 								//  recalculate calculate line-of-sight assuming a pop-up
 								range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset + 30,
@@ -2141,10 +2133,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						// for pop-ups, calculate Helo elev as if it is at low level
 						if (range == 0)
 						{
-							UnitType unitType = counterDataList[c]->getUnitInfo()->getUnitType();
-
 							// this calculation is only required for attack helicopters at nap-of-earth observing the active unit
-							if (targetUnitHeloOffset <= 0 && (unitType == ARH || unitType == LHX))
+							if (targetUnitHeloOffset <= 0 && counterDataList[c]->getUnitInfo()->isAttackHelicopter() )
 							{
 								//  recalculate calculate line-of-sight assuming a pop-up
 								range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitOffset + 30,
@@ -2561,8 +2551,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionLowlevel()
 		UpdateData(TRUE);
 
 		// only for Helicopters
-		UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-		if ( unitType == ARH || unitType == UHH || unitType == UHM || unitType == LHX )
+		if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() )
 		{
 			if ( counterDataList[m_ActiveUnit]->getHeloOffset() > 0 )
 				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, 0);
@@ -2675,8 +2664,7 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 		int wpnType = wpnData->getType();
 		if ( wpnType == SAM )
 		{
-			UnitType tgtunitType = counterDataList[tgt]->getUnitInfo()->getUnitType();
-			if (tgtunitType == ARH || tgtunitType == UHH || tgtunitType == UHM || tgtunitType == LHX)
+			if ( counterDataList[tgt]->getUnitInfo()->isHelicopter() )
 			{
 				if (counterDataList[tgt]->getHeloOffset() == 0)
 				{
@@ -2689,8 +2677,7 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 
 		// get target type modifier for guns and rockets only and only if not firing on helicopter (helicopters cannot be suppressed)
 		int targetTypeModifier = 0;
-		UnitType targetUnitType = counterDataList[tgt]->getUnitInfo()->getUnitType();
-		bool nonHelicopterTarget = targetUnitType != ARH && targetUnitType != UHH && targetUnitType != UHM && targetUnitType != LHX;
+		bool nonHelicopterTarget = !counterDataList[tgt]->getUnitInfo()->isHelicopter();
 		if (nonHelicopterTarget)
 		{
 			switch (wpnOppFiring)
@@ -2714,15 +2701,10 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 		}
 
 		// is helicopter firing
-		bool isHelicopterFiring = false;
-		UnitType unitType = counterDataList[firingUnit]->getUnitInfo()->getUnitType();
-		if ( unitType == ARH || unitType == UHH || unitType == UHM || unitType == LHX )
-			isHelicopterFiring = true;
+		bool isHelicopterFiring = counterDataList[firingUnit]->getUnitInfo()->isHelicopter();
 
-		// helicopter at low level
-		bool isNapOfEarth = false;
-		if ( counterDataList[firingUnit]->getHeloOffset() == 0 )
-			isNapOfEarth = true;
+		// is helicopter at nap of earth
+		bool isNapOfEarth = (counterDataList[firingUnit]->getHeloOffset() == 0);
 
 		// firing rocket from nap-of-earth helicopter is at half range
 		if ( isHelicopterFiring && isNapOfEarth && wpnType == ROCKET )
@@ -2873,7 +2855,7 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 			counterDataList[tgt]->setIsSuppressed(TRUE);
 
 			// infantry will go into defilade if suppressed
-			if (targetUnitType == INF)
+			if ( counterDataList[tgt]->getUnitInfo()->getUnitType() == INF )
 				counterDataList[tgt]->setDefilade(TRUE);
 		}
 		else if ( result == IDOK )
@@ -3391,8 +3373,7 @@ void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 
 void CAirCavLOSDlg::OnBnClickedCheckPopSmoke()
 {
-	UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-	if ( unitType == ARH || unitType == UHH || unitType == UHM || unitType == LHX )
+	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() )
 		MessageBox( (CString)"Helicopters cannot lay smoke", (CString)"Pop Smoke", MB_OK );
 	else if (!counterDataList[m_ActiveUnit]->getIsDismounted())
 		MessageBox((CString)"A mounted unit cannot pop smoke", (CString)"Pop Smoke", MB_OK);

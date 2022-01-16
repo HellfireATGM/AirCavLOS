@@ -73,6 +73,9 @@ public:
 	CString getCountryTypeString( CountryType countryType );
 	CString getSideTypeString(SideType sideType);
 
+	bool isHelicopter();
+	bool isAttackHelicopter();
+
 	int CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke, 
 							int range, int opp, int sup, char *log, int &ttMod);
 };

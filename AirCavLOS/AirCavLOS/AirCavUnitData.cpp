@@ -103,7 +103,21 @@ CString AirCavUnitData::getSideTypeString(SideType sideType)
 	return((CString)SideTypeString[sideType]);
 }
 
-int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke, 
+bool AirCavUnitData::isHelicopter()
+{
+	if ( m_type == ARH || m_type == UHH || m_type == UHM || m_type == LHX )
+		return true;
+	return false;
+}
+
+bool AirCavUnitData::isAttackHelicopter()
+{
+	if ( m_type == ARH || m_type == LHX )
+		return true;
+	return false;
+}
+
+int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke,
 								 int range, int opp, int sup, char *logString, int &ttMod )
 {
 	char logBuffer[256];

@@ -53,6 +53,8 @@ public:
 	RowCol				m_vehicleSmokeHexList;
 	RowCol				m_artillerySmokeHexList;
 
+	UnitTracking		m_unitTracking;
+
 	bool				m_shutdown;
 
 // Implementation
@@ -172,6 +174,8 @@ public:
 	int findScenarioUnitIndex( int scen, char *unitName );
 	void replaceUnderscores( char *strPtr );
 
+	void doUnitTracking(int previousOPs, int previousRow, int previousColumn);
+
 	afx_msg void OnBnClickedButtonEditTerrain();
 	afx_msg void OnBnClickedButtonFillTerrain();
 	afx_msg void OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult);
@@ -205,4 +209,5 @@ public:
 	afx_msg void OnBnClickedCheckIgnoreWater();
 	afx_msg void OnBnClickedCheckIgnoreAutobahn();
 	afx_msg void OnBnClickedCheckRotateMap();
+	afx_msg void OnBnClickedButtonActionPreviousMove();
 };

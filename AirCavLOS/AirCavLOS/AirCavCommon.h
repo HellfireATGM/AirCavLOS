@@ -282,6 +282,14 @@ typedef struct {
 	UnitDef		unit[MAXCOUNTERS];		// the units in the scenario
 } Scenario;
 
+typedef struct {
+	int		unit;					// the unit that is moving
+	int		OPs;					// number of OPs spent moving
+	int		row;					// start row
+	int		column;					// start column
+	bool	activeUnitChanged;		// set when active unit has changed
+} UnitTracking;
+
 class RowCol {
 public:
 	RowCol() { rowcol.clear(); }

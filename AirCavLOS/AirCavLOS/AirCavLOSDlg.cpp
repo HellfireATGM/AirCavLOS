@@ -154,6 +154,9 @@ CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 	m_lastArtilleryRow = 0;
 	m_lastArtilleryCol = 0;
 
+	m_unitTracking.unit = -1;
+	m_unitTracking.OPs = 0;
+
 	m_shutdown = false;
 }
 
@@ -281,6 +284,7 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_CHECK_IGNORE_WATER, &CAirCavLOSDlg::OnBnClickedCheckIgnoreWater)
 	ON_BN_CLICKED(IDC_CHECK_IGNORE_AUTOBAHN, &CAirCavLOSDlg::OnBnClickedCheckIgnoreAutobahn)
 	ON_BN_CLICKED(IDC_CHECK_ROTATE_MAP, &CAirCavLOSDlg::OnBnClickedCheckRotateMap)
+	ON_BN_CLICKED(IDC_BUTTON_ACTION_PREVIOUS_MOVE, &CAirCavLOSDlg::OnBnClickedButtonActionPreviousMove)
 END_MESSAGE_MAP()
 
 
@@ -1013,14 +1017,19 @@ void CAirCavLOSDlg::moveMountedUnits()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 {
 	if (m_ActiveUnit < 0) return;
-
+	
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
 		CString msgstr = (CString)"Suppressed infantry cannot move!";
 		MessageBox((LPCTSTR)msgstr);
 		return;
 	}
+
+	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
+	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
+	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
 	counterDataList[m_ActiveUnit]->moveNorth(mapData, counterDataList, m_popSmokeWhileMoving);
+	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -1041,7 +1050,12 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 		MessageBox((LPCTSTR)msgstr);
 		return;
 	}
+
+	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
+	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
+	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
 	counterDataList[m_ActiveUnit]->moveNorthWest(mapData, counterDataList, m_popSmokeWhileMoving);
+	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -1062,7 +1076,12 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 		MessageBox((LPCTSTR)msgstr);
 		return;
 	}
+
+	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
+	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
+	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
 	counterDataList[m_ActiveUnit]->moveSouthWest(mapData, counterDataList, m_popSmokeWhileMoving);
+	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -1083,7 +1102,12 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 		MessageBox((LPCTSTR)msgstr);
 		return;
 	}
+
+	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
+	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
+	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
 	counterDataList[m_ActiveUnit]->moveSouth(mapData, counterDataList, m_popSmokeWhileMoving);
+	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -1104,7 +1128,12 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 		MessageBox((LPCTSTR)msgstr);
 		return;
 	}
+
+	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
+	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
+	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
 	counterDataList[m_ActiveUnit]->moveSouthEast(mapData, counterDataList, m_popSmokeWhileMoving);
+	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -1125,7 +1154,12 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNe()
 		MessageBox((LPCTSTR)msgstr);
 		return;
 	}
+
+	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
+	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
+	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
 	counterDataList[m_ActiveUnit]->moveNorthEast(mapData, counterDataList, m_popSmokeWhileMoving);
+	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
@@ -1219,6 +1253,7 @@ void CAirCavLOSDlg::OnBnClickedButtonMakeActive()
 	// reset a couple of things
 	m_activeUnitWeapon = 0;
 	m_popSmokeWhileMoving = false;
+	m_unitTracking.activeUnitChanged = true;
 
 	// disable pop smoke button for Helicopters
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() )
@@ -1599,6 +1634,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			}
 			GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(FALSE);
 			GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(FALSE);
+			GetDlgItem(IDC_BUTTON_ACTION_PREVIOUS_MOVE)->EnableWindow(FALSE);
 		}
 		else
 		{
@@ -1623,6 +1659,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			}
 			GetDlgItem(IDC_BUTTON_LAYSMOKE)->EnableWindow(TRUE);
 			GetDlgItem(IDC_BUTTON_ACTION_DEFILADE)->EnableWindow(TRUE);
+			GetDlgItem(IDC_BUTTON_ACTION_PREVIOUS_MOVE)->EnableWindow(TRUE);
 		}
 		if ( m_activeUnitMounted >= 0 )
 			GetDlgItem(IDC_BUTTON_ACTION_MOUNT)->EnableWindow(TRUE);
@@ -1636,7 +1673,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 
 		// which side - blue or red
 		SideType activeSideType = counterDataList[m_ActiveUnit]->getSideType();
-		m_activeSide = counterDataList[m_ActiveUnit]->getUnitInfo()->getSideTypeString(activeSideType);;
+		m_activeSide = counterDataList[m_ActiveUnit]->getUnitInfo()->getSideTypeString(activeSideType);
 
 		// unit type
 		UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
@@ -3726,4 +3763,82 @@ void CAirCavLOSDlg::OnBnClickedCheckRotateMap()
 		GetDlgItem(IDC_BUTTON_ACTION_MOVE_SW2)->ShowWindow(SW_HIDE);
 	}
 	updateActiveUnit();
+}
+
+
+void CAirCavLOSDlg::doUnitTracking(int previousOPs, int previousRow, int previousColumn)
+{
+	// reset if a different active unit or if the active unit has since changed
+	if (m_unitTracking.unit != m_ActiveUnit || m_unitTracking.activeUnitChanged)
+	{
+		m_unitTracking.unit = m_ActiveUnit;
+		int currentOPs = counterDataList[m_ActiveUnit]->getOPs();
+		m_unitTracking.OPs = previousOPs - currentOPs;
+		m_unitTracking.row = previousRow;
+		m_unitTracking.column = previousColumn;
+		m_unitTracking.activeUnitChanged = false;
+	}
+	else
+	{
+		// otherwise just update the number of OPs spent
+		int currentOPs = counterDataList[m_ActiveUnit]->getOPs();
+		m_unitTracking.OPs += (previousOPs - currentOPs);
+	}
+}
+
+void CAirCavLOSDlg::OnBnClickedButtonActionPreviousMove()
+{
+	if ( m_unitTracking.unit > 0 && m_unitTracking.unit != m_ActiveUnit )
+	{
+		// check units are same side
+		SideType followingSideType = counterDataList[m_unitTracking.unit]->getSideType();
+		if (followingSideType != counterDataList[m_ActiveUnit]->getSideType())
+		{
+			char messageStr[128];
+			CString sideTypeString = counterDataList[m_unitTracking.unit]->getUnitInfo()->getSideTypeString(followingSideType);
+			sprintf_s(messageStr, "Following unit needs to be same side [%ls] as followed unit", sideTypeString.GetString());
+			MessageBox((CString)messageStr, (CString)"Cannot Follow", MB_OK);
+			return;
+		}
+
+		// check units are same type
+		UnitType followingUnitType = counterDataList[m_unitTracking.unit]->getUnitInfo()->getUnitType();
+		if (followingUnitType != counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType())
+		{
+			char messageStr[128];
+			CString unitTypeString = counterDataList[m_unitTracking.unit]->getUnitInfo()->getUnitTypeString(followingUnitType);
+			sprintf_s(messageStr, "Following unit needs to be same type [%ls] as followed unit", unitTypeString.GetString());
+			MessageBox((CString)messageStr, (CString)"Cannot Follow", MB_OK);
+			return;
+		}
+
+		// check units started from same location
+		if (counterDataList[m_ActiveUnit]->getHexRow() != m_unitTracking.row ||	counterDataList[m_ActiveUnit]->getHexCol() != m_unitTracking.column )
+		{
+			char messageStr[128];
+			sprintf_s(messageStr, "Following unit needs to start in same location [%02d%02d] as followed unit", m_unitTracking.column, m_unitTracking.row);
+			MessageBox((CString)messageStr, (CString)"Cannot Follow", MB_OK);
+			return;
+		}
+
+		// decrement the number of OPs that the tracked unit used
+		if ( counterDataList[m_ActiveUnit]->decrOPs(m_unitTracking.OPs) != -1 )
+		{
+			// if successful, place the unit in the same position as the tracked unit
+			int hexColumn = counterDataList[m_unitTracking.unit]->getHexCol();
+			int hexRow = counterDataList[m_unitTracking.unit]->getHexRow();
+			counterDataList[m_ActiveUnit]->moveTo(mapData, counterDataList, hexColumn, hexRow, false);
+
+			// set same elevation offset
+			int unitOffset = counterDataList[m_unitTracking.unit]->getElevOffset();
+			counterDataList[m_ActiveUnit]->setElevOffset(unitOffset);
+
+			// if the original unit has moved, so has this one
+			if ( counterDataList[m_unitTracking.unit]->getMoved()) 
+				counterDataList[m_ActiveUnit]->move();
+
+			moveMountedUnits();
+			updateActiveUnit();
+		}
+	}
 }

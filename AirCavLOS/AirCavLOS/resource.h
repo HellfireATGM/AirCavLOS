@@ -180,8 +180,9 @@
 #define IDC_BUTTON_ACTION_MOVE_S2       1094
 #define IDC_BUTTON_ACTION_MOVE_SW2      1095
 #define IDC_BUTTON_ACTION_MOVE_NW2      1096
-#define IDC_CHECK_POP_SMOKE2            1097
 #define IDC_CHECK_ROTATE_MAP            1097
+#define IDC_BUTTON_ACTION_FIRE2         1098
+#define IDC_BUTTON_ACTION_PREVIOUS_MOVE 1098
 
 // Next default values for new objects
 // 

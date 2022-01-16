@@ -2103,7 +2103,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						int ttModm1 = 0, ttModm2 = 0, ttModm3 = 0, ttMods1 = 0, ttMods2 = 0;
 						int oppfire = counterDataList[c]->getIsOppFiring();
 						int supfire = counterDataList[c]->getIsSuppressed() ? counterDataList[c]->getUnitInfo()->getSM() : 0;
-						if (range && counterDataList[m_ActiveUnit]->isVisible(activeTerrain, range, activelowLevel, m_Weather, activeSmoke))
+						if (range && counterDataList[m_ActiveUnit]->isVisible(activeTerrain, range, activelowLevel, m_Weather, targetSmoke))
 						{
 							//  calculate final kill number
 							int mFKN1 = counterDataList[c]->getUnitInfo()->CalculateFKN(

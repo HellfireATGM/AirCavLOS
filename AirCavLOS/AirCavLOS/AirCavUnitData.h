@@ -62,6 +62,7 @@ public:
 	void setAmmoMainWeapon3(int n) { m_nAmmoMainWpn3 = n; }
 	void setAmmoSecondaryWeapon1(int n) { m_nAmmoSecondaryWpn1 = n; }
 	void setAmmoSecondaryWeapon2(int n) { m_nAmmoSecondaryWpn2 = n; }
+
 	int getAmmoMainWeapon1() { return m_nAmmoMainWpn1; }
 	int getAmmoMainWeapon2() { return m_nAmmoMainWpn2; }
 	int getAmmoMainWeapon3() { return m_nAmmoMainWpn3; }
@@ -75,6 +76,9 @@ public:
 
 	bool isHelicopter();
 	bool isAttackHelicopter();
+	bool isTrackedVehicle();
+	bool isWheeledVehicle();
+	bool isInfantry();
 
 	int CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke, 
 							int range, int opp, int sup, char *log, int &ttMod);

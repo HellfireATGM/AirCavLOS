@@ -21,7 +21,7 @@
 #include <map>
 
 #pragma warning(disable:4996)
-#pragma warning(disable: 4244)
+#pragma warning(disable:4244)
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -38,80 +38,6 @@ static std::string file_dir = "C:\\AirCavLOS\\";
 static std::string weapons_file = "weapons.txt";
 static std::string units_file = "units.txt";
 
-// --------------------------------------------------------------------------------------
-#if 0
-Weapon  Weapons [MAXWEAP] = 
-{
-// name                 t    M   M   0  5 10 15 20 25 30    A   B  C  D  E  F   W  T  O  M  A
-//                      y    i   a   -  -  -  -  -  -  +                        d  n  p  v  e
-//                      p    n   x   4  9 14 19 24 29                           s     F  T  T
-
-"None",                 GUN, 0,  0,  0, 0, 0, 0, 0, 0, 0,   0,  0, 0, 0, 0, 0,  0, 0, 0, 0, 0,		// None
-"Soviet 125mm Gun",     GUN, 0, 30, 10,10,10, 9, 8, 6, 4,  -2, -1, 0, 0, 0, 0,  0,-1,-2,-3,-3,		// Sov125mm
-"Soviet 12.7mm MG",     GUN, 0, 13, 10, 8, 6, 0, 0, 0, 0, -10,-10,-8,-7,-2,-1, -1,-2,-2,-1,-1,		// Sov12mm
-"Soviet 73mm Gun",      GUN, 0, 13, 10, 8, 6, 0, 0, 0, 0,  -6, -4,-2,-1, 0, 0, -2,-2,-2,-3,-7,		// Sov73mm
-"Soviet Sagger ATGM",  ATGM, 5, 30,  0, 9, 9, 9, 9, 8, 8,  -3, -2, 0, 0, 0, 0, -4,-2,-2,-2,-5,		// SaggerATGM
-"Soviet RPG16 LAW",    ATGM, 0,  8, 10, 8, 0, 0, 0, 0, 0,  -6, -5,-3,-2, 0, 0, -1,-1,-1,-1,-3,		// SovRPG16
-"Soviet 7.62mm MG",     GUN, 0,  8, 10, 7, 0, 0, 0, 0, 0, -10,-10,-9,-8,-2,-2, -2,-3,-2,-2,-2,		// Sov762mm
-"Soviet 14.5mm MG",     GUN, 0, 13, 10, 8, 6, 0, 0, 0, 0, -10, -9,-5,-4,-2, 0, -1,-2,-1,-1,-1,		// Sov145mm
-"Soviet 4x23mm Cannon", GUN, 0, 25, 10,10, 8, 7, 7, 6, 0,  -8, -6,-4,-3,-1, 0, -2,-2,-1,-2, 0,		// Sov23mm
-"U.S. 120mm Gun",       GUN, 0, 32, 10,10,10,10, 9, 8, 6,  -2, -1, 0, 0, 0, 0, -1,-2,-1,-1,-3,		// US120mm
-"U.S. 12.7mm MG",       GUN, 0, 13, 10, 8, 6, 0, 0, 0, 0, -10,-10,-8,-7,-2,-1, -1,-2,-2,-1,-1,		// US12mm
-"U.S. 20mm Cannon",     GUN, 0, 20, 10,10,10, 8, 6, 0, 0,  -6, -5,-3,-2, 0, 0, -1,-2,-1, 0,-1,		// US20mm
-"U.S. TOW ATGM",       ATGM, 1, 37, 8,10,10,10, 10, 9, 8,  -3, -1, 0, 0, 0, 0, -3,-2,-1,-1,-4,		// USTOW
-"U.S. RGL",             GUN, 0,  3, 9, 0,  0, 0, 0, 0, 0, -10, -9,-7,-5,-2,-2, -2,-2,-2,-2,-5,		// USRGL
-"U.S. 7.62mm MG",       GUN, 0,  8, 10, 7, 0, 0, 0, 0, 0, -10,-10,-9,-8,-2,-2, -2,-3,-2,-2,-2,		// US762mm
-"Soviet 115mm Gun",     GUN, 0, 30, 10,10, 8, 5, 3, 2, 1,  -3, -1, 0, 0, 0, 0, -1,-1,-2,-4,-4,		// Sov115mm
-"Minigun MG",           GUN, 0, 10, 10, 9, 7, 0, 0, 0, 0,  -9, -9,-6,-4,-1, 0, -1,-3,-1,-1,-2,		// Minigun
-"Stinger AAM",         ATGM, 1, 39, 10,10,10,10, 9, 8, 8,   0,  0, 0,-3,-2, 0,  0, 0,-1, 0, 0,		// Stinger
-"Soviet 30mm GL",       GUN, 0, 15, 10, 9, 7, 5, 0, 0, 0,  -9, -7,-3,-2,-1, 0, -1,-3,-2,-1,-3,		// Sov30mm
-"U.S. 30mm Cannon",     GUN, 0, 20, 10,10,10, 9, 7, 0, 0,  -6, -5,-3,-1,-1, 0, -1,-2,-1, 0,-1,		// US30mm
-"Hellfire ATGM",       ATGM, 1, 50,  9,10,10,10,10,10, 9,  -2, -1, 0, 0, 0, 0, -2,-2,-1, 0,-4,		// Hellfire
-"ECAS Rockets",      ROCKET, 4, 40,  0, 9,10,10,10, 9, 9,  -4, -3,-2,-1, 0, 0, -1,-2,-2, 0, 0,		// ECAS
-"U.S. M-16 AR",         GUN, 0,  3,  9, 0, 0, 0, 0, 0, 0, -10,-10,-9,-6,-2,-2, -3,-4,-1,-2, 0,		// USM16AR
-"U.S. M72 LAW",        ATGM, 0,  3,  9, 0, 0, 0, 0, 0, 0,  -9, -7,-5,-4,-2,-1, -2,-2,-1,-2,-3,		// M72LAW
-"Soviet AKS AR",        GUN, 0,  3,  9, 0, 0, 0, 0, 0, 0, -10,-10,-9,-6,-2,-2, -3,-4,-1,-2, 0,		// SovAKSAR
-"Soviet SA-7 SAM",      SAM, 2, 35,  8,10,10, 9, 8, 7, 7,   0,  0, 0,-3,-2, 0,  0, 0,-2, 0, 0,		// SovSA7SAM
-"Soviet SA-14 SAM",     SAM, 3, 60,  4, 8,10,10,10, 9, 9,   0,  0, 0,-1, 0, 0,  0, 0,-1, 0, 0,		// SovSA14SAM
-"Soviet RPG18 LAW",    ATGM, 0,  3,  9, 0, 0, 0, 0, 0, 0,  -9, -7,-5,-4,-2,-1, -2,-2,-1,-2,-3,		// SovRPG18
-"U.S. Dragon ATGM",    ATGM, 0,  3,  9, 0, 0, 0, 0, 0, 0,  -9, -7,-5,-4,-2,-1, -2,-2,-1,-2,-3,		// Dragon
-"Soviet SA-9 SAM",      SAM, 1, 70,  8,10,10,10,10, 9, 8,   0,  0, 0,-1, 0, 0,  0, 0,-1, 0, 0,		// SovSA9SAM
-"Soviet SA-13 SAM",     SAM, 1, 80,  8,10,10,10,10,10, 9,   0,  0, 0, 0, 0, 0,  0, 0, 0, 0, 0,		// SovSA13SAM
-"U.S. 6x23mm Cannon",   GUN, 0, 16, 10, 9, 8, 7, 0, 0, 0,  -8, -6,-3,-1, 0, 0, -1,-1,-2,-2, 0		// US6x23mmCan
-};
-#endif
-
-#if 0
-Type    Types[MAXTYPS] =
-{
-//     name               main 1       main 2      main 3    secn 1      secn 2    type   tt   evm  sm  dm rkt atgm
-
-	{ "T-72 MBT",         Sov125mm,    None,       None,     Sov12mm,    None,     TANK,  TT_A, -2, -2, -3, 0,  0 },	// T_72
-    { "BMP-1 APC",        Sov73mm,     SaggerATGM, None,     Sov762mm,   None,     TLAV,  TT_D, -2, -3, -3, 0,  8 },	// BMP1
-	{ "Soviet Inf Squad", SovAKSAR,    SovRPG16,   Sov762mm, SovSA7SAM,  SovRPG18, INF,   TT_E,  0, -5, -5, 0,  8 },	// SINF
-	{ "BRDM Recon",       Sov145mm,    None,       None,     Sov762mm,   None,     WV,    TT_E, -3, -2, -3, 0,  0 },	// BRDM
-	{ "ZSU-23 SPAAG",     Sov23mm,     None,       None,     Sov762mm,   None,     TLAV,  TT_D, -2,  0, -2, 0,  0 },	// ZSU23
-	{ "M1A1 MBT",         US120mm,     None,       None,     US12mm,     None,     TANK,  TT_A, -3, -1, -4, 0,  0 },	// M1A1
-	{ "AH-1S Cobra",      USTOW,       ECAS,       None,     US20mm,     None,     ARH,   TT_E, -3,  0,  0, 4,  4 },	// AH1S
-	{ "UH-60 Blackhawk",  US762mm,     None,       None,     None,       None,     UHM,   TT_E, -3,  0,  0, 0,  0 },	// UH60
-	{ "U.S. Inf Squad",   USM16AR,     USRGL,      US762mm,  M72LAW,     None,     INF,   TT_E,  0, -5, -5, 0,  8 },	// UINF
-	{ "OH-58 Kiowa",      US762mm,     None,       None,     None,       None,     ARH,   TT_E, -4,  0,  0, 0,  0 },	// OH58
-	{ "T-62 MBT",         Sov115mm,    None,       None,     Sov12mm,    None,     TANK,  TT_B, -1, -3, -3, 0,  0 },	// T_62
-	{ "M2 Bradley APC",   US20mm,      None,       None,     USTOW,      None,     TLAV,  TT_C, -3, -2, -4, 0,  8 },	// M2CV
-	{ "M3 Bradley APC",   US20mm,      None,       None,     USTOW,      None,     TLAV,  TT_C, -3, -2, -4, 0,  8 },	// M3CV
-	{ "AHIP Scout",       Minigun,     None,       None,     Stinger,    None,     ARH,   TT_E, -4,  0,  0, 0,  2 },	// AHIP
-	{ "Mi-6 Hook",        None,        None,       None,     Sov12mm,    None,     UHH,   TT_E, -1,  0,  0, 0,  0 },	// MI_6
-	{ "Mi-8 Hip",         SaggerATGM,  None,       None,     Sov30mm,    None,     UHM,   TT_E, -1,  0,  0, 0,  4 },	// MI_8
-	{ "Mi-24 Hind",       SaggerATGM,  None,       None,     Sov30mm,    None,     ARH,   TT_D, -2,  0,  0, 4,  4 },	// MI_24
-    { "BMD APC",          Sov73mm,     None,       None,     SaggerATGM, None,     TLAV,  TT_D, -3, -3, -3, 0,  8 },	// BMD
-	{ "AH-64 Apache",     Hellfire,    ECAS,       None,     US30mm,     None,     ARH,   TT_D, -3,  0,  0, 4,  4 },	// AH64
-	{ "U.S. Inf Team",    Dragon,      Stinger,    None,     USM16AR,    None,     INF,   TT_F,  0, -5, -6, 0,  0 },	// USTM
-	{ "Soviet Inf Team",  SaggerATGM,  SovSA14SAM, None,     SovAKSAR,   None,     INF,   TT_F,  0, -6, -5, 0,  8 },	// SVTM
-	{ "BRDM SPSAM",       SovSA9SAM,   None,       None,     Sov762mm,   None,     WV,    TT_E, -2, -1, -3, 0,  8 },	// SPSAM
-	{ "BRDM ATGM Carrier",SaggerATGM,  None,       None,     Sov762mm,   None,     WV,    TT_E, -3, -1, -3, 0,  8 },	// SPATGM
-	{ "Vulcan SPAAG",     US6x23mmCan, None,       None,     US762mm,    None,     TLAV,  TT_D, -3, -3, -4, 0,  0 }		// VULCAN
-};
-#endif
 
 Artillery ArtilleryTypes[MAXINDIRECT] = 
 {
@@ -468,8 +394,8 @@ BOOL CAirCavLOSDlg::OnInitDialog()
 	{
 		if (counterDataList[c]->getIsAlive() == false)
 		{
-			UnitType unitType = counterDataList[c]->getUnitInfo()->getUnitType();
-			if (unitType != INF)
+			// no wrecks for infantry, just dead bodies which don't block traffic
+			if ( !counterDataList[c]->getUnitInfo()->isInfantry() )
 			{
 				int hexColumn = counterDataList[c]->getHexCol();
 				int hexRow = counterDataList[c]->getHexRow();
@@ -667,14 +593,14 @@ void CAirCavLOSDlg::OnBnClickedButtonActionPopUp()
 		// only for Attack Helicopters
 		if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isAttackHelicopter() )
 		{
-			if ( counterDataList[m_ActiveUnit]->getHeloOffset() > 0 )
+			if ( counterDataList[m_ActiveUnit]->getHeloOffset() > NAP_OF_EARTH_METERS)
 			{
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, 0, true);
+				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, NAP_OF_EARTH_METERS, true);
 				counterDataList[m_ActiveUnit]->setIsPopUp(false);
 			}
 			else
 			{
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, 30, true);
+				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, LOW_LEVEL_METERS, true);
 				counterDataList[m_ActiveUnit]->setIsPopUp(true);
 			}
 			updateActiveUnit();
@@ -747,7 +673,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 	bool isHelicopterFiring = counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter();
 
 	// is helicopter at nap of earth
-	bool isNapOfEarth = (counterDataList[m_ActiveUnit]->getHeloOffset() == 0);
+	bool isNapOfEarth = (counterDataList[m_ActiveUnit]->getHeloOffset() == NAP_OF_EARTH_METERS);
 
 	// get target type modifier for guns and rockets only and only if not firing on helicopter (helicopters cannot be suppressed)
 	int targetTypeModifier = 0;
@@ -852,7 +778,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 	{
 		if ( counterDataList[tgt]->getUnitInfo()->isHelicopter() )
 		{
-			if ( counterDataList[tgt]->getHeloOffset() == 0 )
+			if ( counterDataList[tgt]->getHeloOffset() == NAP_OF_EARTH_METERS)
 			{
 				CString msgstr = (CString)"Cannot fire SAM at a nap-of-earth helicopter!";
 				MessageBox((LPCTSTR)msgstr);
@@ -910,8 +836,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		int t = tgtUnitsList[u];
 
 		// cannot fire Missiles on Infantry
-		UnitType tgtUnitClass = counterDataList[t]->getUnitInfo()->getUnitType();
-		if ( tgtUnitClass == INF && wpnType == ATGM )
+		if ( counterDataList[t]->getUnitInfo()->isInfantry() && wpnType == ATGM )
 		{
 			CString msgstr = (CString)"Cannot fire missiles on infantry!";
 			MessageBox((LPCTSTR)msgstr);
@@ -1038,7 +963,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 			counterDataList[t]->setIsSuppressed(TRUE);
 
 			// infantry will go into defilade if suppressed
-			if ( counterDataList[tgt]->getUnitInfo()->getUnitType() == INF )
+			if ( counterDataList[tgt]->getUnitInfo()->isInfantry() )
 				counterDataList[tgt]->setDefilade(TRUE);
 		}
 		else if (result == IDOK)
@@ -1088,8 +1013,8 @@ void CAirCavLOSDlg::moveMountedUnits()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 {
 	if (m_ActiveUnit < 0) return;
-	UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-	if (unitType == INF && counterDataList[m_ActiveUnit]->getIsSuppressed())
+
+	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
 		CString msgstr = (CString)"Suppressed infantry cannot move!";
 		MessageBox((LPCTSTR)msgstr);
@@ -1109,8 +1034,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 {
 	if (m_ActiveUnit < 0) return;
-	UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-	if (unitType == INF && counterDataList[m_ActiveUnit]->getIsSuppressed())
+
+	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
 		CString msgstr = (CString)"Suppressed infantry cannot move!";
 		MessageBox((LPCTSTR)msgstr);
@@ -1130,8 +1055,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 {
 	if (m_ActiveUnit < 0) return;
-	UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-	if (unitType == INF && counterDataList[m_ActiveUnit]->getIsSuppressed())
+
+	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
 		CString msgstr = (CString)"Suppressed infantry cannot move!";
 		MessageBox((LPCTSTR)msgstr);
@@ -1151,8 +1076,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 {
 	if (m_ActiveUnit < 0) return;
-	UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-	if (unitType == INF && counterDataList[m_ActiveUnit]->getIsSuppressed())
+
+	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
 		CString msgstr = (CString)"Suppressed infantry cannot move!";
 		MessageBox((LPCTSTR)msgstr);
@@ -1172,8 +1097,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 {
 	if (m_ActiveUnit < 0) return;
-	UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-	if (unitType == INF && counterDataList[m_ActiveUnit]->getIsSuppressed())
+
+	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
 		CString msgstr = (CString)"Suppressed infantry cannot move!";
 		MessageBox((LPCTSTR)msgstr);
@@ -1193,8 +1118,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveNe()
 {
 	if (m_ActiveUnit < 0) return;
-	UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-	if (unitType == INF && counterDataList[m_ActiveUnit]->getIsSuppressed())
+
+	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
 		CString msgstr = (CString)"Suppressed infantry cannot move!";
 		MessageBox((LPCTSTR)msgstr);
@@ -1647,7 +1572,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_activeUnitInDefilade = counterDataList[m_ActiveUnit]->getDefilade();
 		m_activeUnitMounted = counterDataList[m_ActiveUnit]->getIsCarriedBy();
 		m_activeUnitDismounted = counterDataList[m_ActiveUnit]->getIsDismounted();
-		m_activeUnitLowLevel = ( counterDataList[m_ActiveUnit]->getHeloOffset() > 0 ) ? 1 : 0;
+		m_activeUnitLowLevel = ( counterDataList[m_ActiveUnit]->getHeloOffset() > NAP_OF_EARTH_METERS) ? 1 : 0;
 		m_activeUnitIsSuppressed = counterDataList[m_ActiveUnit]->getIsSuppressed();
 
 		if ( m_activeUnitMounted >= 0 && !m_activeUnitDismounted )
@@ -1942,7 +1867,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							if ( activeUnitHeloOffset == 0 && counterDataList[m_ActiveUnit]->getUnitInfo()->isAttackHelicopter() )
 							{
 								//  recalculate calculate line-of-sight assuming a pop-up
-								range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset + 30,
+								range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset + LOW_LEVEL_METERS,
 									targetHexRow, targetHexColumn, targetUnitOffset, buffer);
 
 								if (range > 0)
@@ -2137,7 +2062,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							if (targetUnitHeloOffset <= 0 && counterDataList[c]->getUnitInfo()->isAttackHelicopter() )
 							{
 								//  recalculate calculate line-of-sight assuming a pop-up
-								range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitOffset + 30,
+								range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitOffset + LOW_LEVEL_METERS,
 									activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, buffer);
 
 								if (range > 0)
@@ -2462,16 +2387,35 @@ void CAirCavLOSDlg::OnBnClickedButtonActiveSuppressed()
 		UpdateData(TRUE);
 		if (counterDataList[m_ActiveUnit]->getIsSuppressed())
 		{
-			UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
-			if (unitType == TANK || unitType == TLAV)
+			bool successful = false;
+			if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isTrackedVehicle() )
 			{
 				if (counterDataList[m_ActiveUnit]->decrOPs(2) != -1)
+				{
 					counterDataList[m_ActiveUnit]->setIsSuppressed(0);
+					successful = true;
+				}
 			}
-			else if (unitType == WV || unitType == INF)
+			else if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isWheeledVehicle() )
 			{
 				if (counterDataList[m_ActiveUnit]->decrOPs(3) != -1)
+				{
 					counterDataList[m_ActiveUnit]->setIsSuppressed(0);
+					successful = true;
+				}
+			}
+			else if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() )
+			{
+				if (counterDataList[m_ActiveUnit]->decrOPs(3) != -1)
+				{
+					counterDataList[m_ActiveUnit]->setIsSuppressed(0);
+					successful = true;
+				}
+			}
+			if ( !successful )
+			{
+				CString msgstr = (CString)"Not enough OPs to Remove Suppression";
+				MessageBox((LPCTSTR)msgstr);
 			}
 		}
 		else
@@ -2554,9 +2498,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionLowlevel()
 		if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() )
 		{
 			if ( counterDataList[m_ActiveUnit]->getHeloOffset() > 0 )
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, 0);
+				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, NAP_OF_EARTH_METERS);
 			else
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, 30);
+				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, LOW_LEVEL_METERS);
 			updateActiveUnit();
 		}
 	}
@@ -2666,7 +2610,7 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 		{
 			if ( counterDataList[tgt]->getUnitInfo()->isHelicopter() )
 			{
-				if (counterDataList[tgt]->getHeloOffset() == 0)
+				if (counterDataList[tgt]->getHeloOffset() == NAP_OF_EARTH_METERS)
 				{
 					CString msgstr = (CString)"SAMs cannot be fired at nap-of-earth helicopters";
 					MessageBox((LPCTSTR)msgstr);
@@ -2704,7 +2648,7 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 		bool isHelicopterFiring = counterDataList[firingUnit]->getUnitInfo()->isHelicopter();
 
 		// is helicopter at nap of earth
-		bool isNapOfEarth = (counterDataList[firingUnit]->getHeloOffset() == 0);
+		bool isNapOfEarth = (counterDataList[firingUnit]->getHeloOffset() == NAP_OF_EARTH_METERS);
 
 		// firing rocket from nap-of-earth helicopter is at half range
 		if ( isHelicopterFiring && isNapOfEarth && wpnType == ROCKET )
@@ -2855,7 +2799,7 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 			counterDataList[tgt]->setIsSuppressed(TRUE);
 
 			// infantry will go into defilade if suppressed
-			if ( counterDataList[tgt]->getUnitInfo()->getUnitType() == INF )
+			if ( counterDataList[tgt]->getUnitInfo()->isInfantry() )
 				counterDataList[tgt]->setDefilade(TRUE);
 		}
 		else if ( result == IDOK )
@@ -3172,8 +3116,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 					// terrainModifier == 10 means +1 on infantry, -1 vs all others
 					if ( terrainModifier == 10 )
 					{
-						UnitType unitType = unitInfo->getUnitType();
-						if ( unitType == INF )
+						if ( unitInfo->isInfantry() )
 							terrainModifier = 1;
 						else
 							terrainModifier = -1;
@@ -3233,8 +3176,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 						counterDataList[c]->setIsSuppressed(TRUE);
 
 						// infantry will go into defilade if suppressed
-						UnitType targetUnitType = counterDataList[c]->getUnitInfo()->getUnitType();
-						if (targetUnitType == INF)
+						if ( counterDataList[c]->getUnitInfo()->isInfantry() )
 							counterDataList[c]->setDefilade(TRUE);
 
 						// set suppressed any mounted units as well, but don't set them to defilade
@@ -3269,8 +3211,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 							counterDataList[c]->setIsSuppressed(TRUE);
 
 							// infantry will go into defilade if suppressed
-							UnitType targetUnitType = counterDataList[c]->getUnitInfo()->getUnitType();
-							if (targetUnitType == INF)
+							if ( counterDataList[c]->getUnitInfo()->isInfantry() )
 								counterDataList[c]->setDefilade(TRUE);
 
 							// set suppressed any mounted units as well, but don't set them to defilade
@@ -3312,7 +3253,7 @@ void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 		char smokeStr[128];
 		char titleStr[128];
 		int chance = (rand() % 100);
-		if ( chance < 40 )
+		if ( chance < VEHICLE_SMOKE_DISPERSAL )
 		{
 			hex_loc hex(smokeRow, smokeCol);
 			removedVehicleSmokeHexes.push_back(hex);
@@ -3346,7 +3287,7 @@ void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 		char smokeStr[128];
 		char titleStr[128];
 		int chance = (rand() % 100);
-		if ( chance < 30)
+		if ( chance < ARTILLERY_SMOKE_DISPERSAL )
 		{
 			hex_loc hex(smokeRow, smokeCol);
 			removedArtillerySmokeHexes.push_back(hex);

@@ -117,6 +117,27 @@ bool AirCavUnitData::isAttackHelicopter()
 	return false;
 }
 
+bool AirCavUnitData::isTrackedVehicle()
+{
+	if ( m_type == TANK || m_type == TLAV )
+		return true;
+	return false;
+}
+
+bool AirCavUnitData::isWheeledVehicle()
+{
+	if ( m_type == WV )
+		return true;
+	return false;
+}
+
+bool AirCavUnitData::isInfantry()
+{
+	if ( m_type == INF )
+		return true;
+	return false;
+}
+
 int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke,
 								 int range, int opp, int sup, char *logString, int &ttMod )
 {

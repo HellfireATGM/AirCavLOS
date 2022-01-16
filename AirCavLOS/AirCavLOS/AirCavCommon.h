@@ -160,6 +160,11 @@ enum RoadType
 #define WEATHER_RAIN		4
 #define WEATHER_SNOW		5
 
+#define NAP_OF_EARTH_METERS 0
+#define LOW_LEVEL_METERS 30
+#define ARTILLERY_SMOKE_DISPERSAL 30
+#define VEHICLE_SMOKE_DISPERSAL 40
+
 #define EVEN(a) ((a) % 2 ? 0 : 1)
 
 /*  unit definitions  */

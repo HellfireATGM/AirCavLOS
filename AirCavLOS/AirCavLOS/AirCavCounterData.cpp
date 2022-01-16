@@ -221,7 +221,7 @@ void AirCavCounterData::resetActive()
 	m_moved = FALSE;
 	m_OPs = MAX_OPS;
 	m_OPsSpentMoving = 0;
-	m_inDefilade = FALSE;
+	//m_inDefilade = FALSE;
 	m_evasiveManeuver = FALSE;
 	m_isOppFiring = FALSE;
 	m_isPopUp = FALSE;

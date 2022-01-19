@@ -181,8 +181,9 @@
 #define IDC_BUTTON_ACTION_MOVE_SW2      1095
 #define IDC_BUTTON_ACTION_MOVE_NW2      1096
 #define IDC_CHECK_ROTATE_MAP            1097
-#define IDC_BUTTON_ACTION_FIRE2         1098
 #define IDC_BUTTON_ACTION_PREVIOUS_MOVE 1098
+#define IDC_COMBO_TIME_OF_DAY           1099
+#define IDC_COMBO_OPTICS                1100
 
 // Next default values for new objects
 // 

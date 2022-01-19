@@ -201,6 +201,7 @@
     <ClCompile Include="IndirectFire.cpp" />
     <ClCompile Include="KillDialog.cpp" />
     <ClCompile Include="KillSuppressDialog.cpp" />
+    <ClCompile Include="Observation.cpp" />
     <ClCompile Include="OppFireDialog.cpp" />
     <ClCompile Include="ScenarioDlg.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -225,6 +226,7 @@
     <ClInclude Include="IndirectFire.h" />
     <ClInclude Include="KillDialog.h" />
     <ClInclude Include="KillSuppressDialog.h" />
+    <ClInclude Include="Observation.h" />
     <ClInclude Include="OppFireDialog.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="ScenarioDlg.h" />

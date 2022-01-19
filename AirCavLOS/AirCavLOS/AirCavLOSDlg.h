@@ -43,6 +43,9 @@ public:
 	int					m_originalActiveUnit;
 	int					m_ActiveTarget;
 	int					m_Weather;
+	int					m_TimeOfDay;
+	int					m_Optics;
+	//CListBox			m_currentOptics;
 	CListBox			m_AvailableUnitsListBox;
 	CListBox			m_SightedUnitsListBox;
 	CListBox			m_SightingUnitsListBox;
@@ -111,7 +114,11 @@ public:
 	CString m_activeUnitActualElev;
 	CString m_activeCountry;
 	CString m_activeSide;
+	CString m_activeUnitOptics;
+
 	CString m_currentWeather;
+	CString m_currentTimeOfDay;
+	CString m_currentOptics;
 
 	int m_lastArtilleryUnit;
 	int m_lastArtilleryRow;
@@ -210,4 +217,6 @@ public:
 	afx_msg void OnBnClickedCheckIgnoreAutobahn();
 	afx_msg void OnBnClickedCheckRotateMap();
 	afx_msg void OnBnClickedButtonActionPreviousMove();
+	afx_msg void OnCbnSelchangeComboTimeOfDay();
+	afx_msg void OnCbnSelchangeComboOptics();
 };

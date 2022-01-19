@@ -1,6 +1,7 @@
 #include "StdAfx.h"
 #include "AirCavCounterData.h"
 #include "ElevOffsetDlg.h"
+#include "Observation.h"
 
 double	US_OP_Cost[MAXUNITTYPES][MAXACTS] =
 {
@@ -52,14 +53,14 @@ int ClearObservationTable[MAXUNITTYPES][MAXACTS] =
  r   s     r      l     e  p  o      e  b           a  e  t  n  m
                   e     t            n  n           m  v     t  n
 */
-{30, 4, 4, 0, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, /* TANK */
-{30, 4, 4, 0, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, /* TLAV */
-{30, 4, 4, 0, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, /* WV */
-{35, 8, 8,35, 0,  0, 0, 0, 0, 0, 35,10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, /* UHH */
-{30, 5, 5,30, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, /* UHM */
-{30, 5, 5,30, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, /* ARH */
-{30, 5, 5,30, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, /* LHX*/
-{10, 3, 3, 3, 0,  0, 0, 0, 0, 0, 10, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}  /* INF */
+{30, 4, 4, 0, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4}, /* TANK */
+{30, 4, 4, 0, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4}, /* TLAV */
+{30, 4, 4, 0, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4}, /* WV */
+{35, 8, 8,35, 0,  0, 0, 0, 0, 0, 35,10, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5}, /* UHH */
+{30, 5, 5,30, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5}, /* UHM */
+{30, 5, 5,30, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5}, /* ARH */
+{30, 5, 5,30, 0,  0, 0, 0, 0, 0, 30, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 5}, /* LHX*/
+{10, 3, 3, 3, 0,  0, 0, 0, 0, 0, 10, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3}  /* INF */
 };
 
 int RainObservationTable[MAXUNITTYPES][MAXACTS] = 
@@ -183,6 +184,7 @@ AirCavCounterData::AirCavCounterData(CString name, SideType side, CountryType co
 	m_macroMove = 0;
 	m_actionTaken = false;
 	m_isSuppressed = FALSE;
+	m_opticsInUse = OPTICS_OPTICAL_SIGHT;
 }
 
 AirCavCounterData::~AirCavCounterData(void)
@@ -211,6 +213,7 @@ void AirCavCounterData::reset()
 	m_nAmmoMainWpn3 = m_nFullAmmoMainWpn3;
 	m_nAmmoSecondaryWpn1 = m_nFullAmmoSecondaryWpn1;
 	m_nAmmoSecondaryWpn2 = m_nFullAmmoSecondaryWpn2;
+	m_opticsInUse = OPTICS_OPTICAL_SIGHT;
 }
 
 void AirCavCounterData::resetActive()
@@ -814,10 +817,8 @@ void AirCavCounterData::moveSouthEast(AirCavMapData *mapData, AirCavCounterData 
 	}
 }
 
-int AirCavCounterData::isVisible(int terrain, int range, int lowlevel, int weather, int smoke)
+bool AirCavCounterData::isVisible(int terrain, int range, int weather, int timeofday, int smoke)
 {
-	UnitType unitType = getUnitInfo()->getUnitType();
-
 	int maxFired = 40;
 	int maxLowLevelHeavyHelo = 40;
 	int maxLowLevelLightHelo = 30;
@@ -840,6 +841,8 @@ int AirCavCounterData::isVisible(int terrain, int range, int lowlevel, int weath
 		maxLowLevelLightHelo = 4;
 	}
 
+	bool lowlevel = m_heloOffset > 0;
+	UnitType unitType = m_unitInfo->getUnitType();
 	if ( m_fired && range < maxFired )
 		return 1;
 	else if ( isHeavyHelo(unitType) && lowlevel && range < maxLowLevelHeavyHelo )
@@ -848,6 +851,11 @@ int AirCavCounterData::isVisible(int terrain, int range, int lowlevel, int weath
 		return 1;
 	else
 	{
+		if (m_inDefilade && terrain == CLEAR)
+			terrain = DEFCLR;
+		else if (m_inDefilade)
+			terrain = DEFBRK;
+
 		int maxRange = ClearObservationTable[unitType][terrain];
 		if ( weather == WEATHER_RAIN || weather == WEATHER_SNOW || weather == WEATHER_LT_FOG )
 			maxRange = RainObservationTable[unitType][terrain];
@@ -865,6 +873,24 @@ int AirCavCounterData::isVisible(int terrain, int range, int lowlevel, int weath
 		else
 			return 0;
 	}
+}
+
+bool AirCavCounterData::isVisibleAdvanced(int terrain, int range, int weather, int timeofday, SideType side, int optics, int smoke)
+{
+	bool lowlevel = m_heloOffset > 0;
+	UnitType unitType = m_unitInfo->getUnitType();
+
+	ObservationData observationData;
+	int maxRange = observationData.getObservationRange(unitType, side, optics, terrain, lowlevel, m_inDefilade, m_fired, timeofday, weather);
+
+	if (m_moved)
+		maxRange += 2;
+	if (smoke && !lowlevel)
+		maxRange /= 2;
+	if (range <= maxRange)
+		return true;
+	else
+		return false;
 }
 
 void AirCavCounterData::setFinalKillNumbers( int FKNm1, int FKNm2, int FKNm3, int FKNs1, int FKNs2, int ttm1, int ttm2, int ttm3, int tts1, int tts2 )

@@ -27,6 +27,9 @@
 #define new DEBUG_NEW
 #endif
 
+#define BASIC_OBSERVATION 0
+
+
 extern void CalcAdj (int dir, int cur_y, int cur_x, int *y, int *x);
 
 char *TerrainStr[4] =
@@ -101,6 +104,7 @@ CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CAirCavLOSDlg::IDD, pParent)
 	, m_activeUnitName(_T(""))
 	, m_currentWeather(_T("Clear"))
+	, m_currentTimeOfDay(_T("Day"))
 	, m_popSmokeWhileMoving(false)
 {
 	// data initialization
@@ -150,6 +154,7 @@ CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 	m_debugFKNMessages = 0;
 	m_ActiveTarget = -1;
 	m_Weather = 0;
+	m_TimeOfDay = 0;
 	m_lastArtilleryUnit = 0;
 	m_lastArtilleryRow = 0;
 	m_lastArtilleryCol = 0;
@@ -218,6 +223,8 @@ void CAirCavLOSDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_ACTIVE_LOWLEVEL, m_activeUnitLowLevel);
 	DDX_Check(pDX, IDC_CHECK_ACTIVE_SUPPRESSED, m_activeUnitIsSuppressed);
 	DDX_CBString(pDX, IDC_COMBO_WEATHER, m_currentWeather);
+	DDX_CBString(pDX, IDC_COMBO_TIME_OF_DAY, m_currentTimeOfDay);
+	DDX_CBString(pDX, IDC_COMBO_OPTICS, m_currentOptics);
 	DDX_Check(pDX, IDC_CHECK_POP_SMOKE, m_popSmokeWhileMoving);
 }
 
@@ -276,6 +283,7 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_ELEVOFFSET, &CAirCavLOSDlg::OnBnClickedButtonElevoffset)
 	ON_BN_CLICKED(IDC_BUTTON_LIST_ALL, &CAirCavLOSDlg::OnBnClickedButtonListUnits)
 	ON_CBN_SELCHANGE(IDC_COMBO_WEATHER, &CAirCavLOSDlg::OnCbnSelchangeComboWeather)
+	ON_CBN_SELCHANGE(IDC_COMBO_TIME_OF_DAY, &CAirCavLOSDlg::OnCbnSelchangeComboTimeOfDay)
 	ON_BN_CLICKED(IDC_BUTTON_ACTION_INDFIRE, &CAirCavLOSDlg::OnBnClickedButtonActionIndfire)
 	ON_BN_CLICKED(IDC_BUTTON_REMOVE_SMOKE, &CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke)
 	ON_BN_CLICKED(IDC_CHECK_POP_SMOKE, &CAirCavLOSDlg::OnBnClickedCheckPopSmoke)
@@ -285,6 +293,7 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_CHECK_IGNORE_AUTOBAHN, &CAirCavLOSDlg::OnBnClickedCheckIgnoreAutobahn)
 	ON_BN_CLICKED(IDC_CHECK_ROTATE_MAP, &CAirCavLOSDlg::OnBnClickedCheckRotateMap)
 	ON_BN_CLICKED(IDC_BUTTON_ACTION_PREVIOUS_MOVE, &CAirCavLOSDlg::OnBnClickedButtonActionPreviousMove)
+	ON_CBN_SELCHANGE(IDC_COMBO_OPTICS, &CAirCavLOSDlg::OnCbnSelchangeComboOptics)
 END_MESSAGE_MAP()
 
 
@@ -1610,6 +1619,19 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_activeUnitLowLevel = ( counterDataList[m_ActiveUnit]->getHeloOffset() > NAP_OF_EARTH_METERS) ? 1 : 0;
 		m_activeUnitIsSuppressed = counterDataList[m_ActiveUnit]->getIsSuppressed();
 
+		// set current optics
+		m_Optics = counterDataList[m_ActiveUnit]->getOpticsInUse();
+		if (m_Optics == OPTICS_OPTICAL_SIGHT)
+			m_currentOptics.SetString(_T("OS"));
+		else if (m_Optics == OPTICS_THERMAL_IMAGER)
+			m_currentOptics.SetString(_T("TI"));
+		else if (m_Optics == OPTICS_AMBIENT_LIGHT_ENHANCER)
+			m_currentOptics.SetString(_T("ALE"));
+		else if (m_Optics == OPTICS_INFRARED_SEARCHLIGHT)
+			m_currentOptics.SetString(_T("IRSL"));
+		else if (m_Optics == OPTICS_WHITELIGHT_SEARCHLIGHT)
+			m_currentOptics.SetString(_T("WLSL"));
+
 		if ( m_activeUnitMounted >= 0 && !m_activeUnitDismounted )
 		{
 			SetDlgItemText(IDC_BUTTON_ACTION_MOUNT, STR_DISMOUNT);
@@ -1925,15 +1947,17 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						int targetlowLevel = targetUnitHeloOffset > 0;
 						int activelowLevel = activeUnitHeloOffset > 0;
 						int targetFired = counterDataList[c]->getFired();
-						if (targetFired)
+						int targetMoved = counterDataList[c]->getMoved();
+						if (targetFired || targetMoved)
 						{
-							// a unit can only be observed from 5 hexes away if it is in smoke hex and not low level and it has fired
+							// if a unit is in smoke hex and not low level and it has fired, it can be observed only up to 5 hexes away
+							// my errata: also include in this case if the unit has moved
 							if (!targetlowLevel && targetSmoke && range > 5)
 								continue;
 						}
 						else
 						{
-							// if it has not fired, a unit can only be observed from 1 hex away if it is in smoke hex and not low level
+							// a unit can only be observed from 1 hex away if it is in smoke hex and not low level and has not fired
 							if (!targetlowLevel && targetSmoke && range > 1)
 								continue;
 						}
@@ -1943,7 +1967,14 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							activeSmoke = 0;
 						
 						int ttModm1 = 0, ttModm2 = 0, ttModm3 = 0, ttMods1 = 0, ttMods2 = 0;
-						if (range && counterDataList[c]->isVisible(targetTerrain, range, targetlowLevel, m_Weather, activeSmoke))
+#if BASIC_OBSERVATION
+						bool isVisible = counterDataList[c]->isVisible(targetTerrain, range, m_Weather, m_TimeOfDay, activeSmoke);
+#else
+						SideType activeSide = counterDataList[m_ActiveUnit]->getSideType();
+						int activeOptics = counterDataList[m_ActiveUnit]->getOpticsInUse();
+						bool isVisible = counterDataList[c]->isVisibleAdvanced(targetTerrain, range, m_Weather, m_TimeOfDay, activeSide, activeOptics, activeSmoke);
+#endif
+						if (range && isVisible)
 						{
 							//  calculate final kill number
 							int oppfire = counterDataList[m_ActiveUnit]->getIsOppFiring();
@@ -2120,15 +2151,17 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						int targetlowLevel = targetUnitHeloOffset > 0;
 
 						int activeFired = counterDataList[m_ActiveUnit]->getFired();
-						if (activeFired)
+						int activeMoved = counterDataList[m_ActiveUnit]->getMoved();
+						if (activeFired || activeMoved)
 						{
-							// a unit can only be observed from 5 hexes away if it is in smoke hex and not low level and it has fired
+							// if a unit is in smoke hex and not low level and it has fired, it can be observed only up to 5 hexes away
+							// my errata: also include in this case if the unit has moved
 							if (!activelowLevel && activeSmoke && range > 5)
 								continue;
 						}
 						else
 						{
-							// if it has not fired, a unit can only be observed from 1 hex away if it is in smoke hex and not low level
+							// a unit can only be observed from 1 hex away if it is in smoke hex and not low level and has not fired
 							if (!activelowLevel && activeSmoke && range > 1)
 								continue;
 						}
@@ -2138,10 +2171,18 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							targetSmoke = 0;
 
 						int ttModm1 = 0, ttModm2 = 0, ttModm3 = 0, ttMods1 = 0, ttMods2 = 0;
-						int oppfire = counterDataList[c]->getIsOppFiring();
-						int supfire = counterDataList[c]->getIsSuppressed() ? counterDataList[c]->getUnitInfo()->getSM() : 0;
-						if (range && counterDataList[m_ActiveUnit]->isVisible(activeTerrain, range, activelowLevel, m_Weather, targetSmoke))
+#if BASIC_OBSERVATION
+						bool isVisible = counterDataList[m_ActiveUnit]->isVisible(activeTerrain, range, m_Weather, m_TimeOfDay, targetSmoke);
+#else
+						SideType targetSide = counterDataList[c]->getSideType();
+						int targetOptics = counterDataList[c]->getOpticsInUse();
+						bool isVisible = counterDataList[m_ActiveUnit]->isVisibleAdvanced(activeTerrain, range, m_Weather, m_TimeOfDay, targetSide, targetOptics, targetSmoke);
+#endif
+						if (range && isVisible)
 						{
+							int oppfire = counterDataList[c]->getIsOppFiring();
+							int supfire = counterDataList[c]->getIsSuppressed() ? counterDataList[c]->getUnitInfo()->getSM() : 0;
+
 							//  calculate final kill number
 							int mFKN1 = counterDataList[c]->getUnitInfo()->CalculateFKN(
 								MAIN1, counterDataList[m_ActiveUnit], activeTerrain, activeSmoke, range, oppfire, supfire, buffer, ttModm1);
@@ -2991,7 +3032,40 @@ void CAirCavLOSDlg::OnCbnSelchangeComboWeather()
 		m_Weather = WEATHER_SNOW;
 
 	updateActiveUnit();
+}
 
+void CAirCavLOSDlg::OnCbnSelchangeComboTimeOfDay()
+{
+	UpdateData(TRUE);
+
+	if (m_currentTimeOfDay == "Day")
+		m_TimeOfDay = TIME_DAY;
+	else if (m_currentTimeOfDay == "Night")
+		m_TimeOfDay = TIME_NIGHT;
+
+	updateActiveUnit();
+}
+
+void CAirCavLOSDlg::OnCbnSelchangeComboOptics()
+{
+	if (m_ActiveUnit >= 0)
+	{
+		UpdateData(TRUE);
+
+		if (m_currentOptics == "OS")
+			m_Optics = OPTICS_OPTICAL_SIGHT;
+		else if (m_currentOptics == "TI")
+			m_Optics = OPTICS_THERMAL_IMAGER;
+		else if (m_currentOptics == "ALE")
+			m_Optics = OPTICS_AMBIENT_LIGHT_ENHANCER;
+		else if (m_currentOptics == "IRSL")
+			m_Optics = OPTICS_INFRARED_SEARCHLIGHT;
+		else if (m_currentOptics == "WLSL")
+			m_Optics = OPTICS_WHITELIGHT_SEARCHLIGHT;
+
+		counterDataList[m_ActiveUnit]->setOpticsInUse(m_Optics);
+		updateActiveUnit();
+	}
 }
 
 void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()

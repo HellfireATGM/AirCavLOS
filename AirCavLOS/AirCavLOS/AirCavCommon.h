@@ -160,10 +160,36 @@ enum RoadType
 #define WEATHER_RAIN		4
 #define WEATHER_SNOW		5
 
-#define NAP_OF_EARTH_METERS 0
-#define LOW_LEVEL_METERS 30
-#define ARTILLERY_SMOKE_DISPERSAL 30
-#define VEHICLE_SMOKE_DISPERSAL 40
+#define TIME_DAY		0
+#define TIME_NIGHT		1
+
+#define NAP_OF_EARTH_METERS			0
+#define LOW_LEVEL_METERS			30
+#define ARTILLERY_SMOKE_DISPERSAL	30
+#define VEHICLE_SMOKE_DISPERSAL		40
+
+#define OBS_VEHICLE			0
+#define OBS_INFANTRY		1
+#define OBS_LIGHT_HELO		2
+#define OBS_HEAVY_HELO		3
+#define OBS_FIRING			4
+#define OBS_MAX				5
+
+#define TER_CLEAR		0	/* clear */
+#define TER_BROKEN		1	/* broken */
+#define TER_DEFILADE	2	/* defilade */
+#define TER_WOODS		3	/* woods */
+#define TER_TOWN		4	/* town */
+#define TER_LIGHT_LOW	5	/* light or medium helo at low-level */
+#define TER_HEAVY_LOW	6	/* heavy helo at low-level */
+#define TER_MAX			7
+#define TER_MAX_2		TER_MAX * 2	// includes day and night values for observation
+
+#define OPTICS_OPTICAL_SIGHT				0
+#define OPTICS_THERMAL_IMAGER				1
+#define OPTICS_AMBIENT_LIGHT_ENHANCER		2
+#define OPTICS_INFRARED_SEARCHLIGHT			3
+#define OPTICS_WHITELIGHT_SEARCHLIGHT		4
 
 #define EVEN(a) ((a) % 2 ? 0 : 1)
 

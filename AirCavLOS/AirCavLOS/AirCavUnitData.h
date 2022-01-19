@@ -80,6 +80,8 @@ public:
 	bool isWheeledVehicle();
 	bool isInfantry();
 
+	bool isWeaponNotIRGuided(int which);
+
 	int CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke, 
 							int range, int opp, int sup, char *log, int &ttMod);
 };

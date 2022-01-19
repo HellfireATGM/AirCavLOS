@@ -31,6 +31,11 @@ char *SideTypeString[2] =
 	"BLUE", "RED"
 };
 
+char *IRGuidedWeapons[11] =
+{
+	"SA-14", "AT-6M", "SA-13", "Chaparral SAM", "Roland SAM", "Stinger AAM", "Stinger POST", "Hellfire POST", "SA-7", "SA-9", "ADSM"
+};
+
 AirCavUnitData::AirCavUnitData(void)
 {
 }
@@ -138,6 +143,28 @@ bool AirCavUnitData::isInfantry()
 	return false;
 }
 
+bool AirCavUnitData::isWeaponNotIRGuided(int which)
+{
+	AirCavWeaponData *wpn;
+	if (which == SECONDARY1)
+	{
+		wpn = getSecondaryWeapon1();
+	}
+	else if (which == SECONDARY2)
+	{
+		wpn = getSecondaryWeapon2();
+	}
+	CT2CA unitTypeConvertedAnsiString(wpn->getName());
+	std::string wpnName(unitTypeConvertedAnsiString);
+	for (auto w : IRGuidedWeapons)
+	{
+		if (wpnName.find(w) != std::string::npos)
+			return false;
+	}
+
+	return true;
+}
+
 int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke,
 								 int range, int opp, int sup, char *logString, int &ttMod )
 {
@@ -150,6 +177,8 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 	for (int i = 0; i < length; i++)
 		sName[i] = tgtName.GetAt(i);
 
+	bool isSecondaryWeapon = false;
+	bool isNotIRGuided = true;
 	if ( which == MAIN1 )
 	{
 		char wName[32];
@@ -197,6 +226,8 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 		for (int i = 0; i < length; i++)
 			wName[i] = wpnName.GetAt(i);
 		sprintf_s( logBuffer, "Calculating Secondary Weapon 1 [%s]\nTarget: \"%s\"\n Range: %d  Terrain: %s\n", wName, sName, range, TerrStr[terr]);
+		isSecondaryWeapon = true;
+		isNotIRGuided = isWeaponNotIRGuided(which);
 	}
 	else if ( which == SECONDARY2 )
 	{
@@ -209,6 +240,8 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 		for (int i = 0; i < length; i++)
 			wName[i] = wpnName.GetAt(i);
 		sprintf_s( logBuffer, "Calculating Secondary Weapon 2 [%s]\nTarget: \"%s\"\n Range: %d  Terrain: %s\n", wName, sName, range, TerrStr[terr]);
+		isSecondaryWeapon = true;
+		isNotIRGuided = isWeaponNotIRGuided(which);
 	}
 	strcpy( logString, logBuffer );
 
@@ -230,6 +263,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 		return 0;
 	}
 
+	// base kill number
 	rangeTable rt = mainWpn->getRangeTable();
 	int BKN;
 	if ( range >= 30 )
@@ -251,9 +285,18 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 	if ( BKN == 0 )
 		return 0;
 
+	// suppression modifier
 	sprintf(logBuffer, "Suppression Modifier = %d\n", sup);
 	strcat(logString, logBuffer);
 
+	// secondary weapon modifier
+	int secMod = 0;
+	if (!isHelicopter() && isSecondaryWeapon && isNotIRGuided)
+		secMod = -2;
+	sprintf(logBuffer, "Secondary Weapon Modifier = %d\n", secMod);
+	strcat(logString, logBuffer);
+
+	// target type modifier
 	targetTable tt = mainWpn->getTargetTable();
 	int targetType = tgt->getUnitInfo()->getTargetType();
 	switch( targetType )
@@ -285,6 +328,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 	}
 	strcat( logString, logBuffer );
 
+	// terrain modifier
 	int terrainMod = 0;
 	if ( terr == WOODS )
 	{
@@ -304,6 +348,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 		strcat( logString, logBuffer );
 	}
 
+	// smoke modifier
 	int lowLevel = tgt->getHeloOffset() > 0;
 	if ( smoke &&  !lowLevel )
 	{
@@ -312,6 +357,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 		strcat( logString, logBuffer );
 	}
 
+	// moving modifier
 	int movingMod = 0;
 	int targetMoving = tgt->getMoved();
 	if ( targetMoving )
@@ -319,6 +365,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 	sprintf( logBuffer, "Moving Modifier = %d\n", movingMod );
 	strcat( logString, logBuffer );
 
+	// aerial modifier
 	int aerialMod = 0;
 	int unitType = tgt->getUnitInfo()->getUnitType();
 	if ( unitType == UHH || unitType == UHM || unitType == ARH || unitType == LHX )
@@ -326,12 +373,14 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 	sprintf( logBuffer, "Aerial Modifier = %d\n", aerialMod );
 	strcat( logString, logBuffer );
 
+	// opportunity fire modifier
 	int oppFireMod = 0;
 	if ( opp )
 		oppFireMod = oppMod;
 	sprintf( logBuffer, "Opportunity Fire Modifier = %d\n", oppFireMod );
 	strcat( logString, logBuffer );
 
+	// defilade modifier
 	int defiladeMod = 0;
 	int targetInDefilade = tgt->getDefilade();
 	if ( targetInDefilade )
@@ -339,6 +388,7 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 	sprintf( logBuffer, "In Defilade Modifier = %d\n", defiladeMod );
 	strcat( logString, logBuffer );
 
+	// evasive manuever modifier
 	int evasiveMod = 0;
 	int targetEvading = tgt->getEvading();
 	if ( targetEvading )
@@ -346,10 +396,12 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 	sprintf( logBuffer, "Evasive Maneuver Modifier = %d\n", evasiveMod );
 	strcat( logString, logBuffer );
 
-	int FKN = BKN + ttMod + sup + terrainMod + oppFireMod + movingMod + aerialMod + defiladeMod + evasiveMod;
+	// final kill number
+	int FKN = BKN + ttMod + sup + secMod + terrainMod + oppFireMod + movingMod + aerialMod + defiladeMod + evasiveMod;
 	sprintf( logBuffer, "Final Kill Number = %d\n", FKN );
 	strcat( logString, logBuffer );
 
+	// anything less than zero is essentially zero
 	if ( FKN < 0 )
 		return 0;
 

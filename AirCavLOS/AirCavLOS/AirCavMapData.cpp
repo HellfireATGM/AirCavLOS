@@ -324,17 +324,18 @@ int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 }
 
 
-int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, int tgt_x, int tgt_y, int tgt_elev, char *logString )
+int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, int tgt_x, int tgt_y, int tgt_elev, bool &skylined, char *logString )
 {
 	char logBuffer[256];
 	int Fdir, Ldir, Rdir, Rx, Ry, Fx, Fy, Lx, Ly, cur_x, cur_y;
-	int clear_LOS, blk1, blk2, range;
+	int clear_LOS, blk1, blk2, range, targetRange = 0;
 	double LOS_vec_x, LOS_vec_y, angle;
 	double front_x, front_y, left_x, left_y, right_x, right_y;
 	double Ftan, Ltan, Rtan, Fangle, Langle, Rangle, SmallTan;
 	double Flen, Llen, Rlen, LOS_len;
 	double Fvec_x, Fvec_y, Lvec_x, Lvec_y, Rvec_x, Rvec_y;
 	double Fvec, Lvec, Rvec;
+	bool checkingSkylining = false;
 
 	sprintf( logBuffer, "Calculating LOS from %02d%02d [%d] to %02d%02d [%d]\n", org_y, org_x, org_elev, tgt_y, tgt_x, tgt_elev);
 	strcpy( logString, logBuffer );
@@ -454,16 +455,34 @@ top:
 	/* find direction with smallest tangent */
 	if ( (DBLEQUALTAN(SmallTan, Ftan)) && (DBLEQUALTAN(SmallTan, Rtan)) )
 	{
-		blk1 = Check_Block (org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev );
-		sprintf( logBuffer, "Hex 1: %02d%02d result: %s  ", Fy, Fx, blk1?"Blocked":"Clear" );
-		strcat( logString, logBuffer );
-		sprintf( logBuffer, "Terrain: %s  Elevation: %d\n",TerrainString[Map[Fy][Fx].terrain],Map[Fy][Fx].elevation );
-		strcat( logString, logBuffer );
-		blk2 = Check_Block (org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev);
-		sprintf( logBuffer, "Hex 2: %02d%02d result: %s  ", Ry, Rx, blk2?"Blocked":"Clear" );
-		strcat( logString, logBuffer );
-		sprintf( logBuffer, "Terrain: %s  Elevation: %d\n",TerrainString[Map[Ry][Rx].terrain],Map[Ry][Rx].elevation );
-		strcat( logString, logBuffer );
+		if (!validHex(Fy, Fx))
+		{
+			blk1 = 1;
+			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Fy, Fx);
+			strcat(logString, logBuffer);
+		}
+		else
+		{
+			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev);
+			sprintf(logBuffer, "Hex 1: %02d%02d result: %s  ", Fy, Fx, blk1 ? "Blocked" : "Clear");
+			strcat(logString, logBuffer);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], Map[Fy][Fx].elevation);
+			strcat(logString, logBuffer);
+		}
+		if (!validHex(Ry, Rx))
+		{
+			blk1 = 1;
+			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Ry, Rx);
+			strcat(logString, logBuffer);
+		}
+		else
+		{
+			blk2 = Check_Block(org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev);
+			sprintf(logBuffer, "Hex 2: %02d%02d result: %s  ", Ry, Rx, blk2 ? "Blocked" : "Clear");
+			strcat(logString, logBuffer);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ry][Rx].terrain], Map[Ry][Rx].elevation);
+			strcat(logString, logBuffer);
+		}
 		if (blk1 & blk2)
 		{
 			clear_LOS = 0;
@@ -475,16 +494,34 @@ top:
 	}
 	else if ( (DBLEQUALTAN(SmallTan, Ftan)) && (DBLEQUALTAN(SmallTan, Ltan)) )
 	{
-		blk1 = Check_Block (org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev);
-		sprintf( logBuffer, "Hex 1: %02d%02d result: %s  ", Fy, Fx, blk1?"Blocked":"Clear" );
-		strcat( logString, logBuffer );
-		sprintf( logBuffer, "Terrain: %s  Elevation: %d\n",TerrainString[Map[Fy][Fx].terrain],Map[Fy][Fx].elevation );
-		strcat( logString, logBuffer );
-		blk2 = Check_Block (org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev);
-		sprintf( logBuffer, "Hex 2: %02d%02d result: %s  ", Ly, Lx, blk2?"Blocked":"Clear" );
-		strcat( logString, logBuffer );
-		sprintf( logBuffer, "Terrain: %s  Elevation: %d\n",TerrainString[Map[Ly][Lx].terrain],Map[Ly][Lx].elevation );
-		strcat( logString, logBuffer );
+		if (!validHex(Fy, Fx))
+		{
+			blk1 = 1;
+			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Fy, Fx);
+			strcat(logString, logBuffer);
+		}
+		else
+		{
+			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev);
+			sprintf(logBuffer, "Hex 1: %02d%02d result: %s  ", Fy, Fx, blk1 ? "Blocked" : "Clear");
+			strcat(logString, logBuffer);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], Map[Fy][Fx].elevation);
+			strcat(logString, logBuffer);
+		}
+		if (!validHex(Ly, Lx))
+		{
+			blk1 = 1;
+			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Ly, Lx);
+			strcat(logString, logBuffer);
+		}
+		else
+		{
+			blk2 = Check_Block(org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev);
+			sprintf(logBuffer, "Hex 2: %02d%02d result: %s  ", Ly, Lx, blk2 ? "Blocked" : "Clear");
+			strcat(logString, logBuffer);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ly][Lx].terrain], Map[Ly][Lx].elevation);
+			strcat(logString, logBuffer);
+		}
 		if (blk1 & blk2)
 		{
 			clear_LOS = 0;
@@ -496,11 +533,20 @@ top:
 	}
 	else if ( DBLEQUAL(SmallTan, Ltan) )
 	{
-		blk1 = Check_Block (org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev);
-		sprintf( logBuffer, "Hex: %02d%02d result: %s  ", Ly, Lx, blk1?"Blocked":"Clear" );
-		strcat( logString, logBuffer );
-		sprintf( logBuffer, "Terrain: %s  Elevation: %d\n",TerrainString[Map[Ly][Lx].terrain],Map[Ly][Lx].elevation );
-		strcat( logString, logBuffer );
+		if (!validHex(Ly, Lx))
+		{
+			blk1 = 1;
+			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Ly, Lx);
+			strcat(logString, logBuffer);
+		}
+		else
+		{
+			blk1 = Check_Block(org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev);
+			sprintf(logBuffer, "Hex: %02d%02d result: %s  ", Ly, Lx, blk1 ? "Blocked" : "Clear");
+			strcat(logString, logBuffer);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ly][Lx].terrain], Map[Ly][Lx].elevation);
+			strcat(logString, logBuffer);
+		}
 		if (blk1)
 		{
 			clear_LOS = 0;
@@ -512,11 +558,20 @@ top:
 	}
 	else if ( DBLEQUAL(SmallTan, Ftan) )
 	{
-		blk1 = Check_Block (org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev);
-		sprintf( logBuffer, "Hex: %02d%02d result: %s  ", Fy, Fx, blk1?"Blocked":"Clear" );
-		strcat( logString, logBuffer );
-		sprintf( logBuffer, "Terrain: %s  Elevation: %d\n",TerrainString[Map[Fy][Fx].terrain],Map[Fy][Fx].elevation );
-		strcat( logString, logBuffer );
+		if (!validHex(Fy, Fx))
+		{
+			blk1 = 1;
+			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Fy, Fx);
+			strcat(logString, logBuffer);
+		}
+		else
+		{
+			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev);
+			sprintf(logBuffer, "Hex: %02d%02d result: %s  ", Fy, Fx, blk1 ? "Blocked" : "Clear");
+			strcat(logString, logBuffer);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], Map[Fy][Fx].elevation);
+			strcat(logString, logBuffer);
+		}
 		if (blk1)
 		{
 			clear_LOS = 0;
@@ -528,11 +583,20 @@ top:
 	}
 	else if ( DBLEQUAL(SmallTan, Rtan) )
 	{
-		blk1 = Check_Block (org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev);
-		sprintf( logBuffer, "Hex: %02d%02d result: %s  ", Ry, Rx, blk1?"Blocked":"Clear" );
-		strcat( logString, logBuffer );
-		sprintf( logBuffer, "Terrain: %s  Elevation: %d\n",TerrainString[Map[Ry][Rx].terrain],Map[Ry][Rx].elevation );
-		strcat( logString, logBuffer );
+		if (!validHex(Ry, Rx))
+		{
+			blk1 = 1;
+			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Ry, Rx);
+			strcat(logString, logBuffer);
+		}
+		else
+		{
+			blk1 = Check_Block(org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev);
+			sprintf(logBuffer, "Hex: %02d%02d result: %s  ", Ry, Rx, blk1 ? "Blocked" : "Clear");
+			strcat(logString, logBuffer);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ry][Rx].terrain], Map[Ry][Rx].elevation);
+			strcat(logString, logBuffer);
+		}
 		if (blk1)
 		{
 			clear_LOS = 0;
@@ -551,29 +615,60 @@ top:
 	range += 1;
 	if (!clear_LOS)
 	{
-		if (cur_x == tgt_x && cur_y == tgt_y)
+		if ( !validHex(cur_y, cur_x) && checkingSkylining )
 		{
+			// hit a border hex while checking skylining, skylining check is done
+			skylined = true;
+			sprintf(logBuffer, "Skylining check unblocked, range = %d\n", range);
+			strcat(logString, logBuffer);
+			return(targetRange);
+		}
+		else if (checkingSkylining)
+		{
+			sprintf(logBuffer, "Skylining Blocked\n");
+			strcat(logString, logBuffer);
+			return (targetRange);
+		}
+		else if ( cur_x == tgt_x && cur_y == tgt_y && !checkingSkylining )
+		{
+			// reached the target hex, the LOS is clear
 			clear_LOS = 1;
 			sprintf(logBuffer, "LOS Clear, range = %d\n", range);
+			strcat(logString, logBuffer);
+			checkingSkylining = true;
+			targetRange = range;
+			goto top;
 		}
 		else
 		{
 			range = 0;
 			sprintf(logBuffer, "LOS Blocked\n");
-		}
-		strcat(logString, logBuffer);
-		return (range);
-	}
-	else
-	{
-		if (cur_x == tgt_x && cur_y == tgt_y)
-		{
-			sprintf(logBuffer, "LOS Clear, range = %d\n", range);
 			strcat(logString, logBuffer);
 			return (range);
 		}
+	}
+	else
+	{
+		if ( borderHex(cur_y, cur_x) && checkingSkylining )
+		{
+			// reached the bounds of the map without hitting a blocked hex, skylining check is done
+			skylined = true;
+			sprintf(logBuffer, "Skylining check done, range = %d\n", range);
+			strcat(logString, logBuffer);
+			return(targetRange);
+		}
+		else if ( cur_x == tgt_x && cur_y == tgt_y && !checkingSkylining )
+		{
+			// reached the target hex, the LOS is clear
+			sprintf(logBuffer, "LOS Clear, range = %d\n", range);
+			strcat(logString, logBuffer);
+			checkingSkylining = true;
+			targetRange = range;
+			goto top;
+		}
 		else
 		{
+			// continue the traversal
 			goto top;
 		}
 	}
@@ -653,7 +748,7 @@ int AirCavMapData::getTerrain( int x, int y )
 int AirCavMapData::getElevation( int x, int y )
 {
 	// check if elevation is known, if not ask for it
-	if ( Map[y][x].elevation < 0 )
+	if ( validHex(y, x) && Map[y][x].elevation < 0 )
 	{
 		HexTerrain dlg(x, y);
 		if ( dlg.DoModal() == IDOK )
@@ -881,4 +976,19 @@ bool AirCavMapData::validHex( int col, int row )
 	if ( row > maxRow || row < MIN_ROWS )
 		return false;
 	return true;
+}
+
+bool AirCavMapData::borderHex(int col, int row)
+{
+	int maxRow;
+	if (EVEN(col))
+		maxRow = MAX_ROWS;
+	else
+		maxRow = MAX_ROWS - 1;
+
+	if (col == MAX_COLUMNS || col == MIN_COLUMNS)
+		return true;
+	if (row == maxRow || row == MIN_ROWS)
+		return true;
+	return false;
 }

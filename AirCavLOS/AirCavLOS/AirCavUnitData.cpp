@@ -166,7 +166,7 @@ bool AirCavUnitData::isWeaponNotIRGuided(int which)
 }
 
 int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke,
-								 int range, int opp, int sup, char *logString, int &ttMod )
+								 int range, int opp, int sup, int skylined, char *logString, int &ttMod )
 {
 	char logBuffer[256];
 	AirCavWeaponData *mainWpn;
@@ -396,8 +396,15 @@ int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, i
 	sprintf( logBuffer, "Evasive Maneuver Modifier = %d\n", evasiveMod );
 	strcat( logString, logBuffer );
 
+	// skylined modifier
+	int skylineMod = 0;
+	if ( skylined )
+		skylineMod = 1;
+	sprintf(logBuffer, "Skylining Modifier = %d\n", skylineMod);
+	strcat(logString, logBuffer);
+
 	// final kill number
-	int FKN = BKN + ttMod + sup + secMod + terrainMod + oppFireMod + movingMod + aerialMod + defiladeMod + evasiveMod;
+	int FKN = BKN + ttMod + sup + secMod + terrainMod + oppFireMod + movingMod + aerialMod + defiladeMod + evasiveMod + skylineMod;
 	sprintf( logBuffer, "Final Kill Number = %d\n", FKN );
 	strcat( logString, logBuffer );
 

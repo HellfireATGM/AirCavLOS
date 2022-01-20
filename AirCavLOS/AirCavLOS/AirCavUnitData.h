@@ -83,5 +83,5 @@ public:
 	bool isWeaponNotIRGuided(int which);
 
 	int CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke, 
-							int range, int opp, int sup, char *log, int &ttMod);
+							int range, int opp, int sup, int skylining, char *log, int &ttMod);
 };

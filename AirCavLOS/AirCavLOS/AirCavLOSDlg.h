@@ -180,6 +180,7 @@ public:
 	int findUnitIndex( char *unitName );
 	int findScenarioUnitIndex( int scen, char *unitName );
 	void replaceUnderscores( char *strPtr );
+	bool unitCannotBeSkylined(UnitType unitType, int terrain, int smoke);
 
 	void doUnitTracking(int previousOPs, int previousRow, int previousColumn);
 

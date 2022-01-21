@@ -1967,13 +1967,15 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						// ignore smoke in the active hex if it is a helo at low level
 						if (activelowLevel && activeSmoke)
 							activeSmoke = 0;
-						
-						// a skylined unit (helicopter or vehicle only) can be seen at 4 hexes greater than normal
-						if (counterDataList[c]->getUnitInfo()->getUnitType() == INF)
+
+						// skylining has some very specific requirements, check them here
+						if (skylined && unitCannotBeSkylined(counterDataList[c]->getUnitInfo()->getUnitType(), targetTerrain, targetSmoke))
 							skylined = false;
+
+						// a skylined unit can be seen at 4 hexes greater than normal
 						int skylinedRange = skylined ? range + 4 : range;
 
-						int ttModm1 = 0, ttModm2 = 0, ttModm3 = 0, ttMods1 = 0, ttMods2 = 0;
+						// calculate if unit is visible given the terrain, range, weather, time of day, etc
 #if BASIC_OBSERVATION
 						bool isVisible = counterDataList[c]->isVisible(targetTerrain, skylinedRange, m_Weather, m_TimeOfDay, activeSmoke);
 #else
@@ -1981,6 +1983,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						int activeOptics = counterDataList[m_ActiveUnit]->getOpticsInUse();
 						bool isVisible = counterDataList[c]->isVisibleAdvanced(targetTerrain, skylinedRange, m_Weather, m_TimeOfDay, activeSide, activeOptics, activeSmoke);
 #endif
+						// if in range, calculate FKN for each available weapon
+						int ttModm1 = 0, ttModm2 = 0, ttModm3 = 0, ttMods1 = 0, ttMods2 = 0;
 						if (range && isVisible)
 						{
 							//  calculate final kill number
@@ -2031,12 +2035,13 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 									m_debugFKNMessages = FALSE;
 							}
 
-							// only update FKN numbers for the active target (TODO:  WHY?)
-							//if (m_ActiveTarget == c)
+							// only update FKN numbers for the active target
+							if (m_ActiveTarget == c)
 							{
 								counterDataList[m_ActiveUnit]->setFinalKillNumbers(mFKN1, mFKN2, mFKN3, sFKN1, sFKN2, ttModm1, ttModm2, ttModm3, ttMods1, ttMods2);
 							}
 
+							// display the visible units their type, range and FKN values
 							char sName[32], sType[32];
 							int length;
 							CString sightingUnitName = counterDataList[c]->getName();
@@ -2189,12 +2194,14 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						if (targetlowLevel && targetSmoke)
 							targetSmoke = 0;
 
-						// a skylined unit (helicopter or vehicle only) can be seen at 4 hexes greater than normal
-						if (counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType() == INF)
+						// skylining has some very specific requirements, check them here
+						if (skylined && unitCannotBeSkylined(counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType(), activeTerrain, activeSmoke))
 							skylined = false;
+
+						// a skylined unit can be seen at 4 hexes greater than normal
 						int skylinedRange = skylined ? range + 4 : range;
 
-						int ttModm1 = 0, ttModm2 = 0, ttModm3 = 0, ttMods1 = 0, ttMods2 = 0;
+						// calculate if unit is visible given the terrain, range, weather, time of day, etc
 #if BASIC_OBSERVATION
 						bool isVisible = counterDataList[m_ActiveUnit]->isVisible(activeTerrain, skylinedRange, m_Weather, m_TimeOfDay, targetSmoke);
 #else
@@ -2202,6 +2209,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						int targetOptics = counterDataList[c]->getOpticsInUse();
 						bool isVisible = counterDataList[m_ActiveUnit]->isVisibleAdvanced(activeTerrain, skylinedRange, m_Weather, m_TimeOfDay, targetSide, targetOptics, targetSmoke);
 #endif
+						// if in range, calculate FKN for each available weapon
+						int ttModm1 = 0, ttModm2 = 0, ttModm3 = 0, ttMods1 = 0, ttMods2 = 0;
 						if (range && isVisible)
 						{
 							int oppfire = counterDataList[c]->getIsOppFiring();
@@ -2255,6 +2264,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 
 							counterDataList[c]->setFinalKillNumbers(mFKN1, mFKN2, mFKN3, sFKN1, sFKN2, ttModm1, ttModm2, ttModm3, ttMods1, ttMods2);
 
+							// display the visible units their type, range and FKN values
 							char sName[32], sType[32];
 							int length;
 							CString sightingUnitName = counterDataList[c]->getName();
@@ -3801,6 +3811,23 @@ void CAirCavLOSDlg::replaceUnderscores( char *strPtr )
 {
 	for ( unsigned int i = 0; i < strlen(strPtr); i++ )
 		if ( strPtr[i] == '_' ) strPtr[i] = ' ';
+}
+
+bool CAirCavLOSDlg::unitCannotBeSkylined(UnitType unitType, int terrain, int smoke)
+{
+	// skylined units requirements:
+	// - helicopter or vehicle only (not infantry)
+	// - in clear terrain
+	// - not in smoke hex
+	// - not during fog, rain or snow weather
+	// - skylined unit must be equal or greater elevation (this is handled during LOS calculation)
+	if (unitType == INF || terrain != CLEAR || smoke ||
+		m_Weather == WEATHER_LT_FOG || m_Weather == WEATHER_HVY_FOG ||
+		m_Weather == WEATHER_RAIN || m_Weather == WEATHER_SNOW)
+	{
+		return true;
+	}
+	return false;
 }
 
 void CAirCavLOSDlg::OnBnClickedButtonSaveProgress()

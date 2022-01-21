@@ -629,15 +629,24 @@ top:
 			strcat(logString, logBuffer);
 			return (targetRange);
 		}
-		else if ( cur_x == tgt_x && cur_y == tgt_y && !checkingSkylining )
+		else if (cur_x == tgt_x && cur_y == tgt_y && !checkingSkylining)
 		{
 			// reached the target hex, the LOS is clear
 			clear_LOS = 1;
 			sprintf(logBuffer, "LOS Clear, range = %d\n", range);
 			strcat(logString, logBuffer);
-			checkingSkylining = true;
-			targetRange = range;
-			goto top;
+
+			// only check skylining if target elevation is equal to or greater than origin elevation
+			if (tgt_elev >= org_elev)
+			{
+				checkingSkylining = true;
+				targetRange = range;
+				goto top;
+			}
+			else
+			{
+				return (range);
+			}
 		}
 		else
 		{
@@ -662,9 +671,18 @@ top:
 			// reached the target hex, the LOS is clear
 			sprintf(logBuffer, "LOS Clear, range = %d\n", range);
 			strcat(logString, logBuffer);
-			checkingSkylining = true;
-			targetRange = range;
-			goto top;
+
+			// only check skylining if target elevation is equal to or greater than origin elevation
+			if (tgt_elev >= org_elev)
+			{
+				checkingSkylining = true;
+				targetRange = range;
+				goto top;
+			}
+			else
+			{
+				return (range);
+			}
 		}
 		else
 		{

@@ -1,54 +1,54 @@
-#   name          main 1                   main 2                 main 3             secn 1             secn 2           type   tt   evm  sm  dm  ammo ammo ammo ammo ammo
+#   name          main 1                   main 2                 main 3             secn 1             secn 2           type   tt   evm  sm  dm  ammo ammo ammo ammo ammo ti ale irsl wlsl
 #                                                                                                                                                  m1   m2   m3   s1   s2
 # United States
 #
-M1A1_MBT          U.S._120mm_Gun           None                   None               U.S._12.7mm_MG     U.S._7.62mm_MG   TANK   TT_A  -3  -1  -4   0    0    0    0    0
-M2_Bradley_APC    U.S._25mm_Cannon         None                   None               U.S._TOW_ATGM      None             TLAV   TT_C  -3  -2  -4   0    0    0    8    0  
-M3_Bradley_APC    U.S._25mm_Cannon         None                   None               U.S._TOW_ATGM      None             TLAV   TT_C  -3  -2  -4   0    0    0    8    0  
-AH-64_Apache      U.S._Hellfire_ATGM       U.S._ECAS_Rockets      None               U.S._30mm_Cannon1  None             ARH    TT_D  -3   0   0   4    4    0    0    0  
-AH-1S_Cobra       U.S._TOW_ATGM            U.S._ECAS_Rockets      None               U.S._20mm_Cannon   None             ARH    TT_E  -3   0   0   4    4    0    0    0 
-OH-58_Kiowa       U.S._7.62mm_MG           None                   None               None               None             ARH    TT_E  -4   0   0   0    0    0    0    0  
-AHIP_Scout        U.S._Minigun_MG          None                   None               U.S._Stinger_AAM   None             ARH    TT_E  -4   0   0   0    0    0    2    0  
-UH-60_Blackhawk   U.S._7.62mm_MG           None                   None               None               None             UHM    TT_E  -3   0   0   0    0    0    0    0  
-LHX_SCAT          U.S._Hellfire_POST_ATGM  U.S._Stinger_POST_AAM  U.S._ADSM_AA-ATGM  U.S._30mm_Cannon1  None             LHX    TT_D  -4   0  -8   4    2    2    0    0  
-U.S._Inf_Squad    U.S._M-16_AR             U.S._RGL               U.S._7.62mm_MG     U.S._M72_LAW       None             INF    TT_E   0  -5  -5   0    8    0    4    0  
-U.S._Inf_Team     U.S._Dragon_ATGM         U.S._Stinger_AAM       None               U.S._M-16_AR       None             INF    TT_F   0  -5  -6   4    4    0    0    0  
-Vulcan_SPAAG      U.S._6x23mm_Cannon       None                   None               U.S._7.62mm_MG     None             TLAV   TT_D  -3  -3  -4   0    0    0    0    0 
-#                                                                                                                                                                   
-# Soviet Union                                                                                                                                                      
-#                                                                                                                                                                   
-T-72_MBT          Soviet_125mm_Gun         None                   None               Soviet_12.7mm_MG   Soviet_7.62mm_MG TANK   TT_A  -2  -2  -3   0    0    0    0    0
-T-62_MBT          Soviet_115mm_Gun         None                   None               Soviet_12.7mm_MG   Soviet_7.62mm_MG TANK   TT_B  -1  -3  -3   0    0    0    0    0  
-BMP-1_APC         Soviet_73mm_Gun          Soviet_Sagger_ATGM     None               Soviet_7.62mm_MG   None             TLAV   TT_D  -2  -3  -3   0    8    0    0    0 
-BMP-1981_APC      Soviet_30mm_Cannon       Soviet_AT-5_ATGM       None               Soviet_7.62mm_MG   None             TLAV   TT_D  -3  -3  -3   0    8    0    0    0 
-BMD_APC           Soviet_73mm_Gun          None                   None               Soviet_Sagger_ATGM None             TLAV   TT_D  -3  -3  -3   0    0    0    4    0  
-BRDM_Recon        Soviet_14.5mm_MG         None                   None               Soviet_7.62mm_MG   None             WV     TT_E  -3  -2  -3   0    0    0    0    0  
-BRDM_SPSAM        Soviet_SA-9_SAM          None                   None               Soviet_7.62mm_MG   None             WV     TT_E  -2  -1  -3   8    0    0    0    0  
-BRDM_ATGM_Carrier Soviet_Sagger_ATGM       None                   None               Soviet_7.62mm_MG   None             WV     TT_E  -3  -1  -3   8    0    0    0    0  
-ZSU-23_SPAAG      Soviet_4x23mm_Cannon     None                   None               Soviet_7.62mm_MG   None             TLAV   TT_D  -2   0  -2   0    0    0    0    0  
-Mi-24_Hind        Soviet_Sagger_ATGM       Soviet_57mm_Rockets    Soviet_23mm_Cannon Soviet_30mm_GL     None             ARH    TT_D  -2   0   0   4    4    0    0    0  
-Mi-8_Hip          Soviet_Sagger_ATGM       None                   None               Soviet_30mm_GL     None             UHM    TT_E  -1   0   0   4    0    0    0    0  
-Mi-6_Hook         None                     None                   None               Soviet_12.7mm_MG   None             UHH    TT_E  -1   0   0   0    0    0    0    0  
-Soviet_Inf_Squad  Soviet_AKS_AR            Soviet_RPG16_LAW       Soviet_7.62mm_MG   Soviet_SA-7_SAM    Soviet_RPG18_LAW INF    TT_E   0  -5  -5   0    8    0    4    4 
-Soviet_Inf_Team   Soviet_Sagger_ATGM       Soviet_SA-14_SAM       None               Soviet_AKS_AR      None             INF    TT_F   0  -6  -5   4    4    0    0    0  
-#                                                                                                                                                                   
-# Great Britain                                                                                                                                                     
-#                                                                                                                                                                   
-Chieftan_MBT      U.S._120mm_Gun           None                   None               U.S._12.7mm_MG     U.S._7.62mm_MG   TANK   TT_B  -3  -5  -2   0    0    0    0    0
-Challenger_MBT    U.S._120mm_Gun           None                   None               U.S._12.7mm_MG     U.S._7.62mm_MG   TANK   TT_A  -2  -4  -1   0    0    0    0    0
-Scorpion_Recon    U.K._76mm_MG             None                   None               U.S._7.62mm_MG     None             TLAV   TT_D  -3  -4  -2   0    0    0    0    0  
-Scorpion_90_Recon U.K._90mm_MG             None                   None               U.S._7.62mm_MG     None             TLAV   TT_D  -3  -4  -1   0    0    0    0    0  
-MCV-80_APC        U.K._30mm_Cannon         None                   None               U.S._7.62mm_MG     None             TLAV   TT_D  -3  -5  -1   0    0    0    0    0  
-U.K._Inf_Squad    U.K._L1A1_AR             U.S._RGL               U.S._7.62mm_MG     U.S._M72_LAW       None             INF    TT_E   0  -5  -5   0    0    0    0    4  
-U.K._Inf_Team     U.K._W.G._Milan_ATGM     U.K._Javelin_AAM       None               U.K._L1A1_AR       None             INF    TT_F   0  -5  -6   8    2    0    0    0  
-FV-438_ATGM       U.K._Swingfire_ATGM      None                   None               U.S._7.62mm_MG     None             TLAV   TT_D  -3  -4  -2   8    0    0    0    0  
-Lynx_AH1          U.S._TOW_ATGM            None                   None               None               None             ARH    TT_E  -4   0  -4   8    0    0    0    0  
-#                                                                                                                                                                   
-# West Germany                                                                                                                                                      
-#                                                                                                                                                                   
-Leopard_1_MBT     U.S._105mm_Gun           None                   None               U.S._12.7mm_MG     U.S._7.62mm_MG   TANK   TT_B  -3  -4  -2   0    0    0    0    0
-Leopard_2_MBT     U.S._120mm_Gun           None                   None               U.S._12.7mm_MG     U.S._7.62mm_MG   TANK   TT_A  -3  -4  -1   0    0    0    0    0
-Marder_APC        W.G._20mm_Cannon         U.K._W.G._Milan_ATGM   None               U.S._7.62mm_MG     None             TLAV   TT_C  -3  -5  -1   0    8    0    0    0  
-W.G._Inf_Squad    W.G._HKG3_AR             U.S._RGL               U.S._7.62mm_MG     W.G._PZF44_LAW     None             INF    TT_E   0  -5  -5   0    0    0    0    0  
-W.G._Inf_Team     U.K._W.G._Milan_ATGM     U.K._Javelin_AAM       None               U.K._L1A1_AR       None             INF    TT_F   0  -5  -6   8    2    0    0    0  
-PAH-2_AH          U.S._Hellfire_ATGM       U.S._ECAS_Rockets      None               None               None             ARH    TT_D  -4   0  -4   4    4    0    0    0  
+M1A1_MBT          U.S._120mm_Gun           None                   None               U.S._12.7mm_MG     U.S._7.62mm_MG   TANK   TT_A  -3  -1  -4   0    0    0    0    0    1  1   0   0
+M2_Bradley_APC    U.S._25mm_Cannon         None                   None               U.S._TOW_ATGM      None             TLAV   TT_C  -3  -2  -4   0    0    0    8    0    1  1   0   0  
+M3_Bradley_APC    U.S._25mm_Cannon         None                   None               U.S._TOW_ATGM      None             TLAV   TT_C  -3  -2  -4   0    0    0    8    0    1  1   0   0  
+AH-64_Apache      U.S._Hellfire_ATGM       U.S._ECAS_Rockets      None               U.S._30mm_Cannon1  None             ARH    TT_D  -3   0   0   4    4    0    0    0    1  1   0   0  
+AH-1S_Cobra       U.S._TOW_ATGM            U.S._ECAS_Rockets      None               U.S._20mm_Cannon   None             ARH    TT_E  -3   0   0   4    4    0    0    0    0  1   0   0 
+OH-58_Kiowa       U.S._7.62mm_MG           None                   None               None               None             ARH    TT_E  -4   0   0   0    0    0    0    0    1  0   0   0  
+AHIP_Scout        U.S._Minigun_MG          None                   None               U.S._Stinger_AAM   None             ARH    TT_E  -4   0   0   0    0    0    2    0    1  1   0   0  
+UH-60_Blackhawk   U.S._7.62mm_MG           None                   None               None               None             UHM    TT_E  -3   0   0   0    0    0    0    0    0  0   0   0  
+LHX_SCAT          U.S._Hellfire_POST_ATGM  U.S._Stinger_POST_AAM  U.S._ADSM_AA-ATGM  U.S._30mm_Cannon1  None             LHX    TT_D  -4   0  -8   4    2    2    0    0    1  1   0   0  
+U.S._Inf_Squad    U.S._M-16_AR             U.S._RGL               U.S._7.62mm_MG     U.S._M72_LAW       None             INF    TT_E   0  -5  -5   0    8    0    4    0    1  1   0   0  
+U.S._Inf_Team     U.S._Dragon_ATGM         U.S._Stinger_AAM       None               U.S._M-16_AR       None             INF    TT_F   0  -5  -6   4    4    0    0    0    1  0   0   0  
+Vulcan_SPAAG      U.S._6x23mm_Cannon       None                   None               U.S._7.62mm_MG     None             TLAV   TT_D  -3  -3  -4   0    0    0    0    0    1  0   0   0 
+#                                                                                                                                                                           
+# Soviet Union                                                                                                                                                              
+#                                                                                                                                                                           
+T-72_MBT          Soviet_125mm_Gun         None                   None               Soviet_12.7mm_MG   Soviet_7.62mm_MG TANK   TT_A  -2  -2  -3   0    0    0    0    0    1  0   1   0
+T-62_MBT          Soviet_115mm_Gun         None                   None               Soviet_12.7mm_MG   Soviet_7.62mm_MG TANK   TT_B  -1  -3  -3   0    0    0    0    0    0  0   1   1  
+BMP-1_APC         Soviet_73mm_Gun          Soviet_Sagger_ATGM     None               Soviet_7.62mm_MG   None             TLAV   TT_D  -2  -3  -3   0    8    0    0    0    0  0   1   1 
+BMP-1981_APC      Soviet_30mm_Cannon       Soviet_AT-5_ATGM       None               Soviet_7.62mm_MG   None             TLAV   TT_D  -3  -3  -3   0    8    0    0    0    1  0   1   0 
+BMD_APC           Soviet_73mm_Gun          None                   None               Soviet_Sagger_ATGM None             TLAV   TT_D  -3  -3  -3   0    0    0    4    0    0  0   1   1  
+BRDM_Recon        Soviet_14.5mm_MG         None                   None               Soviet_7.62mm_MG   None             WV     TT_E  -3  -2  -3   0    0    0    0    0    0  0   1   0  
+BRDM_SPSAM        Soviet_SA-9_SAM          None                   None               Soviet_7.62mm_MG   None             WV     TT_E  -2  -1  -3   8    0    0    0    0    0  0   1   1  
+BRDM_ATGM_Carrier Soviet_Sagger_ATGM       None                   None               Soviet_7.62mm_MG   None             WV     TT_E  -3  -1  -3   8    0    0    0    0    0  0   1   1  
+ZSU-23_SPAAG      Soviet_4x23mm_Cannon     None                   None               Soviet_7.62mm_MG   None             TLAV   TT_D  -2   0  -2   0    0    0    0    0    0  0   1   1  
+Mi-24_Hind        Soviet_Sagger_ATGM       Soviet_57mm_Rockets    Soviet_23mm_Cannon Soviet_30mm_GL     None             ARH    TT_D  -2   0   0   4    4    0    0    0    1  1   0   0  
+Mi-8_Hip          Soviet_Sagger_ATGM       None                   None               Soviet_30mm_GL     None             UHM    TT_E  -1   0   0   4    0    0    0    0    0  0   0   0  
+Mi-6_Hook         None                     None                   None               Soviet_12.7mm_MG   None             UHH    TT_E  -1   0   0   0    0    0    0    0    0  0   0   0  
+Soviet_Inf_Squad  Soviet_AKS_AR            Soviet_RPG16_LAW       Soviet_7.62mm_MG   Soviet_SA-7_SAM    Soviet_RPG18_LAW INF    TT_E   0  -5  -5   0    8    0    4    4    1  1   0   0 
+Soviet_Inf_Team   Soviet_Sagger_ATGM       Soviet_SA-14_SAM       None               Soviet_AKS_AR      None             INF    TT_F   0  -6  -5   4    4    0    0    0    1  0   0   0  
+#                                                                                                                                                                           
+# Great Britain                                                                                                                                                             
+#                                                                                                                                                                           
+Chieftan_MBT      U.S._120mm_Gun           None                   None               U.S._12.7mm_MG     U.S._7.62mm_MG   TANK   TT_B  -3  -5  -2   0    0    0    0    0    0  0   1   1
+Challenger_MBT    U.S._120mm_Gun           None                   None               U.S._12.7mm_MG     U.S._7.62mm_MG   TANK   TT_A  -2  -4  -1   0    0    0    0    0    1  0   0   0
+Scorpion_Recon    U.K._76mm_MG             None                   None               U.S._7.62mm_MG     None             TLAV   TT_D  -3  -4  -2   0    0    0    0    0    0  0   0   0  
+Scorpion_90_Recon U.K._90mm_MG             None                   None               U.S._7.62mm_MG     None             TLAV   TT_D  -3  -4  -1   0    0    0    0    0    1  0   0   0  
+MCV-80_APC        U.K._30mm_Cannon         None                   None               U.S._7.62mm_MG     None             TLAV   TT_D  -3  -5  -1   0    0    0    0    0    1  0   0   0  
+U.K._Inf_Squad    U.K._L1A1_AR             U.S._RGL               U.S._7.62mm_MG     U.S._M72_LAW       None             INF    TT_E   0  -5  -5   0    0    0    0    4    1  1   0   0  
+U.K._Inf_Team     U.K._W.G._Milan_ATGM     U.K._Javelin_AAM       None               U.K._L1A1_AR       None             INF    TT_F   0  -5  -6   8    2    0    0    0    1  0   0   0  
+FV-438_ATGM       U.K._Swingfire_ATGM      None                   None               U.S._7.62mm_MG     None             TLAV   TT_D  -3  -4  -2   8    0    0    0    0    0  0   0   0  
+Lynx_AH1          U.S._TOW_ATGM            None                   None               None               None             ARH    TT_E  -4   0  -4   8    0    0    0    0    0  0   0   0  
+#                                                                                                                                                                           
+# West Germany                                                                                                                                                              
+#                                                                                                                                                                           
+Leopard_1_MBT     U.S._105mm_Gun           None                   None               U.S._12.7mm_MG     U.S._7.62mm_MG   TANK   TT_B  -3  -4  -2   0    0    0    0    0    1  0   0   0
+Leopard_2_MBT     U.S._120mm_Gun           None                   None               U.S._12.7mm_MG     U.S._7.62mm_MG   TANK   TT_A  -3  -4  -1   0    0    0    0    0    1  0   0   0
+Marder_APC        W.G._20mm_Cannon         U.K._W.G._Milan_ATGM   None               U.S._7.62mm_MG     None             TLAV   TT_C  -3  -5  -1   0    8    0    0    0    1  0   1   0  
+W.G._Inf_Squad    W.G._HKG3_AR             U.S._RGL               U.S._7.62mm_MG     W.G._PZF44_LAW     None             INF    TT_E   0  -5  -5   0    0    0    0    0    1  1   0   0  
+W.G._Inf_Team     U.K._W.G._Milan_ATGM     U.K._Javelin_AAM       None               U.K._L1A1_AR       None             INF    TT_F   0  -5  -6   8    2    0    0    0    1  0   0   0  
+PAH-2_AH          U.S._Hellfire_ATGM       U.S._ECAS_Rockets      None               None               None             ARH    TT_D  -4   0  -4   4    4    0    0    0    1  0   0   0  

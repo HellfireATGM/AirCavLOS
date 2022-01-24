@@ -43,7 +43,8 @@ AirCavUnitData::AirCavUnitData(void)
 AirCavUnitData::AirCavUnitData(CString name, UnitType type, TargetType TT, 
 					AirCavWeaponData *mwpn1, AirCavWeaponData *mwpn2, AirCavWeaponData *mwpn3,
 					AirCavWeaponData *swpn1, AirCavWeaponData *swpn2, int evm, int sm, int dm, 
-					int ammo_m1, int ammo_m2, int ammo_m3, int ammo_s1, int ammo_s2)
+					int ammo_m1, int ammo_m2, int ammo_m3, int ammo_s1, int ammo_s2,
+					int ti, int ale, int irsl, int wlsl)
 {
 	m_name = name;
 	m_type = type;
@@ -61,6 +62,10 @@ AirCavUnitData::AirCavUnitData(CString name, UnitType type, TargetType TT,
 	m_nAmmoMainWpn3 = ammo_m3;
 	m_nAmmoSecondaryWpn1 = ammo_s1;
 	m_nAmmoSecondaryWpn2 = ammo_s2;
+	m_ti = ti;
+	m_ale = ale;
+	m_irsl = irsl;
+	m_wlsl = wlsl;
 }
 
 AirCavUnitData::AirCavUnitData(Type unit, AirCavWeaponData *mwpn1, AirCavWeaponData *mwpn2, 
@@ -82,6 +87,10 @@ AirCavUnitData::AirCavUnitData(Type unit, AirCavWeaponData *mwpn1, AirCavWeaponD
 	m_nAmmoMainWpn3 = unit.ammo_m3;
 	m_nAmmoSecondaryWpn1 = unit.ammo_s1;
 	m_nAmmoSecondaryWpn2 = unit.ammo_s2;
+	m_ti = unit.ti;
+	m_ale = unit.ale;
+	m_irsl = unit.irsl;
+	m_wlsl = unit.wlsl;
 }
 
 AirCavUnitData::~AirCavUnitData(void)

@@ -172,6 +172,7 @@ void CAirCavLOSDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIST_SIGHTED_UNITS, m_SightedUnitsListBox);
 	DDX_Control(pDX, IDC_LIST_SIGHTING_UNITS, m_SightingUnitsListBox);
 	DDX_Control(pDX, IDC_LIST_FIRING_UNITS, m_FiringUnitsListBox);
+	DDX_Control(pDX, IDC_COMBO_OPTICS, m_currentOpticsComboBox);
 	DDX_Text(pDX, IDC_EDIT_ACTIVE_NAME, m_activeUnitName);
 	DDX_Text(pDX, IDC_EDIT_ACTIVE_OP, m_activeUnitOPs);
 	DDX_Text(pDX, IDC_EDIT_ACTIVE_UNIT_TYPE, m_activeUnitUnitType);
@@ -224,7 +225,6 @@ void CAirCavLOSDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_ACTIVE_SUPPRESSED, m_activeUnitIsSuppressed);
 	DDX_CBString(pDX, IDC_COMBO_WEATHER, m_currentWeather);
 	DDX_CBString(pDX, IDC_COMBO_TIME_OF_DAY, m_currentTimeOfDay);
-	DDX_CBString(pDX, IDC_COMBO_OPTICS, m_currentOptics);
 	DDX_Check(pDX, IDC_CHECK_POP_SMOKE, m_popSmokeWhileMoving);
 }
 
@@ -1620,23 +1620,53 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_activeUnitLowLevel = ( counterDataList[m_ActiveUnit]->getHeloOffset() > NAP_OF_EARTH_METERS) ? 1 : 0;
 		m_activeUnitIsSuppressed = counterDataList[m_ActiveUnit]->getIsSuppressed();
 
-		// set current optics
-		m_Optics = counterDataList[m_ActiveUnit]->getOpticsInUse();
-		if (m_Optics == OPTICS_OPTICAL_SIGHT)
-			m_currentOptics.SetString(_T("OS"));
-		else if (m_Optics == OPTICS_THERMAL_IMAGER)
-			m_currentOptics.SetString(_T("TI"));
-		else if (m_Optics == OPTICS_AMBIENT_LIGHT_ENHANCER)
-			m_currentOptics.SetString(_T("ALE"));
-		else if (m_Optics == OPTICS_INFRARED_SEARCHLIGHT)
-			m_currentOptics.SetString(_T("IRSL"));
-		else if (m_Optics == OPTICS_WHITELIGHT_SEARCHLIGHT)
-			m_currentOptics.SetString(_T("WLSL"));
+		// reset the optics combo box (only want to display this unit's supported optics in the pulldown)
+		m_currentOpticsComboBox.ResetContent();
+		for (int o=0; o < m_currentOpticsComboBox.GetCount(); o++)
+			m_currentOpticsComboBox.DeleteString(o);
 
+		// populate the pulldown (OS is always 0, others will follow if supported)
+		int OpticsIndex = 1; int TIindex = 0; int ALEindex = 0; int IRSLindex = 0; int WLSLindex = 0;
+		m_currentOpticsComboBox.AddString(_T("OS"));
+		if (counterDataList[m_ActiveUnit]->getUnitInfo()->hasTIsight())
+		{
+			TIindex = OpticsIndex++;
+			m_currentOpticsComboBox.AddString(_T("TI"));
+		}
+		if (counterDataList[m_ActiveUnit]->getUnitInfo()->hasALEsight())
+		{
+			ALEindex = OpticsIndex++;
+			m_currentOpticsComboBox.AddString(_T("ALE"));
+		}
+		if (counterDataList[m_ActiveUnit]->getUnitInfo()->hasIRSLsight())
+		{
+			IRSLindex = OpticsIndex++;
+			m_currentOpticsComboBox.AddString(_T("IRSL"));
+		}
+		if (counterDataList[m_ActiveUnit]->getUnitInfo()->hasWLSLsight())
+		{
+			WLSLindex = OpticsIndex++;
+			m_currentOpticsComboBox.AddString(_T("WLSL"));
+		}
+
+		// set current in-use optics
+		m_Optics = counterDataList[m_ActiveUnit]->getOpticsInUse();
+		if (m_Optics == OPTICS_THERMAL_IMAGER && counterDataList[m_ActiveUnit]->getUnitInfo()->hasTIsight())
+			m_currentOpticsComboBox.SetCurSel(TIindex);
+		else if (m_Optics == OPTICS_AMBIENT_LIGHT_ENHANCER && counterDataList[m_ActiveUnit]->getUnitInfo()->hasALEsight())
+			m_currentOpticsComboBox.SetCurSel(ALEindex);
+		else if (m_Optics == OPTICS_INFRARED_SEARCHLIGHT && counterDataList[m_ActiveUnit]->getUnitInfo()->hasIRSLsight())
+			m_currentOpticsComboBox.SetCurSel(IRSLindex);
+		else if (m_Optics == OPTICS_WHITELIGHT_SEARCHLIGHT && counterDataList[m_ActiveUnit]->getUnitInfo()->hasWLSLsight())
+			m_currentOpticsComboBox.SetCurSel(WLSLindex);
+		else
+			m_currentOpticsComboBox.SetCurSel(OPTICS_OPTICAL_SIGHT);
+
+		// check for units that are mounted vs unmounted
 		if ( m_activeUnitMounted >= 0 && !m_activeUnitDismounted )
 		{
 			SetDlgItemText(IDC_BUTTON_ACTION_MOUNT, STR_DISMOUNT);
-			// mounted units cannot move themselves
+			// mounted units cannot move themselves, so disable the move buttons
 			if (m_normalMap)
 			{
 				GetDlgItem(IDC_BUTTON_ACTION_MOVE_N)->EnableWindow(FALSE);
@@ -3096,16 +3126,22 @@ void CAirCavLOSDlg::OnCbnSelchangeComboOptics()
 	{
 		UpdateData(TRUE);
 
-		if (m_currentOptics == "OS")
+		int sel = m_currentOpticsComboBox.GetCurSel();
+		CString opticsName = _T("");
+		m_currentOpticsComboBox.GetLBText(sel, opticsName);
+
+		if (opticsName == "OS")
 			m_Optics = OPTICS_OPTICAL_SIGHT;
-		else if (m_currentOptics == "TI")
+		else if (opticsName == "TI" && counterDataList[m_ActiveUnit]->getUnitInfo()->hasTIsight())
 			m_Optics = OPTICS_THERMAL_IMAGER;
-		else if (m_currentOptics == "ALE")
+		else if (opticsName == "ALE" && counterDataList[m_ActiveUnit]->getUnitInfo()->hasALEsight())
 			m_Optics = OPTICS_AMBIENT_LIGHT_ENHANCER;
-		else if (m_currentOptics == "IRSL")
+		else if (opticsName == "IRSL" && counterDataList[m_ActiveUnit]->getUnitInfo()->hasIRSLsight())
 			m_Optics = OPTICS_INFRARED_SEARCHLIGHT;
-		else if (m_currentOptics == "WLSL")
+		else if (opticsName == "WLSL" && counterDataList[m_ActiveUnit]->getUnitInfo()->hasWLSLsight())
 			m_Optics = OPTICS_WHITELIGHT_SEARCHLIGHT;
+		else
+			m_Optics = OPTICS_OPTICAL_SIGHT;
 
 		counterDataList[m_ActiveUnit]->setOpticsInUse(m_Optics);
 		updateActiveUnit();
@@ -3556,8 +3592,8 @@ bool CAirCavLOSDlg::readWeaponTextFile( FILE *fptr )
 
 bool CAirCavLOSDlg::readUnitTextFile( FILE *fptr )
 {
-//  0         1       2        3        4        5        6      7    8    9   10  11  12  13  14  15
-//  name      main 1  main 2   main 3   secn 1   secn 2   type   tt   evm  sm  dm  nm1 nm2 nm3 ns1 ns2
+//  0         1       2        3        4        5        6      7    8    9   10  11  12  13  14  15  16 17  18   19
+//  name      main 1  main 2   main 3   secn 1   secn 2   type   tt   evm  sm  dm  nm1 nm2 nm3 ns1 ns2 ti ale irsl wlsl
 	char		name[32];
 	char		main1[32];
 	char		main2[32];
@@ -3574,6 +3610,10 @@ bool CAirCavLOSDlg::readUnitTextFile( FILE *fptr )
 	int			nm3;
 	int			ns1;
 	int			ns2;
+	int			ti;
+	int			ale;
+	int			irsl;
+	int			wlsl;
 
 	int u = 0;
 	bool done = false;
@@ -3584,11 +3624,11 @@ bool CAirCavLOSDlg::readUnitTextFile( FILE *fptr )
 		if ( lineStr[0] == '#' )
 			continue;
 
-		int ret = sscanf( lineStr, "%s %s %s %s %s %s %s %s %d %d %d %d %d %d %d %d", 
+		int ret = sscanf( lineStr, "%s %s %s %s %s %s %s %s %d %d %d %d %d %d %d %d %d %d %d %d", 
 							name, main1, main2, main3, secn1, secn2, type, armor,
-							&evm, &sm, &dm, &nm1, &nm2, &nm3, &ns1, &ns2);
+							&evm, &sm, &dm, &nm1, &nm2, &nm3, &ns1, &ns2, &ti, &ale, &irsl, &wlsl);
 
-		if( ret == 16 )
+		if( ret == 20 )
 		{
 			replaceUnderscores( name );
 			replaceUnderscores( main1 );
@@ -3631,6 +3671,10 @@ bool CAirCavLOSDlg::readUnitTextFile( FILE *fptr )
 			newUnit.ammo_m3 = nm3;
 			newUnit.ammo_s1 = ns1;
 			newUnit.ammo_s2 = ns2;
+			newUnit.ti = ti;
+			newUnit.ale = ale;
+			newUnit.irsl = irsl;
+			newUnit.wlsl = wlsl;
 
 			unitDataList[u++] = new AirCavUnitData( newUnit, weaponDataList[main1idx], 
 					weaponDataList[main2idx], weaponDataList[main3idx], 

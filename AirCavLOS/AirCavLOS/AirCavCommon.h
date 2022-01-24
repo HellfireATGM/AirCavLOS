@@ -234,6 +234,10 @@ typedef struct
 	int             ammo_m3;		// ammo - main weapon 3
 	int             ammo_s1;		// ammo - secondary weapon 1
 	int             ammo_s2;		// ammo - secondary weapon 2
+	int				ti;				// thermal imager
+	int				ale;			// ambient light enhancer
+	int				irsl;			// infrared searchlight
+	int				wlsl;			// white light searchlight
 } Type;
 
 /*  weapon definitions  */

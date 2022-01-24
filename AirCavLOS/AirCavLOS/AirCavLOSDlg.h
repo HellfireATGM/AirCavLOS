@@ -45,7 +45,7 @@ public:
 	int					m_Weather;
 	int					m_TimeOfDay;
 	int					m_Optics;
-	//CListBox			m_currentOptics;
+	CComboBox			m_currentOpticsComboBox;
 	CListBox			m_AvailableUnitsListBox;
 	CListBox			m_SightedUnitsListBox;
 	CListBox			m_SightingUnitsListBox;
@@ -118,7 +118,6 @@ public:
 
 	CString m_currentWeather;
 	CString m_currentTimeOfDay;
-	CString m_currentOptics;
 
 	int m_lastArtilleryUnit;
 	int m_lastArtilleryRow;

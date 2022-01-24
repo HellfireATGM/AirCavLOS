@@ -13,7 +13,9 @@ public:
 					AirCavWeaponData *swpn1, AirCavWeaponData *swpn2);
 	AirCavUnitData(CString name, UnitType type, TargetType TT, 
 					AirCavWeaponData *mwpn1, AirCavWeaponData *mwpn2, AirCavWeaponData *mwpn3,
-					AirCavWeaponData *swpn1, AirCavWeaponData *swpn2, int evm, int sm, int dm, int ammo_m1, int ammo_m2, int ammo_m3, int ammo_s1, int ammo_s2);
+					AirCavWeaponData *swpn1, AirCavWeaponData *swpn2, int evm, int sm, int dm, 
+							int ammo_m1, int ammo_m2, int ammo_m3, int ammo_s1, int ammo_s2,
+							int ti, int ale, int irsl, int wlsl);
 public:
 	~AirCavUnitData(void);
 
@@ -36,6 +38,10 @@ private:
 	int					m_nAmmoMainWpn3;		// ammo count for main weapon 3
 	int					m_nAmmoSecondaryWpn1;	// ammo count for secondary weapon 1
 	int					m_nAmmoSecondaryWpn2;	// ammo count for secondary weapon 2
+	int					m_ti;					// thermal imager
+	int					m_ale;					// ambient light enhancer
+	int					m_irsl;					// infrared searchlight
+	int					m_wlsl;					// white light searchlight
 
 // methods
 public:
@@ -79,6 +85,11 @@ public:
 	bool isTrackedVehicle();
 	bool isWheeledVehicle();
 	bool isInfantry();
+
+	bool hasTIsight() { return m_ti == 1; }
+	bool hasALEsight() { return m_ale == 1; }
+	bool hasIRSLsight() { return m_irsl == 1; }
+	bool hasWLSLsight() { return m_wlsl == 1; }
 
 	bool isWeaponNotIRGuided(int which);
 

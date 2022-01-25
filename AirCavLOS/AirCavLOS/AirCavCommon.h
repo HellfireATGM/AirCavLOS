@@ -153,6 +153,10 @@ enum RoadType
 #define SECONDARY1	3
 #define SECONDARY2	4
 
+#define LOS_UNBLOCKED 			0
+#define LOS_BLOCKED_BY_TERRAIN	1
+#define LOS_BLOCKED_BY_SMOKE	2
+
 #define WEATHER_CLEAR		0
 #define WEATHER_LT_FOG		1
 #define WEATHER_HVY_FOG		2
@@ -163,10 +167,10 @@ enum RoadType
 #define TIME_DAY		0
 #define TIME_NIGHT		1
 
-#define NAP_OF_EARTH_METERS			0
-#define LOW_LEVEL_METERS			30
-#define ARTILLERY_SMOKE_DISPERSAL	30
-#define VEHICLE_SMOKE_DISPERSAL		40
+#define NAP_OF_EARTH_METERS			0	// nap of earth is 0m above terrain
+#define LOW_LEVEL_METERS			30	// low level is 30m above terrain
+#define ARTILLERY_SMOKE_DISPERSAL	30	// 30% chance
+#define VEHICLE_SMOKE_DISPERSAL		40	// 40% chance
 
 #define OBS_VEHICLE			0
 #define OBS_INFANTRY		1

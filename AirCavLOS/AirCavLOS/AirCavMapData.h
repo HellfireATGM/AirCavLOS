@@ -12,7 +12,7 @@ public:
 	int OpenMapDataFile(std::string& file_dir);
 	int SaveAndCloseMapDataFile( char *msgbox );
 	int CloseMapDataFile(void);
-	int CalculateLOS( int fx, int fy, int fe, int tx, int ty, int te, bool &skylined, char *log );
+	int CalculateLOS( int fx, int fy, int fe, bool ti, int tx, int ty, int te, bool &skylined, char *log );
 	int Check_Block (int org_x, int org_y, int fe, int x, int y, int tgt_x, int tgt_y, int te);
 
 public:

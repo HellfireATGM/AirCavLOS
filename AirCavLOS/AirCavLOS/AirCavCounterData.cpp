@@ -877,16 +877,26 @@ bool AirCavCounterData::isVisible(int terrain, int range, int weather, int timeo
 
 bool AirCavCounterData::isVisibleAdvanced(int terrain, int range, int weather, int timeofday, SideType side, int optics, int smoke)
 {
+	// low level helicopter
 	bool lowlevel = m_heloOffset > 0;
 	UnitType unitType = m_unitInfo->getUnitType();
 
+	// get the max range at which the target can be seen
 	ObservationData observationData;
 	int maxRange = observationData.getObservationRange(unitType, side, optics, terrain, lowlevel, m_inDefilade, m_fired, timeofday, weather);
 
+	// if target is moving, range is increased by 2
 	if (m_moved)
 		maxRange += 2;
-	if (smoke && !lowlevel)
+
+	// if using Thermal Imager, a unit is unaffected by smoke in its own hex
+	bool usingTI = (optics == OPTICS_THERMAL_IMAGER);
+
+	// if sighting out of a smoke hex, range is halved, unless at low level or using Thermal Imager
+	if (smoke && !lowlevel && !usingTI)
 		maxRange /= 2;
+
+	// if range is beyong max range, target is not visible
 	if (range <= maxRange)
 		return true;
 	else

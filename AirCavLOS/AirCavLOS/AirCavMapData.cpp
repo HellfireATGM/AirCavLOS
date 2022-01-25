@@ -324,7 +324,7 @@ int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 }
 
 
-int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, int tgt_x, int tgt_y, int tgt_elev, bool &skylined, char *logString )
+int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, bool usingTI, int tgt_x, int tgt_y, int tgt_elev, bool &skylined, char *logString )
 {
 	char logBuffer[256];
 	int Fdir, Ldir, Rdir, Rx, Ry, Fx, Fy, Lx, Ly, cur_x, cur_y;
@@ -336,6 +336,7 @@ int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, int tgt_x, 
 	double Fvec_x, Fvec_y, Lvec_x, Lvec_y, Rvec_x, Rvec_y;
 	double Fvec, Lvec, Rvec;
 	bool checkingSkylining = false;
+	bool hitSmokeHex = false;
 
 	sprintf( logBuffer, "Calculating LOS from %02d%02d [%d] to %02d%02d [%d]\n", org_y, org_x, org_elev, tgt_y, tgt_x, tgt_elev);
 	strcpy( logString, logBuffer );
@@ -457,7 +458,7 @@ top:
 	{
 		if (!validHex(Fy, Fx))
 		{
-			blk1 = 1;
+			blk1 = LOS_BLOCKED_BY_TERRAIN;
 			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Fy, Fx);
 			strcat(logString, logBuffer);
 		}
@@ -471,7 +472,7 @@ top:
 		}
 		if (!validHex(Ry, Rx))
 		{
-			blk1 = 1;
+			blk1 = LOS_BLOCKED_BY_TERRAIN;
 			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Ry, Rx);
 			strcat(logString, logBuffer);
 		}
@@ -483,11 +484,20 @@ top:
 			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ry][Rx].terrain], Map[Ry][Rx].elevation);
 			strcat(logString, logBuffer);
 		}
-		if (blk1 & blk2)
+		if (blk1 && blk2)
 		{
-			clear_LOS = 0;
-			blk_x = Fx;
-			blk_y = Fy;
+			bool smoke = (blk1 == LOS_BLOCKED_BY_SMOKE || blk2 == LOS_BLOCKED_BY_SMOKE);
+			if (smoke && usingTI && hitSmokeHex == false)
+			{
+				// if using thermal imaging, ignore the first smoke hex (only)
+				hitSmokeHex = true;
+			}
+			else
+			{
+				clear_LOS = 0;
+				blk_x = Fx;
+				blk_y = Fy;
+			}
 		}
 		cur_x = Fx;
 		cur_y = Fy;
@@ -496,7 +506,7 @@ top:
 	{
 		if (!validHex(Fy, Fx))
 		{
-			blk1 = 1;
+			blk1 = LOS_BLOCKED_BY_TERRAIN;
 			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Fy, Fx);
 			strcat(logString, logBuffer);
 		}
@@ -510,7 +520,7 @@ top:
 		}
 		if (!validHex(Ly, Lx))
 		{
-			blk1 = 1;
+			blk1 = LOS_BLOCKED_BY_TERRAIN;
 			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Ly, Lx);
 			strcat(logString, logBuffer);
 		}
@@ -522,11 +532,20 @@ top:
 			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ly][Lx].terrain], Map[Ly][Lx].elevation);
 			strcat(logString, logBuffer);
 		}
-		if (blk1 & blk2)
+		if (blk1 && blk2)
 		{
-			clear_LOS = 0;
-			blk_x = Fx;
-			blk_y = Fy;
+			bool smoke = (blk1 == LOS_BLOCKED_BY_SMOKE || blk2 == LOS_BLOCKED_BY_SMOKE);
+			if (smoke && usingTI && hitSmokeHex == false)
+			{
+				// if using thermal imaging, ignore the first smoke hex (only)
+				hitSmokeHex = true;
+			}
+			else
+			{
+				clear_LOS = 0;
+				blk_x = Fx;
+				blk_y = Fy;
+			}
 		}
 		cur_x = Fx;
 		cur_y = Fy;
@@ -535,7 +554,7 @@ top:
 	{
 		if (!validHex(Ly, Lx))
 		{
-			blk1 = 1;
+			blk1 = LOS_BLOCKED_BY_TERRAIN;
 			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Ly, Lx);
 			strcat(logString, logBuffer);
 		}
@@ -549,9 +568,18 @@ top:
 		}
 		if (blk1)
 		{
-			clear_LOS = 0;
-			blk_x = Lx;
-			blk_y = Ly;
+			bool smoke = (blk1 == LOS_BLOCKED_BY_SMOKE);
+			if (smoke && usingTI && hitSmokeHex == false)
+			{
+				// if using thermal imaging, ignore the first smoke hex (only)
+				hitSmokeHex = true;
+			}
+			else
+			{
+				clear_LOS = 0;
+				blk_x = Lx;
+				blk_y = Ly;
+			}
 		}
 		cur_x = Lx;
 		cur_y = Ly;
@@ -560,7 +588,7 @@ top:
 	{
 		if (!validHex(Fy, Fx))
 		{
-			blk1 = 1;
+			blk1 = LOS_BLOCKED_BY_TERRAIN;
 			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Fy, Fx);
 			strcat(logString, logBuffer);
 		}
@@ -574,9 +602,18 @@ top:
 		}
 		if (blk1)
 		{
-			clear_LOS = 0;
-			blk_x = Fx;
-			blk_y = Fy;
+			bool smoke = (blk1 == LOS_BLOCKED_BY_SMOKE);
+			if (smoke && usingTI && hitSmokeHex == false)
+			{
+				// if using thermal imaging, ignore the first smoke hex (only)
+				hitSmokeHex = true;
+			}
+			else
+			{
+				clear_LOS = 0;
+				blk_x = Fx;
+				blk_y = Fy;
+			}
 		}
 		cur_x = Fx;
 		cur_y = Fy;
@@ -585,7 +622,7 @@ top:
 	{
 		if (!validHex(Ry, Rx))
 		{
-			blk1 = 1;
+			blk1 = LOS_BLOCKED_BY_TERRAIN;
 			sprintf(logBuffer, "Hex: %02d%02d result: Invalid  ", Ry, Rx);
 			strcat(logString, logBuffer);
 		}
@@ -599,9 +636,18 @@ top:
 		}
 		if (blk1)
 		{
-			clear_LOS = 0;
-			blk_x = Rx;
-			blk_y = Ry;
+			bool smoke = (blk1 == LOS_BLOCKED_BY_SMOKE);
+			if (smoke && usingTI && hitSmokeHex == false)
+			{
+				// if using thermal imaging, ignore the first smoke hex (only)
+				hitSmokeHex = true;
+			}
+			else
+			{
+				clear_LOS = 0;
+				blk_x = Rx;
+				blk_y = Ry;
+			}
 		}
 		cur_x = Rx;
 		cur_y = Ry;
@@ -698,7 +744,7 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 	double dist2tgt, dist2org;
 	int tgt_hgt, org_hgt, int_hgt, blk;
 
-	blk = 0;
+	blk = LOS_UNBLOCKED;
 	int_hgt = getElevation( x, y );
 	org_hgt = getElevation( org_x, org_y ) + org_elev;
 	tgt_hgt = getElevation( tgt_x, tgt_y ) + tgt_elev;
@@ -710,17 +756,17 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 
 	if (int_hgt > org_hgt && int_hgt > tgt_hgt)
 	{
-		blk = 1;
+		blk = LOS_BLOCKED_BY_TERRAIN;
 	}
 	else if (Map[y][x].smoke == 1)
 	{
-		blk = 1;
+		blk = LOS_BLOCKED_BY_SMOKE;
 	}
 	else if (org_hgt > tgt_hgt)
 	{
 		if (int_hgt >= org_hgt)
 		{
-			blk = 1;
+			blk = LOS_BLOCKED_BY_TERRAIN;
 		}
 		else if (int_hgt < org_hgt && int_hgt > tgt_hgt)
 		{
@@ -730,7 +776,7 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 			dist2tgt = sqrt(d2t);
 			if (dist2tgt < dist2org)
 			{
-				blk = 1;
+				blk = LOS_BLOCKED_BY_TERRAIN;
 			}
 		}
 	}
@@ -738,7 +784,7 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 	{
 		if (int_hgt >= tgt_hgt)
 		{
-			blk = 1;
+			blk = LOS_BLOCKED_BY_TERRAIN;
 		}
 		else if (int_hgt > org_hgt && int_hgt < tgt_hgt)
 		{
@@ -748,7 +794,7 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 			dist2tgt = sqrt(d2t);
 			if (dist2org < dist2tgt)
 			{
-				blk = 1;
+				blk = LOS_BLOCKED_BY_TERRAIN;
 			}
 		}
 	}

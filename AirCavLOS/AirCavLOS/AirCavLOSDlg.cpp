@@ -718,6 +718,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 	int tgtCol = counterDataList[tgt]->getHexCol();
 	int tgtRow = counterDataList[tgt]->getHexRow();
 
+	// determine if sighting unit is using Thermal Imaging (to see through smoke)
+	bool usingTI = counterDataList[m_ActiveUnit]->getOpticsInUse() == OPTICS_THERMAL_IMAGER;
+
 	// make sure there is a line of sight for helicopters - it might need to do a popup first
 	if (isHelicopterFiring && isNapOfEarth)
 	{
@@ -733,7 +736,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		targetUnitOffset += targetUnitHeloOffset;
 
 		char buffer[MAX_BUF_SIZE];
-		int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset,
+		int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, usingTI,
 			tgtRow, tgtCol, targetUnitOffset, skylined, buffer);
 
 		if (range == 0)
@@ -754,7 +757,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		char buffer[MAX_BUF_SIZE];
 		int activeUnitOffset = counterDataList[m_ActiveUnit]->getElevOffset();
 		int targetUnitOffset = counterDataList[tgt]->getElevOffset();
-		int rocketRange = mapData->CalculateLOS( unitRow, unitCol, targetUnitOffset, tgtRow, tgtCol, activeUnitOffset, skylined, buffer );
+		int rocketRange = mapData->CalculateLOS( unitRow, unitCol, targetUnitOffset, usingTI, tgtRow, tgtCol, activeUnitOffset, skylined, buffer );
 		int wpnAdjustedMaxRange = wpn->getMaxRange() / 2;
 		if ( rocketRange > wpnAdjustedMaxRange )
 			return;
@@ -1923,6 +1926,9 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			std::map<int, std::string> popupSightedUnits;
 			for (int c = 0; c < m_maxCounters; c++)
 			{
+				// determine if sighting unit is using Thermal Imaging (to see through smoke)
+				bool usingTI = counterDataList[m_ActiveUnit]->getOpticsInUse() == OPTICS_THERMAL_IMAGER;
+
 				if (c != m_ActiveUnit)
 				{
 					bool skylined = false;
@@ -1939,7 +1945,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						targetUnitOffset += targetUnitHeloOffset;
 
 						//  calculate line-of-sight
-						int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset,
+						int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, usingTI,
 							targetHexRow, targetHexColumn, targetUnitOffset, skylined, buffer);
 
 						CString unitName = counterDataList[m_ActiveUnit]->getName();
@@ -1958,7 +1964,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							if ( activeUnitHeloOffset == 0 && counterDataList[m_ActiveUnit]->getUnitInfo()->isAttackHelicopter() )
 							{
 								//  recalculate calculate line-of-sight assuming a pop-up
-								range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset + LOW_LEVEL_METERS,
+								range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset + LOW_LEVEL_METERS, usingTI,
 									targetHexRow, targetHexColumn, targetUnitOffset, skylined, buffer);
 
 								if (range > 0)
@@ -1984,19 +1990,23 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						{
 							// if a unit is in smoke hex and not low level and it has fired, it can be observed only up to 5 hexes away
 							// my errata: also include in this case if the unit has moved
-							if (!targetlowLevel && targetSmoke && range > 5)
+							if (!targetlowLevel && targetSmoke && range > 5 && !usingTI)
 								continue;
 						}
 						else
 						{
 							// a unit can only be observed from 1 hex away if it is in smoke hex and not low level and has not fired
-							if (!targetlowLevel && targetSmoke && range > 1)
+							if (!targetlowLevel && targetSmoke && range > 1 && !usingTI)
 								continue;
 						}
 
-						// ignore smoke in the active hex if it is a helo at low level
-						if (activelowLevel && activeSmoke)
+						// ignore smoke in the active hex if it is a helo at low level or if using Thermal Imager
+						if ((activelowLevel || usingTI) && activeSmoke)
 							activeSmoke = 0;
+
+						// ignore smoke in the target hex if it is a helo at low level
+						if (targetlowLevel && targetSmoke)
+							targetSmoke = 0;
 
 						// skylining has some very specific requirements, check them here
 						if (skylined && unitCannotBeSkylined(counterDataList[c]->getUnitInfo()->getUnitType(), targetTerrain, targetSmoke))
@@ -2126,13 +2136,17 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						int targetUnitOffset = counterDataList[s.first]->getElevOffset();
 						int targetUnitHeloOffset = counterDataList[s.first]->getHeloOffset();
 						targetUnitOffset += targetUnitHeloOffset;
+
+						// determine if sighting unit is using Thermal Imaging (to see through smoke)
+						bool usingTI = counterDataList[c]->getOpticsInUse() == OPTICS_THERMAL_IMAGER;
+
 						int friendlyUnitHexColumn = counterDataList[c]->getHexCol();
 						int friendlyUnitHexRow = counterDataList[c]->getHexRow();
 						int friendlyUnitOffset = counterDataList[c]->getElevOffset();
 						int friendlyUnitHeloOffset = counterDataList[c]->getHeloOffset();
 						friendlyUnitOffset += friendlyUnitHeloOffset;
 
-						int range = mapData->CalculateLOS(friendlyUnitHexRow, friendlyUnitHexColumn, friendlyUnitOffset,
+						int range = mapData->CalculateLOS(friendlyUnitHexRow, friendlyUnitHexColumn, friendlyUnitOffset, usingTI,
 							targetUnitHexRow, targetUnitHexColumn, targetUnitOffset, skylined, buffer);
 						if (range > 0)
 							numNormalSightings++;
@@ -2149,6 +2163,9 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			std::map<int, std::string> popupSightingUnits;
 			for (int c = 0; c < m_maxCounters; c++)
 			{
+				// determine if sighting unit is using Thermal Imaging (to see through smoke)
+				bool usingTI = counterDataList[c]->getOpticsInUse() == OPTICS_THERMAL_IMAGER;
+
 				if (c != m_ActiveUnit)
 				{
 					int targetHexColumn = counterDataList[c]->getHexCol();
@@ -2165,7 +2182,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						targetUnitOffset += targetUnitHeloOffset;
 
 						//  calculate line-of-sight
-						int range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitOffset, 
+						int range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitOffset, usingTI,
 							activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, buffer);
 
 						CString unitName = counterDataList[m_ActiveUnit]->getName();
@@ -2184,7 +2201,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							if (targetUnitHeloOffset <= 0 && counterDataList[c]->getUnitInfo()->isAttackHelicopter() )
 							{
 								//  recalculate calculate line-of-sight assuming a pop-up
-								range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitOffset + LOW_LEVEL_METERS,
+								range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitOffset + LOW_LEVEL_METERS, usingTI,
 									activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, buffer);
 
 								if (range > 0)
@@ -2210,19 +2227,23 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						{
 							// if a unit is in smoke hex and not low level and it has fired, it can be observed only up to 5 hexes away
 							// my errata: also include in this case if the unit has moved
-							if (!activelowLevel && activeSmoke && range > 5)
+							if (!activelowLevel && activeSmoke && range > 5 && !usingTI)
 								continue;
 						}
 						else
 						{
 							// a unit can only be observed from 1 hex away if it is in smoke hex and not low level and has not fired
-							if (!activelowLevel && activeSmoke && range > 1)
+							if (!activelowLevel && activeSmoke && range > 1 && !usingTI)
 								continue;
 						}
 
-						// ignore smoke in the target hex if it is a helo at low level
-						if (targetlowLevel && targetSmoke)
+						// ignore smoke in the target hex if it is a helo at low level or if using Thermal Imager
+						if ((targetlowLevel || usingTI) && targetSmoke)
 							targetSmoke = 0;
+
+						// ignore smoke in the active hex if it is a helo at low level
+						if (activelowLevel && activeSmoke)
+							activeSmoke = 0;
 
 						// skylining has some very specific requirements, check them here
 						if (skylined && unitCannotBeSkylined(counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType(), activeTerrain, activeSmoke))
@@ -2348,13 +2369,17 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							bool skylined = false;
 							int activeUnitHexColumn = counterDataList[m_ActiveUnit]->getHexCol();
 							int activeUnitHexRow = counterDataList[m_ActiveUnit]->getHexRow();
+
+							// determine if sighting unit is using Thermal Imaging (to see through smoke)
+							bool usingTI = counterDataList[c]->getOpticsInUse() == OPTICS_THERMAL_IMAGER;
+
 							int enemyUnitHexColumn = counterDataList[c]->getHexCol();
 							int enemyUnitHexRow = counterDataList[c]->getHexRow();
 							int enemyUnitOffset = counterDataList[c]->getElevOffset();
 							int enemyUnitHeloOffset = counterDataList[c]->getHeloOffset();
 							enemyUnitOffset += enemyUnitHeloOffset;
 
-							int range = mapData->CalculateLOS(enemyUnitHexRow, enemyUnitHexColumn, enemyUnitOffset,
+							int range = mapData->CalculateLOS(enemyUnitHexRow, enemyUnitHexColumn, enemyUnitOffset, usingTI,
 								activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, buffer);
 							if (range > 0)
 								numNormalSightings++;
@@ -2802,6 +2827,9 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 		// is helicopter at nap of earth
 		bool isNapOfEarth = (counterDataList[firingUnit]->getHeloOffset() == NAP_OF_EARTH_METERS);
 
+		// determine if sighting unit is using Thermal Imaging (to see through smoke)
+		bool usingTI = counterDataList[firingUnit]->getOpticsInUse() == OPTICS_THERMAL_IMAGER;
+
 		// firing rocket from nap-of-earth helicopter is at half range
 		if ( isHelicopterFiring && isNapOfEarth && wpnType == ROCKET )
 		{
@@ -2816,7 +2844,7 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 			char buffer[MAX_BUF_SIZE];
 			int activeUnitOffset = counterDataList[firingUnit]->getElevOffset();
 			int targetUnitOffset = counterDataList[tgt]->getElevOffset();
-			int rocketRange = mapData->CalculateLOS( unitRow, unitCol, targetUnitOffset, tgtRow, tgtCol, activeUnitOffset, skylined, buffer );
+			int rocketRange = mapData->CalculateLOS( unitRow, unitCol, activeUnitOffset, usingTI, tgtRow, tgtCol, targetUnitOffset, skylined, buffer );
 			int wpnAdjustedMaxRange = wpnData->getMaxRange() / 2;
 			if ( rocketRange > wpnAdjustedMaxRange )
 				return lastActiveUnit;

@@ -439,11 +439,9 @@ void CAirCavLOSDlg::OnOK()
 	if ( ret == IDYES )
 	{
 		// close the map file and delete the map data
-		//char msgbox[128];
 		if ( mapData )
 		{
-			//mapData->SaveAndCloseMapDataFile(msgbox);
-			//MessageBox( (CString)msgbox, (CString)"Map Progress", MB_OK );
+			mapData->CloseMapDataFile();
 			delete mapData;
 			mapData = NULL;
 		}

@@ -307,11 +307,15 @@ int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 			if (Map[c][r].elevation < 0)
 				e = 0.0f;
 			else if (Map[c][r].terrain == RIVER)
-				e = -10.0f;
+				e = (double)Map[c][r].elevation - 10.0f;
 			else if (Map[c][r].terrain == TOWN)
-				e = 100.0f;
+				e = (double)Map[c][r].elevation + 20.0f;
 			else
+			{
 				e = (double)Map[c][r].elevation;
+				if (Map[c][r].contour && e > 0.0f)
+					e -= 5.0f;
+			}
 
 			fprintf (dem_file_pointer, "%f, %f, %f\n", x, y, e);
 		}

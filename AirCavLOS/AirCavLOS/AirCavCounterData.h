@@ -116,7 +116,7 @@ public:
 	double incrOPs(double op);
 	double decrOPs(double op, bool oppAction=false);
 
-	int moveAction( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int col, int row, int from, int popSmoke, bool goingToNOE = false);
+	int moveAction( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int col, int row, int from, int popSmoke, int timeOfDay, int weather, bool goingToNOE = false);
 	int fireGun( bool oppFire = FALSE );
 	int fireMissile( bool oppFire = FALSE );
 	int fireRocket( bool oppFire = FALSE );
@@ -180,12 +180,12 @@ public:
 	int getAmmoSecondaryWeapon2() { return m_nAmmoSecondaryWpn2; }
 
 	void moveTo(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int col, int row, bool doCheckContour = true);
-	void moveNorth( AirCavMapData *mapData, AirCavCounterData *counterDataList[MAXCOUNTERS], int popSmoke );
-	void moveNorthWest( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
-	void moveNorthEast( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
-	void moveSouth( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
-	void moveSouthWest( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
-	void moveSouthEast( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke );
+	void moveNorth( AirCavMapData *mapData, AirCavCounterData *counterDataList[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather );
+	void moveNorthWest( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather );
+	void moveNorthEast( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather );
+	void moveSouth( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather );
+	void moveSouthWest( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather );
+	void moveSouthEast( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather );
 
 	int checkContour(AirCavMapData *mapData, int col, int row, int from, int curOffset = 0);
 	bool isVisible(int terrain, int range, int weather, int timeofday, int smoke = FALSE);

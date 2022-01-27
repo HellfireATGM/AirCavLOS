@@ -1039,7 +1039,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
 	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
 	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
-	counterDataList[m_ActiveUnit]->moveNorth(mapData, counterDataList, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveNorth(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();
@@ -1065,7 +1065,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
 	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
 	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
-	counterDataList[m_ActiveUnit]->moveNorthWest(mapData, counterDataList, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveNorthWest(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();
@@ -1091,7 +1091,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
 	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
 	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
-	counterDataList[m_ActiveUnit]->moveSouthWest(mapData, counterDataList, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveSouthWest(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();
@@ -1117,7 +1117,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
 	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
 	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
-	counterDataList[m_ActiveUnit]->moveSouth(mapData, counterDataList, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveSouth(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();
@@ -1143,7 +1143,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
 	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
 	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
-	counterDataList[m_ActiveUnit]->moveSouthEast(mapData, counterDataList, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveSouthEast(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();
@@ -1169,7 +1169,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNe()
 	int previousOPs = counterDataList[m_ActiveUnit]->getOPs();
 	int previousRow = counterDataList[m_ActiveUnit]->getHexRow();
 	int previousColumn = counterDataList[m_ActiveUnit]->getHexCol();
-	counterDataList[m_ActiveUnit]->moveNorthEast(mapData, counterDataList, m_popSmokeWhileMoving);
+	counterDataList[m_ActiveUnit]->moveNorthEast(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
 	updateActiveUnit();

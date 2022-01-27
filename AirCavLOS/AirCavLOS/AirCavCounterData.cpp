@@ -254,7 +254,7 @@ double AirCavCounterData::decrOPs(double op, bool oppCost)
 	return m_OPs;
 }
 
-int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int col, int row, int from, int popSmoke, bool goingToNOE )
+int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int col, int row, int from, int popSmoke, int timeOfDay, int weather, bool goingToNOE )
 {
 	double OPcost;
 
@@ -373,6 +373,10 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 		}
 		else
 		{
+			// nap-of-earth helicopters cannnot enter a smoke hex
+			if (smokeHex && isHeloUnit)
+				return 0;
+
 			// crossing a stream
 			if ( stream )
 			{
@@ -399,12 +403,15 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 			// being suppressed costs extra
 			if (m_isSuppressed)
 				OPcost += 1.0;
-			// helicopters cannnot enter a smoke hex
-			if ( smokeHex && isHeloUnit)
-				return 0;
 			// smoke hex costs extra for all other units
 			if ( smokeHex )
 				OPcost += 1.0;
+			// night costs extra (NOTE: tables don't mention towns, presumably because they have lights at night)
+			if ( timeOfDay == TIME_NIGHT )
+				OPcost += 1.0;
+			// bad weather costs extra (NOTE: presumably operations in towns is not hindered by bad weather)
+			if ( weather == WEATHER_HVY_FOG || weather == WEATHER_RAIN || weather == WEATHER_SNOW )
+				OPcost += ((nextTerr == TOWN) ? 0.0 : 2.0);
 		}
 
 		// determine if there are enough operation points
@@ -683,7 +690,7 @@ void AirCavCounterData::setHeloOffset(AirCavMapData *mapData, AirCavCounterData 
 		if ( noCost )
 			m_heloOffset = elev;
 		// changing from Low Level to Nap of the Earth (cost is terrain)
-		else if ( moveAction( mapData, counterData, m_hexCol, m_hexRow, -1, false, true ) )
+		else if ( moveAction( mapData, counterData, m_hexCol, m_hexRow, -1, false, TIME_DAY, WEATHER_CLEAR, true ) )
 			m_heloOffset = elev;
 	}
 	else
@@ -727,14 +734,14 @@ void AirCavCounterData::moveTo(AirCavMapData *mapData, AirCavCounterData *counte
 	}
 }
 
-void AirCavCounterData::moveNorth(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
+void AirCavCounterData::moveNorth(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather)
 {
 	int nextRow = m_hexRow-1;
 	int nextCol = m_hexCol;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, DIRECTION_SO);
-		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_SO, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_SO, popSmoke, timeOfDay, weather ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;
@@ -742,14 +749,14 @@ void AirCavCounterData::moveNorth(AirCavMapData *mapData, AirCavCounterData *cou
 	}
 }
 
-void AirCavCounterData::moveNorthWest(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
+void AirCavCounterData::moveNorthWest(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather)
 {
 	int nextRow = EVEN(m_hexCol) ? m_hexRow-1 : m_hexRow;
 	int nextCol = m_hexCol - 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, DIRECTION_SE);
-		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_SE, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_SE, popSmoke, timeOfDay, weather ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;
@@ -757,14 +764,14 @@ void AirCavCounterData::moveNorthWest(AirCavMapData *mapData, AirCavCounterData 
 	}
 }
 
-void AirCavCounterData::moveNorthEast(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
+void AirCavCounterData::moveNorthEast(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather)
 {
 	int nextRow = EVEN(m_hexCol) ? m_hexRow-1 : m_hexRow;
 	int nextCol = m_hexCol + 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, DIRECTION_SW);
-		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_SW, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_SW, popSmoke, timeOfDay, weather ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;
@@ -772,14 +779,14 @@ void AirCavCounterData::moveNorthEast(AirCavMapData *mapData, AirCavCounterData 
 	}
 }
 
-void AirCavCounterData::moveSouth(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
+void AirCavCounterData::moveSouth(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather)
 {
 	int nextRow = m_hexRow + 1;
 	int nextCol = m_hexCol;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, DIRECTION_NO);
-		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_NO, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_NO, popSmoke, timeOfDay, weather ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;
@@ -787,14 +794,14 @@ void AirCavCounterData::moveSouth(AirCavMapData *mapData, AirCavCounterData *cou
 	}
 }
 
-void AirCavCounterData::moveSouthWest(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
+void AirCavCounterData::moveSouthWest(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather)
 {
 	int nextRow = EVEN(m_hexCol) ? m_hexRow : m_hexRow + 1;
 	int nextCol = m_hexCol - 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, DIRECTION_NE);
-		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_NE, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_NE, popSmoke, timeOfDay, weather ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;
@@ -802,14 +809,14 @@ void AirCavCounterData::moveSouthWest(AirCavMapData *mapData, AirCavCounterData 
 	}
 }
 
-void AirCavCounterData::moveSouthEast(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke)
+void AirCavCounterData::moveSouthEast(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int popSmoke, int timeOfDay, int weather)
 {
 	int nextRow = EVEN(m_hexCol) ? m_hexRow : m_hexRow + 1;
 	int nextCol = m_hexCol + 1;
 	if ( mapData->validHex(nextCol, nextRow) )
 	{
 		m_nextElevOffset = checkContour(mapData, nextCol, nextRow, DIRECTION_NW);
-		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_NW, popSmoke ) )
+		if ( moveAction( mapData, counterData, nextCol, nextRow, DIRECTION_NW, popSmoke, timeOfDay, weather ) )
 		{
 			m_hexRow = nextRow;
 			m_hexCol = nextCol;

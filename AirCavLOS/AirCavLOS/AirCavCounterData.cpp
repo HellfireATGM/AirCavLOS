@@ -459,6 +459,7 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 			if ( m_OPsSpentMoving >= 6 )
 				m_moved = 1;
 			setActionTaken(true);
+			setDefilade(FALSE);
 			m_elevOffset = m_nextElevOffset;
 			if ( popSmoke )
 				mapData->setSmoke( row, col, false );

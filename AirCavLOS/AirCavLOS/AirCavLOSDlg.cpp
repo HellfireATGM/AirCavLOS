@@ -614,6 +614,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionPopUp()
 				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, LOW_LEVEL_METERS, true);
 				counterDataList[m_ActiveUnit]->setIsPopUp(POPUP_NOT_FIRED);
 			}
+			counterDataList[m_ActiveUnit]->setActionTaken(true);
 			updateActiveUnit();
 		}
 	}
@@ -1639,6 +1640,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		// Active Unit info
 		char buffer[MAX_BUF_SIZE];
 		m_activeUnitName = counterDataList[m_ActiveUnit]->getName();
+		m_activeUnitMounted = counterDataList[m_ActiveUnit]->getIsCarriedBy();
+		m_activeUnitDismounted = counterDataList[m_ActiveUnit]->getIsDismounted();
 
 		if (counterDataList[m_ActiveUnit]->getIsAlive() == DEAD)
 		{
@@ -1651,6 +1654,11 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			// unit has been active this turn
 			m_activeUnitName += " [ACTION]";
 		}
+		if (m_activeUnitMounted && !m_activeUnitDismounted)
+		{
+			// unit is currently mounted
+			m_activeUnitName += " [MOUNT]";
+		}
 		sprintf_s( buffer, "%2.1f", counterDataList[m_ActiveUnit]->getOPs() );
 		m_activeUnitOPs = (CString)buffer;
 
@@ -1660,8 +1668,6 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		m_activeUnitMoved = counterDataList[m_ActiveUnit]->getMoved();
 		m_activeUnitEvading = counterDataList[m_ActiveUnit]->getEvading();
 		m_activeUnitInDefilade = counterDataList[m_ActiveUnit]->getDefilade();
-		m_activeUnitMounted = counterDataList[m_ActiveUnit]->getIsCarriedBy();
-		m_activeUnitDismounted = counterDataList[m_ActiveUnit]->getIsDismounted();
 		m_activeUnitLowLevel = ( counterDataList[m_ActiveUnit]->getHeloOffset() > NAP_OF_EARTH_METERS) ? 1 : 0;
 		m_activeUnitIsSuppressed = counterDataList[m_ActiveUnit]->getIsSuppressed();
 
@@ -2573,6 +2579,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionEvade()
 	{
 		UpdateData(TRUE);
 		counterDataList[m_ActiveUnit]->evasiveManeuver();
+		if (counterDataList[m_ActiveUnit]->getEvading())
+			counterDataList[m_ActiveUnit]->setActionTaken(true);
 		updateActiveUnit();
 	}
 }
@@ -2611,6 +2619,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActiveSuppressed()
 				if (counterDataList[m_ActiveUnit]->decrOPs(2) != -1)
 				{
 					counterDataList[m_ActiveUnit]->setIsSuppressed(0);
+					counterDataList[m_ActiveUnit]->setActionTaken(true);
 					successful = true;
 				}
 			}
@@ -2619,6 +2628,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActiveSuppressed()
 				if (counterDataList[m_ActiveUnit]->decrOPs(3) != -1)
 				{
 					counterDataList[m_ActiveUnit]->setIsSuppressed(0);
+					counterDataList[m_ActiveUnit]->setActionTaken(true);
 					successful = true;
 				}
 			}
@@ -2627,6 +2637,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActiveSuppressed()
 				if (counterDataList[m_ActiveUnit]->decrOPs(3) != -1)
 				{
 					counterDataList[m_ActiveUnit]->setIsSuppressed(0);
+					counterDataList[m_ActiveUnit]->setActionTaken(true);
 					successful = true;
 				}
 			}
@@ -4085,6 +4096,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionPreviousMove()
 			// if the original unit has moved, so has this one
 			if ( counterDataList[m_unitTracking.unit]->getMoved()) 
 				counterDataList[m_ActiveUnit]->move();
+
+			// and it it considered to have taken an action
+			counterDataList[m_ActiveUnit]->setActionTaken(true);
 
 			moveMountedUnits();
 			updateActiveUnit();

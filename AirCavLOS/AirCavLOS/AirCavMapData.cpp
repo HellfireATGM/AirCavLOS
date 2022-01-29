@@ -689,6 +689,8 @@ top:
 			// only check skylining if target elevation is equal to or greater than origin elevation
 			if (tgt_elev >= org_elev)
 			{
+				sprintf(logBuffer, "Check Skylining (Target Elev >= Origin Elev)\n");
+				strcat(logString, logBuffer);
 				checkingSkylining = true;
 				targetRange = range;
 				goto top;
@@ -725,6 +727,8 @@ top:
 			// only check skylining if target elevation is equal to or greater than origin elevation
 			if (tgt_elev >= org_elev)
 			{
+				sprintf(logBuffer, "Check Skylining (Target Elev >= Origin Elev)\n");
+				strcat(logString, logBuffer);
 				checkingSkylining = true;
 				targetRange = range;
 				goto top;

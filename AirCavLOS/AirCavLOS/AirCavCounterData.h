@@ -107,6 +107,7 @@ public:
 	void setDefilade(int def) { m_inDefilade = def; }
 	void setEvading(int evade) { m_evasiveManeuver = evade; }
 	bool getActionTaken() { return m_actionTaken; }
+	void setActionTaken(bool act) { m_actionTaken = act; }
 	int getIsSuppressed() { return m_isSuppressed; }
 	void setIsSuppressed(int sup) { m_isSuppressed = sup; }
 	int getOpticsInUse() { return m_opticsInUse; }

@@ -249,8 +249,6 @@ double AirCavCounterData::decrOPs(double op, bool oppCost)
 
 	m_OPs -= op;
 	if ( m_OPs < 0 ) m_OPs = 0;
-	if ( !oppCost )
-		m_actionTaken = true;
 	return m_OPs;
 }
 
@@ -460,6 +458,7 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 			m_OPsSpentMoving += OPcost;
 			if ( m_OPsSpentMoving >= 6 )
 				m_moved = 1;
+			setActionTaken(true);
 			m_elevOffset = m_nextElevOffset;
 			if ( popSmoke )
 				mapData->setSmoke( row, col, false );
@@ -494,6 +493,7 @@ int AirCavCounterData::fireGun(bool oppFire)
 		if ( decrOPs(OPcost, oppFire) != -1 )
 		{
 			fire();
+			setActionTaken(true);
 			return 1;
 		}
 		else
@@ -525,6 +525,7 @@ int AirCavCounterData::fireMissile(bool oppFire)
 		if ( decrOPs(OPcost, oppFire) != -1 )
 		{
 			fire();
+			setActionTaken(true);
 			return 1;
 		}
 		else
@@ -556,6 +557,7 @@ int AirCavCounterData::fireRocket(bool oppFire)
 		if ( decrOPs(OPcost, oppFire) != -1 )
 		{
 			fire();
+			setActionTaken(true);
 			return 1;
 		}
 		else
@@ -587,6 +589,7 @@ int AirCavCounterData::fireSAM(bool oppFire)
 		if ( decrOPs(OPcost, oppFire) != -1 )
 		{
 			fire();
+			setActionTaken(true);
 			return 1;
 		}
 		else
@@ -615,6 +618,7 @@ int AirCavCounterData::popupFire(bool oppFire)
 		if ( decrOPs(OPcost, oppFire) != -1 )
 		{
 			fire();
+			setActionTaken(true);
 			return 1;
 		}
 		else
@@ -752,6 +756,7 @@ void AirCavCounterData::setHeloOffset(AirCavMapData *mapData, AirCavCounterData 
 			else if ( decrOPs(OPcost) != -1 )
 			{
 				m_heloOffset = elev;
+				setActionTaken(true);
 			}
 		}
 	}
@@ -990,6 +995,7 @@ int AirCavCounterData::enterDefilade(int terrain, int toggle)
 		if ( decrOPs(OPcost) != -1 )
 		{
 			m_inDefilade = TRUE;
+			setActionTaken(true);
 			return 1;
 		}
 		else
@@ -1057,6 +1063,7 @@ int AirCavCounterData::laySmoke( AirCavMapData *mapData, int col, int row )
 	if ( decrOPs(OPcost) != -1 )
 	{
 		mapData->setSmoke( row, col );
+		setActionTaken(true);
 		return 1;
 	}
 	else
@@ -1079,6 +1086,7 @@ int AirCavCounterData::mountCarrier( void )
 		if ( decrOPs(OPcost) != -1 )
 		{
 			m_isDismounted = FALSE;
+			setActionTaken(true);
 			return 1;
 		}
 	}
@@ -1101,6 +1109,7 @@ int AirCavCounterData::dismountCarrier( void )
 		if ( decrOPs(OPcost) != -1 )
 		{
 			m_isDismounted = TRUE;
+			setActionTaken(true);
 			return 1;
 		}
 	}
@@ -1160,6 +1169,7 @@ int AirCavCounterData::mountUnit( void )
 	{
 		if ( decrOPs(OPcost) != -1 )
 		{
+			setActionTaken(true);
 			return 1;
 		}
 	}
@@ -1181,6 +1191,7 @@ int AirCavCounterData::dismountUnit( void )
 	{
 		if ( decrOPs(OPcost) != -1 )
 		{
+			setActionTaken(true);
 			return 1;
 		}
 	}

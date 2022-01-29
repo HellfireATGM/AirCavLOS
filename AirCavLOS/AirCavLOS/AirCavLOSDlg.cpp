@@ -867,6 +867,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		{
 			CString msgstr = (CString)"The selected weapon is out of ammo!";
 			MessageBox((LPCTSTR)msgstr);
+			return;
 		}
 	}
 	if ( succeeded == 0 )
@@ -1041,8 +1042,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		}
 
 		// set Evasive Maneuver to false
-		if ( EVMmod )
-			counterDataList[t]->setEvading(0);
+		counterDataList[t]->setEvading(0);
 
 		updateActiveUnit();
 	}

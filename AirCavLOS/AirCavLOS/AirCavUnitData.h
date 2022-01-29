@@ -81,7 +81,10 @@ public:
 	CString getSideTypeString(SideType sideType);
 
 	bool isHelicopter();
+	bool isHeavyHelicopter();
+	bool isLightHelicopter();
 	bool isAttackHelicopter();
+	bool isVehicle();
 	bool isTrackedVehicle();
 	bool isWheeledVehicle();
 	bool isInfantry();

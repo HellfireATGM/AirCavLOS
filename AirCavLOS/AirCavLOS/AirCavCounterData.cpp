@@ -141,7 +141,7 @@ AirCavCounterData::AirCavCounterData(CString name, SideType side, CountryType co
 	m_OPsSpentMoving = 0;
 	m_isActive = NOT_ACTIVE;
 	m_isOppFiring = FALSE;
-	m_isPopUp = FALSE;
+	m_isPopUp = NOT_IN_POPUP;
     m_wpnOppFiring = 0;
     m_tgtOppFiring = 0;
 	m_status = op < 0 ? DEAD : ALIVE;		// a dead unit has negative OPs remaining
@@ -202,7 +202,7 @@ void AirCavCounterData::reset()
 	m_inDefilade = FALSE;
 	m_evasiveManeuver = FALSE;
 	m_isOppFiring = FALSE;
-	m_isPopUp = FALSE;
+	m_isPopUp = NOT_IN_POPUP;
     m_wpnOppFiring = 0;
     m_tgtOppFiring = -1;
 	m_macroMove = 0;
@@ -227,7 +227,7 @@ void AirCavCounterData::resetActive()
 	//m_inDefilade = FALSE;
 	m_evasiveManeuver = FALSE;
 	m_isOppFiring = FALSE;
-	m_isPopUp = FALSE;
+	m_isPopUp = NOT_IN_POPUP;
     m_wpnOppFiring = 0;
     m_tgtOppFiring = -1;
 	m_macroMove = 0;
@@ -254,6 +254,46 @@ double AirCavCounterData::decrOPs(double op, bool oppCost)
 	return m_OPs;
 }
 
+void AirCavCounterData::setIsPopUp(int popup)
+{
+	// if "in popup" but have not fired and going to "not popup", expend OPs for the popup only
+	if (m_isPopUp == POPUP_NOT_FIRED && popup == NOT_IN_POPUP)
+	{
+		UnitType utype = m_unitInfo->getUnitType();
+		CountryType side = m_unitInfo->getCountryType();
+
+		double OPcost;
+		if (isNATO(side))
+			OPcost = US_OP_Cost[utype][POPUP];
+		else
+			OPcost = Sov_OP_Cost[utype][POPUP];
+		if (OPcost > 0)
+		{
+			if (decrOPs(OPcost, false) != -1)
+			{
+				nofire();
+				move();
+				m_isPopUp = popup;
+			}
+		}
+		return;
+	}
+
+	// otherwise, if "not popup", go to "in popup" (Fired and not Moving)
+	if (popup == NOT_IN_POPUP)
+	{
+		fire();
+		nomove();
+	}
+	else
+	{
+		// and if "in popup", go back to "not popup" (not Fired and Moving)
+		nofire();
+		move();
+	}
+	m_isPopUp = popup;
+}
+
 int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int col, int row, int from, int popSmoke, int timeOfDay, int weather, bool goingToNOE )
 {
 	double OPcost;
@@ -269,8 +309,8 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 	if (hexStackingFull(mapData, counterData, row, col, false, goingToNOE))
 		return 0;
 
-	bool isInfantryUnit = isInfantry(unitType);
-	bool isHeavyHeloUnit = isHeavyHelo(unitType);
+	bool isInfantryUnit = m_unitInfo->isInfantry();
+	bool isHeavyHeloUnit = m_unitInfo->isHeavyHelicopter();
 
 	int nextTerr = mapData->getTerrain( row, col );
 	int currRoad = mapData->getRoad( m_hexRow, m_hexCol );
@@ -331,7 +371,7 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 	// for helicopters at low level, the only cost is the macro cost
 	bool isHeloUnit = false;
 	bool heloAtLowLevel = false;
-	if ( isHelo( unitType ) )
+	if ( m_unitInfo->isHelicopter() )
 	{
 		// this is a helicopter
 		isHeloUnit = true;
@@ -618,14 +658,10 @@ int AirCavCounterData::oppFire(int weaponType)
 int AirCavCounterData::checkContour(AirCavMapData *mapData, int col, int row, int from, int curOffset)
 {
 	int elevOffset = 0;
-	UnitType unitType = m_unitInfo->getUnitType();
 	bool heloAtLowLevel = false;
-	if ( isHelo( unitType ) )
+	if ( m_unitInfo->isHelicopter() && m_heloOffset > 0 )
 	{
-		if ( m_heloOffset > 0 )
-		{
-			heloAtLowLevel = true;
-		}
+		heloAtLowLevel = true;
 	}
 
 	// get this elevation - this will bring up a popup if not known
@@ -849,12 +885,11 @@ bool AirCavCounterData::isVisible(int terrain, int range, int weather, int timeo
 	}
 
 	bool lowlevel = m_heloOffset > 0;
-	UnitType unitType = m_unitInfo->getUnitType();
 	if ( m_fired && range < maxFired )
 		return 1;
-	else if ( isHeavyHelo(unitType) && lowlevel && range < maxLowLevelHeavyHelo )
+	else if (m_unitInfo->isHeavyHelicopter() && lowlevel && range < maxLowLevelHeavyHelo )
 		return 1;
-	else if ( isLightHelo(unitType) && lowlevel && range < maxLowLevelLightHelo )
+	else if (m_unitInfo->isLightHelicopter() && lowlevel && range < maxLowLevelLightHelo )
 		return 1;
 	else
 	{
@@ -863,6 +898,7 @@ bool AirCavCounterData::isVisible(int terrain, int range, int weather, int timeo
 		else if (m_inDefilade)
 			terrain = DEFBRK;
 
+		UnitType unitType = m_unitInfo->getUnitType();
 		int maxRange = ClearObservationTable[unitType][terrain];
 		if ( weather == WEATHER_RAIN || weather == WEATHER_SNOW || weather == WEATHER_LT_FOG )
 			maxRange = RainObservationTable[unitType][terrain];
@@ -963,6 +999,22 @@ int AirCavCounterData::enterDefilade(int terrain, int toggle)
 	{
 		return 0;
 	}
+}
+
+int AirCavCounterData::enoughOPsForEvasiveManeuver()
+{
+	double OPcost;
+
+	UnitType utype = m_unitInfo->getUnitType();
+	CountryType side = m_unitInfo->getCountryType();
+	if (isNATO(side))
+		OPcost = US_OP_Cost[utype][EVM];
+	else
+		OPcost = Sov_OP_Cost[utype][EVM];
+
+	if (m_OPs >= OPcost)
+		return true;
+	return false;
 }
 
 int AirCavCounterData::evasiveManeuver(int toggle)
@@ -1143,9 +1195,8 @@ bool AirCavCounterData::hexStackingFull(AirCavMapData *mapData, AirCavCounterDat
 	// - at NOE, helicopter is equal to 2 vehicles, 3 for heavy helo
 	// - at Low Level, limit is 2 helicopters
 	// - ignoring wrecks for now
-	UnitType unitType = m_unitInfo->getUnitType();
-	bool isInfantryUnit = isInfantry(unitType);
-	bool isHeloUnit = isHelo(unitType);
+	bool isInfantryUnit = m_unitInfo->isInfantry();
+	bool isHeloUnit = m_unitInfo->isHelicopter();
 	bool heloAtLowLevel = false;
 	if (m_heloOffset > 0)
 	{
@@ -1170,18 +1221,18 @@ bool AirCavCounterData::hexStackingFull(AirCavMapData *mapData, AirCavCounterDat
 			if (counterData[c]->getIsAlive() == false)
 				continue;
 
-			CString unitName = counterData[c]->getUnitInfo()->getName();
-			UnitType type = counterData[c]->getUnitInfo()->getUnitType();
+			AirCavUnitData *unitInfo = counterData[c]->getUnitInfo();
+			CString unitName = unitInfo->getName();
 			bool isAtLowLevel = (counterData[c]->getHeloOffset() > 0);
-			int unitStackingValue = isHeavyHelo(type) ? 3 : isHelo(type) ? 2 : 1; // helo at NOE depends on type
+			int unitStackingValue = unitInfo->isHeavyHelicopter() ? 3 : unitInfo->isHelicopter() ? 2 : 1; // helo at NOE depends on type
 			
-			if (isHelo(type) && isAtLowLevel)
+			if ( unitInfo->isHelicopter() && isAtLowLevel )
 				lowLevelHeloStackingCount += 1;	// helo at low level is just one
-			else if (isInfantry(type) && unitName.Find(_T("Squad")) > 0)
+			else if (unitInfo->isInfantry() && unitName.Find(_T("Squad")) > 0 )
 				infantryStackingCount += unitStackingValue * 2;
-			else if (isInfantry(type))
+			else if (unitInfo->isInfantry() )
 				infantryStackingCount += unitStackingValue;
-			else
+			else if (unitInfo->isVehicle())
 				vehicleStackingCount += unitStackingValue;
 		}
 	}
@@ -1208,19 +1259,19 @@ CString AirCavCounterData::getStackingString(AirCavMapData *mapData, AirCavCount
 			if (counterData[c]->getIsDismounted() == false)
 				continue;
 
-			CString unitName = counterData[c]->getUnitInfo()->getName();
-			UnitType type = counterData[c]->getUnitInfo()->getUnitType();
-			bool isInfantryUnit = isInfantry(type);
+			AirCavUnitData *unitInfo = counterData[c]->getUnitInfo();
+			CString unitName = unitInfo->getName();
+			bool isInfantryUnit = unitInfo->isInfantry();
 			bool isAtLowLevel = (counterData[c]->getHeloOffset() > 0);
-			int unitStackingValue = isHeavyHelo(type) ? 3 : isHelo(type) ? 2 : 1; // helo at NOE depends on type
+			int unitStackingValue = unitInfo->isHeavyHelicopter() ? 3 : unitInfo->isHelicopter() ? 2 : 1; // helo at NOE depends on type
 
-			if (isHelo(type) && isAtLowLevel)
+			if ( unitInfo->isHelicopter() && isAtLowLevel )
 				lowLevelHeloStackingCount += 1;	// helo at low level is just one
-			else if (isInfantry(type) && unitName.Find(_T("Squad")) > 0)
+			else if ( unitInfo->isInfantry() && unitName.Find(_T("Squad")) > 0 )
 				infantryStackingCount += unitStackingValue * 2;
-			else if (isInfantry(type))
+			else if ( unitInfo->isInfantry() )
 				infantryStackingCount += unitStackingValue;
-			else
+			else if ( unitInfo->isVehicle() )
 				vehicleStackingCount += unitStackingValue;
 		}
 	}

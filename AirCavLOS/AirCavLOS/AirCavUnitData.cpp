@@ -124,9 +124,30 @@ bool AirCavUnitData::isHelicopter()
 	return false;
 }
 
+bool AirCavUnitData::isHeavyHelicopter()
+{
+	if ( m_type == UHH )
+		return true;
+	return false;
+}
+
+bool AirCavUnitData::isLightHelicopter()
+{
+	if ( m_type == UHM || m_type == ARH || m_type == LHX )
+		return true;
+	return false;
+}
+
 bool AirCavUnitData::isAttackHelicopter()
 {
 	if ( m_type == ARH || m_type == LHX )
+		return true;
+	return false;
+}
+
+bool AirCavUnitData::isVehicle()
+{
+	if ( m_type == TANK || m_type == TLAV || m_type == WV )
 		return true;
 	return false;
 }

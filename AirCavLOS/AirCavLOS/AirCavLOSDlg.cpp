@@ -607,12 +607,12 @@ void CAirCavLOSDlg::OnBnClickedButtonActionPopUp()
 			if ( counterDataList[m_ActiveUnit]->getHeloOffset() > NAP_OF_EARTH_METERS)
 			{
 				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, NAP_OF_EARTH_METERS, true);
-				counterDataList[m_ActiveUnit]->setIsPopUp(false);
+				counterDataList[m_ActiveUnit]->setIsPopUp(NOT_IN_POPUP);
 			}
 			else
 			{
 				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, LOW_LEVEL_METERS, true);
-				counterDataList[m_ActiveUnit]->setIsPopUp(true);
+				counterDataList[m_ActiveUnit]->setIsPopUp(POPUP_NOT_FIRED);
 			}
 			updateActiveUnit();
 		}
@@ -802,18 +802,46 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		}
 	}
 
+	// rockets cannot be fire during a popup!
+	if (popup && wpnType == ROCKET)
+	{
+		CString msgstr = (CString)"Rockets cannot be fire during a popup!";
+		MessageBox((LPCTSTR)msgstr);
+		return;
+	}
+
 	// figure out if there enough OPs and enough ammo to fire the selected weapon
 	int succeeded = 0;
-	if ( popup )
-		succeeded = counterDataList[m_ActiveUnit]->popupFire();
-	else if ( wpnType == GUN )
-		succeeded = counterDataList[m_ActiveUnit]->fireGun();
-	else if ( wpnType == ATGM || wpnType == SAM || wpnType == ROCKET )
+
+	// spend the OPs for the popup if not already in a popup
+	if (popup && counterDataList[m_ActiveUnit]->getIsPopUp() == POPUP_NOT_FIRED)
 	{
-		// expend the ammunition in the case of SAMS, Rockets and ATGMs
+		succeeded = counterDataList[m_ActiveUnit]->popupFire();
+		if (succeeded)
+		{
+			counterDataList[m_ActiveUnit]->setIsPopUp(POPUP_HAS_FIRED);
+		}
+		else
+		{
+			CString msgstr = (CString)"Not enough OPs to do a Popup attack!";
+			MessageBox((LPCTSTR)msgstr);
+			return;
+		}
+	}
+
+	// spend the OPs for the fired weapon
+	bool firingMissile = (wpnType == ATGM || wpnType == SAM || wpnType == ROCKET);
+	if (firingMissile)
+		succeeded = counterDataList[m_ActiveUnit]->fireMissile();
+	else
+		succeeded = counterDataList[m_ActiveUnit]->fireGun();
+
+	// expend the ammunition in the case of SAMS, Rockets and ATGMs
+	if ( firingMissile )
+	{
 		if (nAmmoRemaining > 0 )
 		{
-			if ( succeeded = counterDataList[m_ActiveUnit]->fireMissile() )
+			if (succeeded)
 			{
 				switch (m_activeUnitWeapon)
 				{
@@ -842,7 +870,11 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		}
 	}
 	if ( succeeded == 0 )
+	{
+		CString msgstr = (CString)"Not enough OPs to fire "; msgstr += wpn->getName();
+		MessageBox((LPCTSTR)msgstr);
 		return;
+	}
 
 	// fire at all units in this hex
 	size_t listSize = tgtUnitsList.size();
@@ -858,22 +890,28 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 			continue;
 		}
 
-		// allow the target unit to Evade
+		// allow the target unit to Evade if it has the OPs
 		int EVMmod = 0;
-		if ( !counterDataList[t]->getEvading() && wpnType != ROCKET )
+		if ( !counterDataList[t]->getEvading() && counterDataList[t]->enoughOPsForEvasiveManeuver() )
 		{
-			CString tgtUnitName = counterDataList[t]->getName();
+			bool cannotEvade = ((counterDataList[t]->getUnitInfo()->isHelicopter() || counterDataList[t]->getUnitInfo()->isVehicle()) && wpnType == ROCKET);
+			if (!cannotEvade)
+			{
+				CString tgtUnitName = counterDataList[t]->getName();
 
-			char tName[32];
-			int length = tgtUnitName.GetLength() + 1;
-			for (int i = 0; i < length; i++)
-				tName[i] = tgtUnitName.GetAt(i);						
+				char tName[32];
+				int length = tgtUnitName.GetLength() + 1;
+				for (int i = 0; i < length; i++)
+					tName[i] = tgtUnitName.GetAt(i);
 
-			// display the information
-			char buffer1[MAX_BUF_SIZE];
-			sprintf_s( buffer1, "Is the Unit \"%s\" going to Evade?", tName );
-			if ( MessageBox((CString)buffer1, _T("Evasive Maneuver"), MB_YESNO) == IDYES )
-				EVMmod = counterDataList[t]->evasiveManeuver(FALSE);
+				// display the information
+				char buffer1[MAX_BUF_SIZE];
+				sprintf_s(buffer1, "Is the Unit \"%s\" going to Evade?", tName);
+				if (MessageBox((CString)buffer1, _T("Evasive Maneuver"), MB_YESNO) == IDYES)
+				{
+					EVMmod = counterDataList[t]->evasiveManeuver(FALSE);
+				}
+			}
 		}
 
 		// calculate initial final kill number based on the weapon
@@ -1439,20 +1477,26 @@ void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 
 				// allow the active unit to Evade
 				int EVMmod = 0;
-				if ( !counterDataList[m_ActiveUnit]->getEvading() && wpnType != GUN )
+				if ( !counterDataList[m_ActiveUnit]->getEvading() && counterDataList[m_ActiveUnit]->enoughOPsForEvasiveManeuver() )
 				{
-					CString tgtUnitName = counterDataList[m_ActiveUnit]->getName();
+					bool cannotEvade = ((counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() || counterDataList[m_ActiveUnit]->getUnitInfo()->isVehicle()) && wpnType == ROCKET);
+					if (!cannotEvade)
+					{
+						CString tgtUnitName = counterDataList[m_ActiveUnit]->getName();
 
-					char tName[32];
-					int length = tgtUnitName.GetLength() + 1;
-					for (int i = 0; i < length; i++)
-						tName[i] = tgtUnitName.GetAt(i);						
+						char tName[32];
+						int length = tgtUnitName.GetLength() + 1;
+						for (int i = 0; i < length; i++)
+							tName[i] = tgtUnitName.GetAt(i);
 
-					// display the information
-					char buffer1[MAX_BUF_SIZE];
-					sprintf_s( buffer1, "Is the Unit \"%s\" going to Evade?", tName );
-					if ( MessageBox((CString)buffer1, _T("Evasive Maneuver"), MB_YESNO) == IDYES )
-						EVMmod = counterDataList[m_ActiveUnit]->evasiveManeuver(FALSE);
+						// display the information
+						char buffer1[MAX_BUF_SIZE];
+						sprintf_s(buffer1, "Is the Unit \"%s\" going to Evade?", tName);
+						if (MessageBox((CString)buffer1, _T("Evasive Maneuver"), MB_YESNO) == IDYES)
+						{
+							EVMmod = counterDataList[m_ActiveUnit]->evasiveManeuver(FALSE);
+						}
+					}
 				}
 
 				switch( weapon )

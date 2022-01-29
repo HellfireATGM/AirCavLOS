@@ -26,7 +26,7 @@ private:
 	double				m_OPsSpentMoving;	// operation points spent moving
 	int			        m_isActive;			// NOT_ACTIVE, ACTIVE or WAS_ACTIVE
 	bool		        m_isOppFiring;		// true or false
-	bool		        m_isPopUp;			// true or false
+	int			        m_isPopUp;			// 0 = not in popup; 1 = in popup, not yet fired; 2 = in popup, has fired
 	int			        m_wpnOppFiring;		// which weapon used for OppFire (1-5)
 	int			        m_tgtOppFiring;		// which unit is the target for OppFire
 	int					m_status;			// DEAD or ALIVE
@@ -91,6 +91,7 @@ public:
 	int getHeloOffset() { return m_heloOffset; }
 	int enterDefilade(int terrain, int toggle = TRUE);
 	int evasiveManeuver(int toggle = TRUE);
+	int enoughOPsForEvasiveManeuver();
 	int getDefilade() { return m_inDefilade; }
 	int getEvading() { return m_evasiveManeuver; }
 	int getIsDismounted() { return m_isDismounted; }
@@ -144,8 +145,8 @@ public:
 	int getIsAlive() { return m_status; }
 	bool getIsOppFiring() { return m_isOppFiring; }
 	void setIsOppFiring(bool opp) { m_isOppFiring = opp; }
-	bool getIsPopUp() { return m_isPopUp; }
-	void setIsPopUp(bool p) { if (p) {fire();nomove();} else {nofire(); move();} m_isPopUp = p; }
+	int getIsPopUp() { return m_isPopUp; }
+	void setIsPopUp(int p);
 	int getWpnOppFiring() { return m_wpnOppFiring; }
 	int getTgtOppFiring() { return m_tgtOppFiring; }
 
@@ -196,36 +197,6 @@ public:
 
 	bool isNATO( CountryType side )
 	{
-		return ( side == COUNTRY_US || side == COUNTRY_GERMANY || side == COUNTRY_BRITAIN );
-	}
-
-	bool isVehicle(UnitType unitType)
-	{
-		return ( unitType == TANK || unitType == TLAV || unitType == WV );
-	}
-
-	bool isInfantry(UnitType unitType)
-	{
-		return ( unitType == INF );
-	}
-
-	bool isHelo(UnitType unitType)
-	{
-		return ( unitType == ARH || unitType == UHM || unitType == UHH || unitType == LHX );
-	}
-
-	bool isAttackHelo(UnitType unitType)
-	{
-		return ( unitType == ARH || unitType == LHX );
-	}
-
-	bool isLightHelo(UnitType unitType)
-	{
-		return ( unitType == ARH || unitType == UHM || unitType == LHX );
-	}
-
-	bool isHeavyHelo(UnitType unitType)
-	{
-		return ( unitType == UHH );
+		return ( side == COUNTRY_US || side == COUNTRY_GERMANY || side == COUNTRY_BRITAIN || side == COUNTRY_ISRAEL );
 	}
 };

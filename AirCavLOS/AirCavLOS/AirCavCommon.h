@@ -153,6 +153,10 @@ enum RoadType
 #define SECONDARY1	3
 #define SECONDARY2	4
 
+#define NOT_IN_POPUP 0
+#define POPUP_NOT_FIRED 1
+#define POPUP_HAS_FIRED 2
+
 #define LOS_UNBLOCKED 			0
 #define LOS_BLOCKED_BY_TERRAIN	1
 #define LOS_BLOCKED_BY_SMOKE	2

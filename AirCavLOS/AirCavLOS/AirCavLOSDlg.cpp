@@ -441,7 +441,24 @@ void CAirCavLOSDlg::OnOK()
 		// close the map file and delete the map data
 		if ( mapData )
 		{
-			mapData->CloseMapDataFile();
+			if ( mapData->getMapDataEdited() )
+			{
+				int ret = MessageBox((CString)"The map has been edited. Do you want to save the changes?", (CString)"Update Map", MB_YESNO);
+				if (ret == IDYES)
+				{
+					char msgbox[128];
+					mapData->SaveAndCloseMapDataFile(msgbox);
+					MessageBox((CString)msgbox, (CString)"Map Progress", MB_OK);
+				}
+				else
+				{
+					mapData->CloseMapDataFile();
+				}
+			}
+			else
+			{
+				mapData->CloseMapDataFile();
+			}
 			delete mapData;
 			mapData = NULL;
 		}

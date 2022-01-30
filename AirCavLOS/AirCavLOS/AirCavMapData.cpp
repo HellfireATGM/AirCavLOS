@@ -81,6 +81,7 @@ AirCavMapData::AirCavMapData(void)
 	map_file_pointer = 0;
 	m_ignoreWaterFeatures = false;
 	m_ignoreAutobahn = false;
+	m_mapDataEdited = false;
 }
 
 AirCavMapData::~AirCavMapData(void)
@@ -226,8 +227,6 @@ int AirCavMapData::CloseMapDataFile( )
 
 int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 {
-	int i,j, h = 0;
-
 	/* reopen the old file, write new data and close data file */
 	errno_t err;
 	if (map_file_pointer)
@@ -238,46 +237,62 @@ int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 	if (err != 0 || map_file_pointer == NULL)
 		return 0;
 
-	for (i=0; i < NROW; i++)
+	/* count the number of unknown hexes */
+	int numDefinedHexes = 0;
+	int numValidHexes = 0;
+	for (int r = 0; r < NROW; r++)
 	{
-		for (j=0; j < NCOL; j++)
+		for (int c = 0; c < NCOL; c++)
 		{
-			fwrite (&Map[j][i].terrain,   sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].elevation, sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].contour,   sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].road,      sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].autobahn,  sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].river,     sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].terrain,   sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].elevation, sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].contour,   sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].road,      sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].autobahn,  sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].river,     sizeof(int), 1, map_file_pointer);
 
-			fwrite (&Map[j][i].rnw,        sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].rn,         sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].rne,        sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].rsw,        sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].rs,         sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].rse,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].rnw,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].rn,         sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].rne,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].rsw,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].rs,         sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].rse,        sizeof(int), 1, map_file_pointer);
 
-			fwrite (&Map[j][i].anw,        sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].an,         sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].ane,        sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].asw,        sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].as,         sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].ase,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].anw,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].an,         sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].ane,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].asw,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].as,         sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].ase,        sizeof(int), 1, map_file_pointer);
 
-			fwrite (&Map[j][i].vnw,        sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].vn,         sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].vne,        sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].vsw,        sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].vs,         sizeof(int), 1, map_file_pointer);
-			fwrite (&Map[j][i].vse,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].vnw,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].vn,         sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].vne,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].vsw,        sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].vs,         sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].vse,        sizeof(int), 1, map_file_pointer);
 
-			fwrite (&Map[j][i].unit,       sizeof(int), 1, map_file_pointer);
+			fwrite (&Map[c][r].unit,       sizeof(int), 1, map_file_pointer);
 
-			if (Map[j][i].elevation >= 0) h++;
+			int maxRow;
+			if (EVEN(r))
+				maxRow = MAX_ROWS;
+			else
+				maxRow = MAX_ROWS - 1;
+			bool rowValid = (r >= MIN_ROWS && r <= maxRow);
+			bool colValid = (c >= MIN_COLUMNS && c <= MAX_COLUMNS);
+
+			if ( rowValid && colValid )
+			{
+				if (Map[c][r].elevation >= 0)
+					numDefinedHexes++;
+				numValidHexes++;
+			}
 		}
 	}
 
-	i = fclose (map_file_pointer);
-	if (i != 0)
+	int f = fclose (map_file_pointer);
+	if (f != 0)
 		return 0;
 
 	// write out the DEM
@@ -305,16 +320,16 @@ int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 				y = (MAX_ROWS-r) * demScale + (demScale/2.0);
 
 			if (Map[c][r].elevation < 0)
-				e = 0.0f;
+				e = (double)Map[c][r].elevation;
 			else if (Map[c][r].terrain == RIVER)
 				e = (double)Map[c][r].elevation - 10.0f;
 			else if (Map[c][r].terrain == TOWN)
 				e = (double)Map[c][r].elevation + 20.0f;
 			else
 			{
-				e = (double)Map[c][r].elevation;
+				e = (double)Map[c][r].elevation * 2.0f;
 				if (Map[c][r].contour && e > 0.0f)
-					e -= 5.0f;
+					e -= 10.0f;
 			}
 
 			fprintf (dem_file_pointer, "%f, %f, %f\n", x, y, e);
@@ -322,7 +337,7 @@ int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 	}
 	fclose(dem_file_pointer);
 
-	sprintf( msgbox, "Number of hexes known: %d out of %d (%3.1f percent)\n", h, NROW*NCOL, (double)h/(double)(NROW*NCOL)*(double)100.0 );
+	sprintf( msgbox, "Number of hexes known: %d out of %d (%3.1f percent)\n", numDefinedHexes, numValidHexes, (double)numDefinedHexes /(double)(numValidHexes)*(double)100.0 );
 
     return 1;
 }
@@ -1031,6 +1046,8 @@ int AirCavMapData::editTerrainData( int x, int y )
 		Map[y][x].vs = dlg.getRiverHex(DIRECTION_SO);
 		Map[y][x].vse = dlg.getRiverHex(DIRECTION_SE);
 		Map[y][x].vne = dlg.getRiverHex(DIRECTION_NE);
+
+		m_mapDataEdited = true;
 	}
 	return 1;
 }

@@ -50,6 +50,9 @@ public:
 			m_ignoreAutobahn = true;
 	}
 
+	bool getMapDataEdited() { return m_mapDataEdited; }
+	void setMapDataEdited() { m_mapDataEdited = true; }
+
 private:
 	FILE	*map_file_pointer;
 	MAP		Map[NCOL][NROW];
@@ -60,6 +63,7 @@ private:
 
 	bool m_ignoreWaterFeatures;
 	bool m_ignoreAutobahn;
+	bool m_mapDataEdited;
 };
 
 

@@ -924,8 +924,17 @@ bool AirCavCounterData::isVisible(int terrain, int range, int weather, int timeo
 	}
 }
 
+// note: in this code, 'this' is the unit being observed (aka the 'target'), the passed in values are the 'observer'
 bool AirCavCounterData::isVisibleAdvanced(int terrain, int range, int weather, int timeofday, SideType side, int optics, int smoke)
 {
+	// using a WLSL at night - visibility is automatic at any range
+	if (timeofday == TIME_NIGHT && m_opticsInUse == OPTICS_WHITELIGHT_SEARCHLIGHT)
+		return true;
+
+	// using a IRSL - visibility is automatic at any range if observer is using TI
+	if (m_opticsInUse == OPTICS_INFRARED_SEARCHLIGHT && optics == OPTICS_THERMAL_IMAGER)
+		return true;
+
 	// low level helicopter
 	bool lowlevel = m_heloOffset > 0;
 	UnitType unitType = m_unitInfo->getUnitType();
@@ -945,7 +954,7 @@ bool AirCavCounterData::isVisibleAdvanced(int terrain, int range, int weather, i
 	if (smoke && !lowlevel && !usingTI)
 		maxRange /= 2;
 
-	// if range is beyong max range, target is not visible
+	// if range is beyond max range, target is not visible
 	if (range <= maxRange)
 		return true;
 	else

@@ -298,6 +298,150 @@ int	Ambient_Light_Enhancer_Heavy_Fog[OBS_MAX][TER_MAX] =
   { 0,  0,  0,  0,  0,  0,  0 }  /* OBS_FIRING */
 };
 
+int	Infrared_Searchlight_Clear[OBS_MAX][TER_MAX] =
+{
+//  c   b   d   w   t   l    h
+//  l   r   e   o   o   t    v
+//  e   o   f   o   w        y
+//  a   k   i   d   n   l     
+//  r   e   l   s       o    l
+//      n   a           w    o
+//          d                w
+//          e                 
+
+  { 12, 4,  3,  3,  3,  0,   0 }, /* OBS_VEHICLE */
+  { 10, 2,  2,  2,  2,  0,   0 }, /* OBS_INFANTRY */
+  { 12, 4,  4,  4,  4,  12,  0 }, /* OBS_LIGHT_HELO */
+  { 12, 6,  6,  6,  6,  0,  12 }, /* OBS_HEAVY_HELO */
+  { 15,15, 15, 15, 15,  15, 15 }  /* OBS_FIRING */
+};
+
+int	Infrared_Searchlight_Rain_Snow_Lt_Fog[OBS_MAX][TER_MAX] =
+{
+//  c   b   d   w   t   l    h
+//  l   r   e   o   o   t    v
+//  e   o   f   o   w        y
+//  a   k   i   d   n   l     
+//  r   e   l   s       o    l
+//      n   a           w    o
+//          d                w
+//          e                 
+
+  { 6,  3,  2,  2,  2,  0,   0 }, /* OBS_VEHICLE */
+  { 2,  1,  1,  1,  1,  0,   0 }, /* OBS_INFANTRY */
+  { 2,  3,  3,  3,  3,  4,   0 }, /* OBS_LIGHT_HELO */
+  { 6,  3,  4,  4,  5,  0,   6 }, /* OBS_HEAVY_HELO */
+  { 6,  6,  6,  6,  6,  6,   6 }  /* OBS_FIRING */
+};
+
+int	Infrared_Searchlight_Overcast[OBS_MAX][TER_MAX] =
+{
+//  c   b   d   w   t   l    h
+//  l   r   e   o   o   t    v
+//  e   o   f   o   w        y
+//  a   k   i   d   n   l     
+//  r   e   l   s       o    l
+//      n   a           w    o
+//          d                w
+//          e                 
+
+  { 12, 4,  3,  3,  3,  0,   0 }, /* OBS_VEHICLE */
+  { 10, 2,  2,  2,  2,  0,   0 }, /* OBS_INFANTRY */
+  { 12, 4,  4,  4,  4, 12,   0 }, /* OBS_LIGHT_HELO */
+  { 12, 5,  6,  6,  6,  0,  12 }, /* OBS_HEAVY_HELO */
+  { 15,15, 15, 15, 15,  15, 15 }  /* OBS_FIRING */
+};
+
+int	Infrared_Searchlight_Heavy_Fog[OBS_MAX][TER_MAX] =
+{
+//  c   b   d   w   t   l    h
+//  l   r   e   o   o   t    v
+//  e   o   f   o   w        y
+//  a   k   i   d   n   l     
+//  r   e   l   s       o    l
+//      n   a           w    o
+//          d                w
+//          e                 
+
+  { 2,  1,  1,  1,  1,  0,  0 }, /* OBS_VEHICLE */
+  { 0,  0,  0,  0,  0,  0,  0 }, /* OBS_INFANTRY */
+  { 2,  1,  1,  1,  1,  2,  0 }, /* OBS_LIGHT_HELO */
+  { 3,  2,  2,  2,  2,  0,  4 }, /* OBS_HEAVY_HELO */
+  { 6,  6,  6,  6,  6,  6,  6 }  /* OBS_FIRING */
+};
+
+int	Whitelight_Searchlight_Clear[OBS_MAX][TER_MAX] =
+{
+//  c   b   d   w   t   l    h
+//  l   r   e   o   o   t    v
+//  e   o   f   o   w        y
+//  a   k   i   d   n   l     
+//  r   e   l   s       o    l
+//      n   a           w    o
+//          d                w
+//          e                 
+
+  { 15, 4,  3,  3,  3,  0,   0 }, /* OBS_VEHICLE */
+  { 10, 2,  2,  2,  2,  0,   0 }, /* OBS_INFANTRY */
+  { 15,15, 15, 15, 15,  15,  0 }, /* OBS_LIGHT_HELO */
+  { 20,15, 15, 15, 15,  0,  15 }, /* OBS_HEAVY_HELO */
+  { 15,15, 15, 15, 15,  15, 15 }  /* OBS_FIRING */
+};
+
+int	Whitelight_Searchlight_Rain_Snow_Lt_Fog[OBS_MAX][TER_MAX] =
+{
+//  c   b   d   w   t   l    h
+//  l   r   e   o   o   t    v
+//  e   o   f   o   w        y
+//  a   k   i   d   n   l     
+//  r   e   l   s       o    l
+//      n   a           w    o
+//          d                w
+//          e                 
+
+  { 8,  3,  2,  2,  2,  0,   0 }, /* OBS_VEHICLE */
+  { 2,  1,  1,  1,  1,  0,   0 }, /* OBS_INFANTRY */
+  { 8,  8,  8,  8,  8,  10,  0 }, /* OBS_LIGHT_HELO */
+  { 10,10, 10, 10, 10,  0,  12 }, /* OBS_HEAVY_HELO */
+  { 15,15, 15, 15, 15,  15, 15 }  /* OBS_FIRING */
+};
+
+int	Whitelight_Searchlight_Overcast[OBS_MAX][TER_MAX] =
+{
+//  c   b   d   w   t   l    h
+//  l   r   e   o   o   t    v
+//  e   o   f   o   w        y
+//  a   k   i   d   n   l     
+//  r   e   l   s       o    l
+//      n   a           w    o
+//          d                w
+//          e                 
+
+  { 15, 4,  3,  3,  3,  0,   0 }, /* OBS_VEHICLE */
+  { 10, 2,  2,  2,  2,  0,   0 }, /* OBS_INFANTRY */
+  { 15,15, 15, 15, 15,  15,  0 }, /* OBS_LIGHT_HELO */
+  { 15,15, 15, 15, 15,  0,  15 }, /* OBS_HEAVY_HELO */
+  { 15,15, 15, 15, 15,  15, 15 }  /* OBS_FIRING */
+};
+
+int	Whitelight_Searchlight_Heavy_Fog[OBS_MAX][TER_MAX] =
+{
+//  c   b   d   w   t   l    h
+//  l   r   e   o   o   t    v
+//  e   o   f   o   w        y
+//  a   k   i   d   n   l     
+//  r   e   l   s       o    l
+//      n   a           w    o
+//          d                w
+//          e                 
+
+  { 2,  1,  1,  1,  1,  0,   0 }, /* OBS_VEHICLE */
+  { 0,  0,  0,  0,  0,  0,   0 }, /* OBS_INFANTRY */
+  { 2,  1,  1,  1,  1,  4,   0 }, /* OBS_LIGHT_HELO */
+  { 4,  2,  2,  2,  2,  0,   4 }, /* OBS_HEAVY_HELO */
+  { 6,  6,  6,  6,  6,  6,   6 }  /* OBS_FIRING */
+};
+
 int ObservationData::getObservationRange(UnitType unitType, int side, int optics, int terrain, int lowlevel, int defilade, int fired, int timeofday, int weather)
 {
 	// shift according to time of day, night values are after the day values
@@ -463,7 +607,25 @@ int ObservationData::getObservationRange(UnitType unitType, int side, int optics
 		{
 			if (timeofday == TIME_DAY)
 				return 0;
-			break;
+
+			switch (weather)
+			{
+			case WEATHER_CLEAR:
+				return (Infrared_Searchlight_Clear[basicUnitType][basicTerrainType]);
+				break;
+			case WEATHER_RAIN:
+			case WEATHER_SNOW:
+			case WEATHER_LT_FOG:
+				return (Infrared_Searchlight_Rain_Snow_Lt_Fog[basicUnitType][basicTerrainType]);
+				break;
+			case WEATHER_OVERCAST:
+				return (Infrared_Searchlight_Overcast[basicUnitType][basicTerrainType]);
+				break;
+			case WEATHER_HVY_FOG:
+				return (Infrared_Searchlight_Heavy_Fog[basicUnitType][basicTerrainType]);
+				break;
+			}
+			return (Infrared_Searchlight_Clear[basicUnitType][basicTerrainType]);
 		}
 
 		// whitelight searchlight
@@ -471,7 +633,25 @@ int ObservationData::getObservationRange(UnitType unitType, int side, int optics
 		{
 			if (timeofday == TIME_DAY)
 				return 0;
-			break;
+
+			switch (weather)
+			{
+			case WEATHER_CLEAR:
+				return (Whitelight_Searchlight_Clear[basicUnitType][basicTerrainType]);
+				break;
+			case WEATHER_RAIN:
+			case WEATHER_SNOW:
+			case WEATHER_LT_FOG:
+				return (Whitelight_Searchlight_Rain_Snow_Lt_Fog[basicUnitType][basicTerrainType]);
+				break;
+			case WEATHER_OVERCAST:
+				return (Whitelight_Searchlight_Overcast[basicUnitType][basicTerrainType]);
+				break;
+			case WEATHER_HVY_FOG:
+				return (Whitelight_Searchlight_Heavy_Fog[basicUnitType][basicTerrainType]);
+				break;
+			}
+			return (Whitelight_Searchlight_Clear[basicUnitType][basicTerrainType]);
 		}
 	}
 	return (Standard_Optics_Clear[basicUnitType][basicTerrainType + offset]);

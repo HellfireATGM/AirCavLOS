@@ -343,7 +343,7 @@ int AirCavMapData::SaveAndCloseMapDataFile( char *msgbox )
 }
 
 
-int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, bool usingTI, int tgt_x, int tgt_y, int tgt_elev, bool &skylined, char *logString )
+int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, bool usingTI, int tgt_x, int tgt_y, int tgt_elev, bool &skylined, bool laser, char *logString )
 {
 	char logBuffer[256];
 	int Fdir, Ldir, Rdir, Rx, Ry, Fx, Fy, Lx, Ly, cur_x, cur_y;
@@ -356,6 +356,7 @@ int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, bool usingT
 	double Fvec, Lvec, Rvec;
 	bool checkingSkylining = false;
 	bool hitSmokeHex = false;
+	bool hitBlockingHex = false;
 
 	sprintf( logBuffer, "Calculating LOS from %02d%02d [%d] to %02d%02d [%d]\n", org_y, org_x, org_elev, tgt_y, tgt_x, tgt_elev);
 	strcpy( logString, logBuffer );
@@ -506,16 +507,22 @@ top:
 		if (blk1 && blk2)
 		{
 			bool smoke = (blk1 == LOS_BLOCKED_BY_SMOKE || blk2 == LOS_BLOCKED_BY_SMOKE);
-			if (smoke && usingTI && hitSmokeHex == false)
+			if (smoke && usingTI && !laser && hitSmokeHex == false)
 			{
 				// if using thermal imaging, ignore the first smoke hex (only)
 				hitSmokeHex = true;
 			}
 			else
 			{
-				clear_LOS = 0;
-				blk_x = Fx;
-				blk_y = Fy;
+				if (laser && hitBlockingHex == false)
+					// if using laser designator, ignore the first blocking hex (only)
+					hitBlockingHex = true;
+				else
+				{
+					clear_LOS = 0;
+					blk_x = Fx;
+					blk_y = Fy;
+				}
 			}
 		}
 		cur_x = Fx;
@@ -554,16 +561,22 @@ top:
 		if (blk1 && blk2)
 		{
 			bool smoke = (blk1 == LOS_BLOCKED_BY_SMOKE || blk2 == LOS_BLOCKED_BY_SMOKE);
-			if (smoke && usingTI && hitSmokeHex == false)
+			if (smoke && usingTI && !laser && hitSmokeHex == false)
 			{
 				// if using thermal imaging, ignore the first smoke hex (only)
 				hitSmokeHex = true;
 			}
 			else
 			{
-				clear_LOS = 0;
-				blk_x = Fx;
-				blk_y = Fy;
+				if (laser && hitBlockingHex == false)
+					// if using laser designator, ignore the first blocking hex (only)
+					hitBlockingHex = true;
+				else
+				{
+					clear_LOS = 0;
+					blk_x = Fx;
+					blk_y = Fy;
+				}
 			}
 		}
 		cur_x = Fx;
@@ -588,16 +601,22 @@ top:
 		if (blk1)
 		{
 			bool smoke = (blk1 == LOS_BLOCKED_BY_SMOKE);
-			if (smoke && usingTI && hitSmokeHex == false)
+			if (smoke && usingTI && !laser && hitSmokeHex == false)
 			{
 				// if using thermal imaging, ignore the first smoke hex (only)
 				hitSmokeHex = true;
 			}
 			else
 			{
-				clear_LOS = 0;
-				blk_x = Lx;
-				blk_y = Ly;
+				if (laser && hitBlockingHex == false)
+					// if using laser designator, ignore the first blocking hex (only)
+					hitBlockingHex = true;
+				else
+				{
+					clear_LOS = 0;
+					blk_x = Lx;
+					blk_y = Ly;
+				}
 			}
 		}
 		cur_x = Lx;
@@ -622,16 +641,22 @@ top:
 		if (blk1)
 		{
 			bool smoke = (blk1 == LOS_BLOCKED_BY_SMOKE);
-			if (smoke && usingTI && hitSmokeHex == false)
+			if (smoke && usingTI && !laser && hitSmokeHex == false)
 			{
 				// if using thermal imaging, ignore the first smoke hex (only)
 				hitSmokeHex = true;
 			}
 			else
 			{
-				clear_LOS = 0;
-				blk_x = Fx;
-				blk_y = Fy;
+				if (laser && hitBlockingHex == false)
+					// if using laser designator, ignore the first blocking hex (only)
+					hitBlockingHex = true;
+				else
+				{
+					clear_LOS = 0;
+					blk_x = Fx;
+					blk_y = Fy;
+				}
 			}
 		}
 		cur_x = Fx;
@@ -656,16 +681,22 @@ top:
 		if (blk1)
 		{
 			bool smoke = (blk1 == LOS_BLOCKED_BY_SMOKE);
-			if (smoke && usingTI && hitSmokeHex == false)
+			if (smoke && usingTI && !laser && hitSmokeHex == false)
 			{
 				// if using thermal imaging, ignore the first smoke hex (only)
 				hitSmokeHex = true;
 			}
 			else
 			{
-				clear_LOS = 0;
-				blk_x = Rx;
-				blk_y = Ry;
+				if (laser && hitBlockingHex == false)
+					// if using laser designator, ignore the first blocking hex (only)
+					hitBlockingHex = true;
+				else
+				{
+					clear_LOS = 0;
+					blk_x = Rx;
+					blk_y = Ry;
+				}
 			}
 		}
 		cur_x = Rx;

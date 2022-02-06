@@ -46,6 +46,9 @@ private:
 	int					m_isDismounted;		// this unit has dismounted from its carrying unit
 	int					m_carriedByUnit;	// unit carrying this one
 	int					m_opticsInUse;		// OPTICS_*
+	int					m_laserDesignated;	// ID of unit that is laser designated by this unit
+	int					m_laserDesignating;	// ID of unit that is laser designating this unit
+	int					m_radarInUse;		// TRUE or FALSE
 
 	int					m_FKNm1;			// Final Kill Number Main Weapon 1
 	int					m_FKNm2;			// Final Kill Number Main Weapon 2
@@ -112,6 +115,12 @@ public:
 	void setIsSuppressed(int sup) { m_isSuppressed = sup; }
 	int getOpticsInUse() { return m_opticsInUse; }
 	void setOpticsInUse(int opt) { m_opticsInUse = opt; }
+	int getLaserDesignatedUnit() { return m_laserDesignated; }
+	void setLaserDesignatedUnit(int unit) { m_laserDesignated = unit; }
+	int getLaserDesignatingUnit() { return m_laserDesignating; }
+	void setLaserDesignatingUnit(int unit) { m_laserDesignating = unit; }
+	int getRadarInUse() { return m_radarInUse; }
+	void setRadarInUse(int radar) { m_radarInUse = radar; }
 
 	double getOPs() { return m_OPs; }
 	void setOPs(double op) { m_OPs = op; }
@@ -191,7 +200,7 @@ public:
 
 	int checkContour(AirCavMapData *mapData, int col, int row, int from, int curOffset = 0);
 	bool isVisible(int terrain, int range, int weather, int timeofday, int smoke = FALSE);
-	bool isVisibleAdvanced(int terrain, int range, int weather, int timeofday, SideType side, int optics, int smoke = FALSE);
+	bool isVisibleAdvanced(int terrain, int range, int weather, int timeofday, SideType side, int optics, bool radar, int smoke = FALSE);
 
 	bool hexStackingFull(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int row, int col, bool checkLowLevel = false, bool isGoingtoNOE = false);
 	CString AirCavCounterData::getStackingString(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int row, int col);

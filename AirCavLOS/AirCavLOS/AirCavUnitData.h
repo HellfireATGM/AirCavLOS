@@ -15,7 +15,7 @@ public:
 					AirCavWeaponData *mwpn1, AirCavWeaponData *mwpn2, AirCavWeaponData *mwpn3,
 					AirCavWeaponData *swpn1, AirCavWeaponData *swpn2, int evm, int sm, int dm, 
 							int ammo_m1, int ammo_m2, int ammo_m3, int ammo_s1, int ammo_s2,
-							int ti, int ale, int irsl, int wlsl);
+							int ti, int ale, int irsl, int wlsl, int ld, int radar);
 public:
 	~AirCavUnitData(void);
 
@@ -42,6 +42,8 @@ private:
 	int					m_ale;					// ambient light enhancer
 	int					m_irsl;					// infrared searchlight
 	int					m_wlsl;					// white light searchlight
+	int					m_ld;					// laser designator
+	int					m_radar;				// radar
 
 // methods
 public:
@@ -94,7 +96,11 @@ public:
 	bool hasIRSLsight() { return m_irsl == 1; }
 	bool hasWLSLsight() { return m_wlsl == 1; }
 
+	bool hasLaserDesignator() { return m_ld == 1; }
+	bool hasRadar() { return m_radar == 1; }
+
 	bool isWeaponNotIRGuided(int which);
+	bool isWeaponLaserGuided(int which);
 
 	int CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke, 
 							int range, int opp, int sup, int skylining, char *log, int &ttMod);

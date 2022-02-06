@@ -226,6 +226,7 @@ void CAirCavLOSDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBString(pDX, IDC_COMBO_WEATHER, m_currentWeather);
 	DDX_CBString(pDX, IDC_COMBO_TIME_OF_DAY, m_currentTimeOfDay);
 	DDX_Check(pDX, IDC_CHECK_POP_SMOKE, m_popSmokeWhileMoving);
+	DDX_Check(pDX, IDC_CHECK_ACTIVE_RADAR_ON, m_activeUnitRadarOn);
 }
 
 BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
@@ -294,6 +295,9 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_CHECK_ROTATE_MAP, &CAirCavLOSDlg::OnBnClickedCheckRotateMap)
 	ON_BN_CLICKED(IDC_BUTTON_ACTION_PREVIOUS_MOVE, &CAirCavLOSDlg::OnBnClickedButtonActionPreviousMove)
 	ON_CBN_SELCHANGE(IDC_COMBO_OPTICS, &CAirCavLOSDlg::OnCbnSelchangeComboOptics)
+	ON_BN_CLICKED(IDC_BUTTON_ACTION_LASER, &CAirCavLOSDlg::OnBnClickedButtonActionLaser)
+	ON_BN_CLICKED(IDC_BUTTON_ACTION_RADAR, &CAirCavLOSDlg::OnBnClickedButtonActionRadar)
+	ON_BN_CLICKED(IDC_CHECK_ACTIVE_RADAR_ON, &CAirCavLOSDlg::OnBnClickedCheckActiveRadarOn)
 END_MESSAGE_MAP()
 
 
@@ -753,13 +757,29 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 
 		char buffer[MAX_BUF_SIZE];
 		int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, usingTI,
-			tgtRow, tgtCol, targetUnitOffset, skylined, buffer);
+			tgtRow, tgtCol, targetUnitOffset, skylined, false, buffer);
 
 		if (range == 0)
 		{
-			CString msgstr = (CString)"Active unit cannot fire on target without first doing a popup!";
-			MessageBox((LPCTSTR)msgstr);
-			return;
+			// check if this is a laser designated weapon and the target is being painted with a laser by some unit (doesn't matter which)
+			if (counterDataList[m_ActiveUnit]->getUnitInfo()->isWeaponLaserGuided(m_activeUnitWeapon) && counterDataList[tgt]->getLaserDesignatingUnit() >= 0)
+			{
+				// need to check if smoke hex or more than one blocking hex along LOS - this will prevent laser designated targeting
+				int laserRange = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, false,
+					tgtRow, tgtCol, targetUnitOffset, skylined, true, buffer);
+				if (laserRange == 0)
+				{
+					CString msgstr = (CString)"Path to laser designated target is blocked by terrain or smoke";
+					MessageBox((LPCTSTR)msgstr);
+					return;
+				}
+			}
+			else
+			{
+				CString msgstr = (CString)"Active unit cannot fire on target without first doing a popup!";
+				MessageBox((LPCTSTR)msgstr);
+				return;
+			}
 		}
 	}
 
@@ -773,7 +793,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		char buffer[MAX_BUF_SIZE];
 		int activeUnitOffset = counterDataList[m_ActiveUnit]->getElevOffset();
 		int targetUnitOffset = counterDataList[tgt]->getElevOffset();
-		int rocketRange = mapData->CalculateLOS( unitRow, unitCol, targetUnitOffset, usingTI, tgtRow, tgtCol, activeUnitOffset, skylined, buffer );
+		int rocketRange = mapData->CalculateLOS( unitRow, unitCol, targetUnitOffset, usingTI, tgtRow, tgtCol, activeUnitOffset, skylined, false, buffer );
 		int wpnAdjustedMaxRange = wpn->getMaxRange() / 2;
 		if ( rocketRange > wpnAdjustedMaxRange )
 			return;
@@ -1081,6 +1101,26 @@ void CAirCavLOSDlg::moveMountedUnits()
 	}
 }
 
+void CAirCavLOSDlg::resetLaserDesignation()
+{
+	// if this unit was painted with a laser designator, remove it
+	// for example, if the unit moved the designating unit will need to re-acquire its target
+	int unit = counterDataList[m_ActiveUnit]->getLaserDesignatingUnit();
+	if ( unit >= 0)
+	{
+		counterDataList[m_ActiveUnit]->setLaserDesignatingUnit(-1);
+		counterDataList[unit]->setLaserDesignatedUnit(-1);
+	}
+
+	// if this unit was painting another unit with a laser designator, remove it
+	unit = counterDataList[m_ActiveUnit]->getLaserDesignatedUnit();
+	if (unit >= 0)
+	{
+		counterDataList[m_ActiveUnit]->setLaserDesignatedUnit(-1);
+		counterDataList[unit]->setLaserDesignatingUnit(-1);
+	}
+}
+
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 {
 	if (m_ActiveUnit < 0) return;
@@ -1098,6 +1138,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 	counterDataList[m_ActiveUnit]->moveNorth(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
+	resetLaserDesignation();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
 	{
@@ -1124,6 +1165,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 	counterDataList[m_ActiveUnit]->moveNorthWest(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
+	resetLaserDesignation();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
 	{
@@ -1150,6 +1192,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 	counterDataList[m_ActiveUnit]->moveSouthWest(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
+	resetLaserDesignation();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
 	{
@@ -1176,6 +1219,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 	counterDataList[m_ActiveUnit]->moveSouth(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
+	resetLaserDesignation();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
 	{
@@ -1202,6 +1246,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 	counterDataList[m_ActiveUnit]->moveSouthEast(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
+	resetLaserDesignation();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
 	{
@@ -1228,6 +1273,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNe()
 	counterDataList[m_ActiveUnit]->moveNorthEast(mapData, counterDataList, m_popSmokeWhileMoving, m_TimeOfDay, m_Weather);
 	doUnitTracking(previousOPs, previousRow, previousColumn);
 	moveMountedUnits();
+	resetLaserDesignation();
 	updateActiveUnit();
 	if ( m_popSmokeWhileMoving )
 	{
@@ -1596,6 +1642,107 @@ void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 	m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
 }
 
+void CAirCavLOSDlg::OnBnClickedButtonActionLaser()
+{
+	int indexSelectedUnit = m_SightedUnitsListBox.GetCurSel();
+	if (indexSelectedUnit < 0)
+		return;
+	for (int c = 0; c < m_maxCounters; c++)
+	{
+		CString thisUnitsName;
+		char actualThisName[60], actualActiveName[60];
+		m_SightedUnitsListBox.GetText(indexSelectedUnit, thisUnitsName);
+		int rightBracket = thisUnitsName.Find(')');
+		int j = 0;
+		for (int i = 0; i < rightBracket - 4; i++)
+		{
+			actualThisName[j] = thisUnitsName.GetAt(i);
+			j++;
+		}
+		actualThisName[j] = '\0';
+		CString thisUnitsActualName = (CString)actualThisName;
+
+		CString activeUnitsName = counterDataList[c]->getName();
+		rightBracket = activeUnitsName.Find(')');
+		j = 0;
+		for (int i = 0; i < rightBracket - 4; i++)
+		{
+			actualActiveName[j] = activeUnitsName.GetAt(i);
+			j++;
+		}
+		actualActiveName[j] = '\0';
+		CString activeUnitsActualName = (CString)actualActiveName;
+
+		SideType activeSide = counterDataList[m_ActiveUnit]->getSideType();
+		SideType thisSide = counterDataList[c]->getSideType();
+
+		// found a target
+		if (thisUnitsActualName == activeUnitsActualName && activeSide != thisSide)
+		{
+			// if the active unit was painting this target unit, it is no longer
+			if (counterDataList[m_ActiveUnit]->getLaserDesignatedUnit() == c)
+			{
+				counterDataList[m_ActiveUnit]->setLaserDesignatedUnit(-1);
+				counterDataList[c]->setLaserDesignatingUnit(-1);
+			}
+			else
+			{
+				// this unit can only laser designate the target if it has an actual line of sight (not via another unit)
+				bool hasNormalLOS = true;
+				for (auto s : popupSightedUnits)
+				{
+					if (s.first == c)
+					{
+						hasNormalLOS = false;
+						break;
+					}
+				}
+				if (hasNormalLOS)
+				{
+					// whatever unit is being painted by the active unit, is no longer
+					int unit = counterDataList[m_ActiveUnit]->getLaserDesignatedUnit();
+					if (unit >= 0)
+					{
+						counterDataList[unit]->setLaserDesignatingUnit(-1);
+					}
+					// whatever unit was painting this target unit, is no longer
+					unit = counterDataList[c]->getLaserDesignatingUnit();
+					if (unit >= 0)
+					{
+						counterDataList[unit]->setLaserDesignatedUnit(-1);
+					}
+					// now the active unit is painting this target unit
+					counterDataList[m_ActiveUnit]->setLaserDesignatedUnit(c);
+					counterDataList[c]->setLaserDesignatingUnit(m_ActiveUnit);
+				}
+				else
+				{
+					CString msgstr = (CString)"Active unit must have direct LOS to a unit to laser designate";
+					MessageBox((LPCTSTR)msgstr);
+				}
+			}
+		}
+	}
+	updateActiveUnit();
+}
+
+void CAirCavLOSDlg::OnBnClickedButtonActionRadar()
+{
+	if (counterDataList[m_ActiveUnit]->getUnitInfo()->hasRadar())
+	{
+		if (counterDataList[m_ActiveUnit]->getRadarInUse())
+		{
+			counterDataList[m_ActiveUnit]->setRadarInUse(false);
+		}
+		else
+		{
+			counterDataList[m_ActiveUnit]->setRadarInUse(true);
+		}
+	}
+	m_activeUnitRadarOn = counterDataList[m_ActiveUnit]->getRadarInUse();
+	updateActiveUnit();
+}
+
 void CAirCavLOSDlg::updateFiringUnits()
 {
 	m_FiringUnitsListBox.ResetContent();
@@ -1729,6 +1876,24 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 			m_currentOpticsComboBox.SetCurSel(WLSLindex);
 		else
 			m_currentOpticsComboBox.SetCurSel(OPTICS_OPTICAL_SIGHT);
+
+		// laser designator, except during snow and heavy fog
+		if (counterDataList[m_ActiveUnit]->getUnitInfo()->hasLaserDesignator() && m_Weather != WEATHER_HVY_FOG && m_Weather != WEATHER_SNOW)
+			GetDlgItem(IDC_BUTTON_ACTION_LASER)->EnableWindow(TRUE);
+		else
+			GetDlgItem(IDC_BUTTON_ACTION_LASER)->EnableWindow(FALSE);
+
+		// radar, only if a unit has it
+		if (counterDataList[m_ActiveUnit]->getUnitInfo()->hasRadar())
+		{
+			GetDlgItem(IDC_BUTTON_ACTION_RADAR)->EnableWindow(TRUE);
+			GetDlgItem(IDC_CHECK_ACTIVE_RADAR_ON)->EnableWindow(TRUE);
+		}
+		else
+		{
+			GetDlgItem(IDC_BUTTON_ACTION_RADAR)->EnableWindow(FALSE);
+			GetDlgItem(IDC_CHECK_ACTIVE_RADAR_ON)->EnableWindow(FALSE);
+		}
 
 		// check for units that are mounted vs unmounted
 		if ( m_activeUnitMounted >= 0 && !m_activeUnitDismounted )
@@ -1983,12 +2148,14 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 		_itoa_s(activeUnitElev, buffer, 10);
 		m_activeUnitActualElev = (CString)buffer;
 
+		// list of units sighted by this unit, ONLY by popup
+		popupSightedUnits.clear();
+
 		// only bother with Line of Sight if the active unit is alive
 		if (counterDataList[m_ActiveUnit]->getIsAlive())
 		{
 			// calculate range from active unit to all other enemy units (these are SIGHTED)
 			int numPopupSightings = 0;
-			std::map<int, std::string> popupSightedUnits;
 			for (int c = 0; c < m_maxCounters; c++)
 			{
 				// determine if sighting unit is using Thermal Imaging (to see through smoke)
@@ -2011,7 +2178,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 
 						//  calculate line-of-sight
 						int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, usingTI,
-							targetHexRow, targetHexColumn, targetUnitOffset, skylined, buffer);
+							targetHexRow, targetHexColumn, targetUnitOffset, skylined, false, buffer);
 
 						CString unitName = counterDataList[m_ActiveUnit]->getName();
 						CString targetName = counterDataList[c]->getName();
@@ -2030,7 +2197,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							{
 								//  recalculate calculate line-of-sight assuming a pop-up
 								range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset + LOW_LEVEL_METERS, usingTI,
-									targetHexRow, targetHexColumn, targetUnitOffset, skylined, buffer);
+									targetHexRow, targetHexColumn, targetUnitOffset, skylined, false, buffer);
 
 								if (range > 0)
 									popupRange = true;
@@ -2086,7 +2253,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 #else
 						SideType activeSide = counterDataList[m_ActiveUnit]->getSideType();
 						int activeOptics = counterDataList[m_ActiveUnit]->getOpticsInUse();
-						bool isVisible = counterDataList[c]->isVisibleAdvanced(targetTerrain, skylinedRange, m_Weather, m_TimeOfDay, activeSide, activeOptics, activeSmoke);
+						bool activeRadar = (counterDataList[m_ActiveUnit]->getUnitInfo()->hasRadar() && counterDataList[m_ActiveUnit]->getRadarInUse());
+						bool isVisible = counterDataList[c]->isVisibleAdvanced(targetTerrain, skylinedRange, m_Weather, m_TimeOfDay, activeSide, activeOptics, activeRadar, activeSmoke);
 #endif
 						// if in range, calculate FKN for each available weapon
 						int ttModm1 = 0, ttModm2 = 0, ttModm3 = 0, ttMods1 = 0, ttMods2 = 0;
@@ -2157,25 +2325,33 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							length = sightingUnitType.GetLength() + 1;
 							for (int i = 0; i < length; i++)
 								sType[i] = sightingUnitType.GetAt(i);
+
+							// if another unit is laser designating this unit, display this
+							std::string ld("");
+							if (counterDataList[c]->getLaserDesignatingUnit() >= 0)
+							{
+								ld = "[LD]";
+							}
+
 							if (popupRange)
 							{
 								numPopupSightings++;
 								if (skylined)
-									sprintf_s(buffer, "%s [%s] [POPUP]  Hex: %02d%02d  Range: %d   m1:(%d)  m2:(%d)  m3:(%d)  s1:(%d)  s2:(%d)",
-										sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+									sprintf_s(buffer, "%s [%s] [POPUP] %s Hex: %02d%02d  Range: %d   m1:(%d)  m2:(%d)  m3:(%d)  s1:(%d)  s2:(%d)",
+										sName, sType, ld.c_str(), targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								else
-									sprintf_s(buffer, "%s [%s] [POPUP]  Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
-										sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+									sprintf_s(buffer, "%s [%s] [POPUP] %s Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
+										sName, sType, ld.c_str(), targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								popupSightedUnits.insert(std::make_pair(c, buffer));
 							}
 							else
 							{
 								if (skylined)
-									sprintf_s(buffer, "%s [%s]  Hex: %02d%02d  Range: %d   m1:(%d)  m2:(%d)  m3:(%d)  s1:(%d)  s2:(%d)",
-										sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+									sprintf_s(buffer, "%s [%s] %s Hex: %02d%02d  Range: %d   m1:(%d)  m2:(%d)  m3:(%d)  s1:(%d)  s2:(%d)",
+										sName, sType, ld.c_str(), targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								else
-									sprintf_s(buffer, "%s [%s]  Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
-										sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+									sprintf_s(buffer, "%s [%s] %s Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
+										sName, sType, ld.c_str(), targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								if (rebuildList)
 									m_SightedUnitsListBox.AddString(CString(buffer));
 							}
@@ -2212,7 +2388,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 						friendlyUnitOffset += friendlyUnitHeloOffset;
 
 						int range = mapData->CalculateLOS(friendlyUnitHexRow, friendlyUnitHexColumn, friendlyUnitOffset, usingTI,
-							targetUnitHexRow, targetUnitHexColumn, targetUnitOffset, skylined, buffer);
+							targetUnitHexRow, targetUnitHexColumn, targetUnitOffset, skylined, false, buffer);
 						if (range > 0)
 							numNormalSightings++;
 					}
@@ -2248,7 +2424,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 
 						//  calculate line-of-sight
 						int range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitOffset, usingTI,
-							activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, buffer);
+							activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, false, buffer);
 
 						CString unitName = counterDataList[m_ActiveUnit]->getName();
 						CString targetName = counterDataList[c]->getName();
@@ -2267,7 +2443,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							{
 								//  recalculate calculate line-of-sight assuming a pop-up
 								range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitOffset + LOW_LEVEL_METERS, usingTI,
-									activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, buffer);
+									activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, false, buffer);
 
 								if (range > 0)
 									popupRange = true;
@@ -2323,7 +2499,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 #else
 						SideType targetSide = counterDataList[c]->getSideType();
 						int targetOptics = counterDataList[c]->getOpticsInUse();
-						bool isVisible = counterDataList[m_ActiveUnit]->isVisibleAdvanced(activeTerrain, skylinedRange, m_Weather, m_TimeOfDay, targetSide, targetOptics, targetSmoke);
+						bool targetRadar = (counterDataList[c]->getUnitInfo()->hasRadar() && counterDataList[c]->getRadarInUse());
+						bool isVisible = counterDataList[m_ActiveUnit]->isVisibleAdvanced(activeTerrain, skylinedRange, m_Weather, m_TimeOfDay, targetSide, targetOptics, targetRadar, targetSmoke);
 #endif
 						// if in range, calculate FKN for each available weapon
 						int ttModm1 = 0, ttModm2 = 0, ttModm3 = 0, ttMods1 = 0, ttMods2 = 0;
@@ -2391,25 +2568,33 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							length = sightingUnitType.GetLength() + 1;
 							for (int i = 0; i < length; i++)
 								sType[i] = sightingUnitType.GetAt(i);
+
+							// if the active unit is being laser designated by this unit, display this
+							std::string ld("");
+							if (counterDataList[m_ActiveUnit]->getLaserDesignatingUnit() == c)
+							{
+								ld = "[LD]";
+							}
+
 							if (popupRange)
 							{
 								numPopupSightings++;
 								if (skylined)
-									sprintf_s(buffer, "%s [%s] [POPUP]  Hex: %02d%02d  Range: %d   m1:(%d)  m2:(%d)  m3:(%d)  s1:(%d)  s2:(%d)",
-										sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+									sprintf_s(buffer, "%s [%s] [POPUP] %s Hex: %02d%02d  Range: %d   m1:(%d)  m2:(%d)  m3:(%d)  s1:(%d)  s2:(%d)",
+										sName, sType, ld.c_str(), targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								else
-									sprintf_s(buffer, "%s [%s] [POPUP]  Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
-										sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+									sprintf_s(buffer, "%s [%s] [POPUP] %s Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
+										sName, sType, ld.c_str(), targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								popupSightingUnits.insert(std::make_pair(c, buffer));
 							}
 							else
 							{
 								if (skylined)
-									sprintf_s(buffer, "%s [%s]  Hex: %02d%02d  Range: %d   m1:(%d)  m2:(%d)  m3:(%d)  s1:(%d)  s2:(%d)",
-										sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+									sprintf_s(buffer, "%s [%s] %s Hex: %02d%02d  Range: %d   m1:(%d)  m2:(%d)  m3:(%d)  s1:(%d)  s2:(%d)",
+										sName, sType, ld.c_str(), targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								else
-									sprintf_s(buffer, "%s [%s]  Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
-										sName, sType, targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
+									sprintf_s(buffer, "%s [%s] %s Hex: %02d%02d  Range: %d   m1: %d   m2: %d   m3: %d   s1: %d   s2: %d",
+										sName, sType, ld.c_str(), targetHexColumn, targetHexRow, range, mFKN1, mFKN2, mFKN3, sFKN1, sFKN2);
 								if (rebuildList)
 									m_SightingUnitsListBox.AddString(CString(buffer));
 							}
@@ -2445,7 +2630,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 							enemyUnitOffset += enemyUnitHeloOffset;
 
 							int range = mapData->CalculateLOS(enemyUnitHexRow, enemyUnitHexColumn, enemyUnitOffset, usingTI,
-								activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, buffer);
+								activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, false, buffer);
 							if (range > 0)
 								numNormalSightings++;
 						}
@@ -2914,7 +3099,7 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 			char buffer[MAX_BUF_SIZE];
 			int activeUnitOffset = counterDataList[firingUnit]->getElevOffset();
 			int targetUnitOffset = counterDataList[tgt]->getElevOffset();
-			int rocketRange = mapData->CalculateLOS( unitRow, unitCol, activeUnitOffset, usingTI, tgtRow, tgtCol, targetUnitOffset, skylined, buffer );
+			int rocketRange = mapData->CalculateLOS( unitRow, unitCol, activeUnitOffset, usingTI, tgtRow, tgtCol, targetUnitOffset, skylined, false, buffer );
 			int wpnAdjustedMaxRange = wpnData->getMaxRange() / 2;
 			if ( rocketRange > wpnAdjustedMaxRange )
 				return lastActiveUnit;
@@ -3690,8 +3875,8 @@ bool CAirCavLOSDlg::readWeaponTextFile( FILE *fptr )
 
 bool CAirCavLOSDlg::readUnitTextFile( FILE *fptr )
 {
-//  0         1       2        3        4        5        6      7    8    9   10  11  12  13  14  15  16 17  18   19
-//  name      main 1  main 2   main 3   secn 1   secn 2   type   tt   evm  sm  dm  nm1 nm2 nm3 ns1 ns2 ti ale irsl wlsl
+//  0         1       2        3        4        5        6      7    8    9   10  11  12  13  14  15  16 17  18   19   20 21
+//  name      main 1  main 2   main 3   secn 1   secn 2   type   tt   evm  sm  dm  nm1 nm2 nm3 ns1 ns2 ti ale irsl wlsl ld r
 	char		name[32];
 	char		main1[32];
 	char		main2[32];
@@ -3712,6 +3897,8 @@ bool CAirCavLOSDlg::readUnitTextFile( FILE *fptr )
 	int			ale;
 	int			irsl;
 	int			wlsl;
+	int			ld;
+	int			radar;
 
 	int u = 0;
 	bool done = false;
@@ -3722,11 +3909,11 @@ bool CAirCavLOSDlg::readUnitTextFile( FILE *fptr )
 		if ( lineStr[0] == '#' )
 			continue;
 
-		int ret = sscanf( lineStr, "%s %s %s %s %s %s %s %s %d %d %d %d %d %d %d %d %d %d %d %d", 
+		int ret = sscanf( lineStr, "%s %s %s %s %s %s %s %s %d %d %d %d %d %d %d %d %d %d %d %d %d %d", 
 							name, main1, main2, main3, secn1, secn2, type, armor,
-							&evm, &sm, &dm, &nm1, &nm2, &nm3, &ns1, &ns2, &ti, &ale, &irsl, &wlsl);
+							&evm, &sm, &dm, &nm1, &nm2, &nm3, &ns1, &ns2, &ti, &ale, &irsl, &wlsl, &ld, &radar);
 
-		if( ret == 20 )
+		if( ret == 22 )
 		{
 			replaceUnderscores( name );
 			replaceUnderscores( main1 );
@@ -3773,6 +3960,8 @@ bool CAirCavLOSDlg::readUnitTextFile( FILE *fptr )
 			newUnit.ale = ale;
 			newUnit.irsl = irsl;
 			newUnit.wlsl = wlsl;
+			newUnit.ld = ld;
+			newUnit.radar = radar;
 
 			unitDataList[u++] = new AirCavUnitData( newUnit, weaponDataList[main1idx], 
 					weaponDataList[main2idx], weaponDataList[main3idx], 
@@ -4121,4 +4310,11 @@ void CAirCavLOSDlg::OnBnClickedButtonActionPreviousMove()
 			updateActiveUnit();
 		}
 	}
+}
+
+
+
+void CAirCavLOSDlg::OnBnClickedCheckActiveRadarOn()
+{
+	OnBnClickedButtonActionRadar();
 }

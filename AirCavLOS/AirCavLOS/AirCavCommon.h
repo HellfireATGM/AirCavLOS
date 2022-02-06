@@ -246,6 +246,8 @@ typedef struct
 	int				ale;			// ambient light enhancer
 	int				irsl;			// infrared searchlight
 	int				wlsl;			// white light searchlight
+	int				ld;				// laser designator
+	int				radar;			// radar
 } Type;
 
 /*  weapon definitions  */

@@ -6,6 +6,7 @@
 #include "AirCavMapData.h"
 #include "AirCavScenarioData.h"
 #include <vector>
+#include <map>
 
 #pragma once
 
@@ -161,8 +162,11 @@ public:
 	int m_activeUnitDismounted;
 	int m_activeUnitLowLevel;
 	int m_activeUnitIsSuppressed;
+	int m_activeUnitRadarOn;
 	int m_debugLOSMessages;
 	int m_debugFKNMessages;
+
+	std::map<int, std::string> popupSightedUnits;
 
 	afx_msg void OnLbnSelchangeListLog();
 
@@ -182,6 +186,7 @@ public:
 	bool unitCannotBeSkylined(UnitType unitType, int terrain, int smoke);
 
 	void doUnitTracking(int previousOPs, int previousRow, int previousColumn);
+	void resetLaserDesignation();
 
 	afx_msg void OnBnClickedButtonEditTerrain();
 	afx_msg void OnBnClickedButtonFillTerrain();
@@ -219,4 +224,7 @@ public:
 	afx_msg void OnBnClickedButtonActionPreviousMove();
 	afx_msg void OnCbnSelchangeComboTimeOfDay();
 	afx_msg void OnCbnSelchangeComboOptics();
+	afx_msg void OnBnClickedButtonActionLaser();
+	afx_msg void OnBnClickedButtonActionRadar();
+	afx_msg void OnBnClickedCheckActiveRadarOn();
 };

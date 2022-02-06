@@ -36,6 +36,11 @@ char *IRGuidedWeapons[11] =
 	"SA-14", "AT-6M", "SA-13", "Chaparral SAM", "Roland SAM", "Stinger AAM", "Stinger POST", "Hellfire POST", "SA-7", "SA-9", "ADSM"
 };
 
+char *LaserGuidedWeapons[3] =
+{
+	"AT-6 ATGM", "Hellfire ATGM", "Toger ATGM"
+};
+
 AirCavUnitData::AirCavUnitData(void)
 {
 }
@@ -44,7 +49,7 @@ AirCavUnitData::AirCavUnitData(CString name, UnitType type, TargetType TT,
 					AirCavWeaponData *mwpn1, AirCavWeaponData *mwpn2, AirCavWeaponData *mwpn3,
 					AirCavWeaponData *swpn1, AirCavWeaponData *swpn2, int evm, int sm, int dm, 
 					int ammo_m1, int ammo_m2, int ammo_m3, int ammo_s1, int ammo_s2,
-					int ti, int ale, int irsl, int wlsl)
+					int ti, int ale, int irsl, int wlsl, int ld, int radar)
 {
 	m_name = name;
 	m_type = type;
@@ -66,6 +71,8 @@ AirCavUnitData::AirCavUnitData(CString name, UnitType type, TargetType TT,
 	m_ale = ale;
 	m_irsl = irsl;
 	m_wlsl = wlsl;
+	m_ld = ld;
+	m_radar = radar;
 }
 
 AirCavUnitData::AirCavUnitData(Type unit, AirCavWeaponData *mwpn1, AirCavWeaponData *mwpn2, 
@@ -91,6 +98,8 @@ AirCavUnitData::AirCavUnitData(Type unit, AirCavWeaponData *mwpn1, AirCavWeaponD
 	m_ale = unit.ale;
 	m_irsl = unit.irsl;
 	m_wlsl = unit.wlsl;
+	m_ld = unit.ld;
+	m_radar = unit.radar;
 }
 
 AirCavUnitData::~AirCavUnitData(void)
@@ -193,6 +202,40 @@ bool AirCavUnitData::isWeaponNotIRGuided(int which)
 	}
 
 	return true;
+}
+
+bool AirCavUnitData::isWeaponLaserGuided(int which)
+{
+	AirCavWeaponData *wpn;
+	if (which == MAIN1)
+	{
+		wpn = getMainWeapon1();
+	}
+	else if (which == MAIN2)
+	{
+		wpn = getMainWeapon2();
+	}
+	else if (which == MAIN3)
+	{
+		wpn = getMainWeapon3();
+	}
+	else if (which == SECONDARY1)
+	{
+		wpn = getSecondaryWeapon1();
+	}
+	else if (which == SECONDARY2)
+	{
+		wpn = getSecondaryWeapon2();
+	}
+	CT2CA unitTypeConvertedAnsiString(wpn->getName());
+	std::string wpnName(unitTypeConvertedAnsiString);
+	for (auto w : LaserGuidedWeapons)
+	{
+		if (wpnName.find(w) != std::string::npos)
+			return true;
+	}
+
+	return false;
 }
 
 int AirCavUnitData::CalculateFKN( int which, AirCavCounterData *tgt, int terr, int smoke,

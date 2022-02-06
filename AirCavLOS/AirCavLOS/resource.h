@@ -184,6 +184,10 @@
 #define IDC_BUTTON_ACTION_PREVIOUS_MOVE 1098
 #define IDC_COMBO_TIME_OF_DAY           1099
 #define IDC_COMBO_OPTICS                1100
+#define IDC_BUTTON_ACTION_LASER         1101
+#define IDC_BUTTON_ACTION_RADAR         1102
+#define IDC_CHECK_ACTIVE_SUPPRESSED2    1103
+#define IDC_CHECK_ACTIVE_RADAR_ON       1103
 
 // Next default values for new objects
 // 

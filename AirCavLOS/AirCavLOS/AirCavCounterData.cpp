@@ -185,6 +185,9 @@ AirCavCounterData::AirCavCounterData(CString name, SideType side, CountryType co
 	m_actionTaken = false;
 	m_isSuppressed = FALSE;
 	m_opticsInUse = OPTICS_OPTICAL_SIGHT;
+	m_laserDesignated = -1;
+	m_laserDesignating = -1;
+	m_radarInUse = FALSE;
 }
 
 AirCavCounterData::~AirCavCounterData(void)
@@ -214,6 +217,9 @@ void AirCavCounterData::reset()
 	m_nAmmoSecondaryWpn1 = m_nFullAmmoSecondaryWpn1;
 	m_nAmmoSecondaryWpn2 = m_nFullAmmoSecondaryWpn2;
 	m_opticsInUse = OPTICS_OPTICAL_SIGHT;
+	m_laserDesignated = -1;
+	m_laserDesignating = -1;
+	m_radarInUse = FALSE;
 }
 
 void AirCavCounterData::resetActive()
@@ -233,6 +239,8 @@ void AirCavCounterData::resetActive()
 	m_macroMove = 0;
 	m_actionTaken = false;
 	m_isSuppressed = FALSE;
+	m_laserDesignated = -1;
+	m_laserDesignating = -1;
 }
 
 double AirCavCounterData::incrOPs(double op)
@@ -924,24 +932,28 @@ bool AirCavCounterData::isVisible(int terrain, int range, int weather, int timeo
 	}
 }
 
-// note: in this code, 'this' is the unit being observed (aka the 'target'), the passed in values are the 'observer'
-bool AirCavCounterData::isVisibleAdvanced(int terrain, int range, int weather, int timeofday, SideType side, int optics, int smoke)
+// note: in this code, 'this' is the unit being observed (aka the 'target'), the passed in values are for the 'observer'
+bool AirCavCounterData::isVisibleAdvanced(int terrain, int range, int weather, int timeofday, SideType side, int optics, bool radar, int smoke)
 {
-	// using a WLSL at night - visibility is automatic at any range
+	// if this unit is using a WLSL at night - visibility is automatic at any range
 	if (timeofday == TIME_NIGHT && m_opticsInUse == OPTICS_WHITELIGHT_SEARCHLIGHT)
 		return true;
 
-	// using a IRSL - visibility is automatic at any range if observer is using TI
+	// if this unit is using a IRSL - visibility is automatic at any range if observer is using TI
 	if (m_opticsInUse == OPTICS_INFRARED_SEARCHLIGHT && optics == OPTICS_THERMAL_IMAGER)
 		return true;
 
 	// low level helicopter
-	bool lowlevel = m_heloOffset > 0;
+	bool lowlevelHelo = (m_unitInfo->isHelicopter() && m_heloOffset > 0);
 	UnitType unitType = m_unitInfo->getUnitType();
+
+	// low level helicopter is visible at any range if observer is using radar
+	if (lowlevelHelo && radar)
+		return true;
 
 	// get the max range at which the target can be seen
 	ObservationData observationData;
-	int maxRange = observationData.getObservationRange(unitType, side, optics, terrain, lowlevel, m_inDefilade, m_fired, timeofday, weather);
+	int maxRange = observationData.getObservationRange(unitType, side, optics, terrain, lowlevelHelo, m_inDefilade, m_fired, timeofday, weather);
 
 	// if target is moving, range is increased by 2
 	if (m_moved)
@@ -951,7 +963,7 @@ bool AirCavCounterData::isVisibleAdvanced(int terrain, int range, int weather, i
 	bool usingTI = (optics == OPTICS_THERMAL_IMAGER);
 
 	// if sighting out of a smoke hex, range is halved, unless at low level or using Thermal Imager
-	if (smoke && !lowlevel && !usingTI)
+	if (smoke && !lowlevelHelo && !usingTI)
 		maxRange /= 2;
 
 	// if range is beyond max range, target is not visible

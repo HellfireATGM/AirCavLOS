@@ -20,6 +20,7 @@ One minor tweak to the board game is instead of the FKN being a number from 1-10
 - Opposing units can Opportunity Fire on the active unit at any time, once all opportunity firing units are known, these are resolved with a single button click
 - Indirect Fire can be applied at any time, including Smoke - smoke can be randomly dissipated with the push of a button
 - Weather, Time of Day, Advanced Observation (Special Vision Equipment, Weather, Skylining), Suppression, Main and Secondary Weapons are all implemented
+- Radar and Laser Designation is implemented - a target can be laser designation by one unit and fired on by another unit
 - Terrain for the hex currently occupied by the active unit is displayed, including Smoke and Wrecks
 - Stacking limits and effects are enforced
 - In progress scenarios can be saved at any time and recalled later
@@ -28,8 +29,7 @@ One minor tweak to the board game is instead of the FKN being a number from 1-10
 Current limitations:
 - Only the European map is implemented
 - Only Scenarios 1-5 are implemented, however the scenario format is a simple text file, so you can easily generate your own
-- Radar, Laser Designators, Close Assault and Overrun are not implemented at this time
-- See the "Air Cav LOS Features.doc" file for a list of features on the "to do" list
+- Close Assault and Overrun, ECM and Random Events are not implemented at this time
 - Runs on Windows only (there are no plans to port to any other platform, please don't ask)
 - Head to Head networking support is being considered (this way two players could play remotely against each other)
 

@@ -323,6 +323,8 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 	int nextRoad = mapData->getRoad( row, col );
 	int currAutobahn = mapData->getAutobahn( m_hexRow, m_hexCol );
 	int nextAutobahn = mapData->getAutobahn( row, col );
+	int currRiver = mapData->getRiver( m_hexRow, m_hexCol );
+	int nextRiver = mapData->getRiver( row, col );
 	int currHexElevation = mapData->getElevation( m_hexRow, m_hexCol );
 	int nextHexElevation = mapData->getElevation( row, col );
 	int currElevation = currHexElevation + m_elevOffset;
@@ -374,24 +376,22 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 	else if ( from == DIRECTION_NE && mapData->getStreamHex(row, col, 5) )
 		stream = true;
 
-	// for helicopters at low level, the only cost is the macro cost
-	bool isHeloUnit = false;
-	bool heloAtLowLevel = false;
-	if ( m_unitInfo->isHelicopter() )
+	// for helicopters at low level or moving along road/autobahn or river, the only cost is the macro cost
+	bool isHeloUnit = m_unitInfo->isHelicopter();
+	bool heloAtLowLevel = (isHeloUnit && m_heloOffset > 0);
+	bool alongRoadOrRiver = (currRoad && nextRoad || currAutobahn && nextAutobahn || currRiver && nextRiver);
+	bool heloAtNOEalongRoadOrRiver = (isHeloUnit && !heloAtLowLevel && alongRoadOrRiver);
+	if ( isHeloUnit )
 	{
-		// this is a helicopter
-		isHeloUnit = true;
-
 		// entering Nap of the earth from Low Level
 		if ( from == -1 )
 		{
 			heloAtLowLevel = true;
 			m_macroMove = 0;
 		}
-		// moving at Low Level
-		else if ( m_heloOffset > 0 )
+		// moving at Low Level, or along a road/river - cost is macrohex
+		else if ( heloAtLowLevel || heloAtNOEalongRoadOrRiver )
 		{
-			heloAtLowLevel = true;
 			nextTerr = MACRO;
 
 			// check if moved a macroHex, if so, reset the tally
@@ -419,8 +419,12 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 		}
 		else
 		{
+			// the cost for a macroHex is zero until the tally is reset back to zero
+			if ( heloAtNOEalongRoadOrRiver && m_macroMove != 0 )
+				OPcost = 0;
+
 			// nap-of-earth helicopters cannnot enter a smoke hex
-			if (smokeHex && isHeloUnit)
+			if ( smokeHex && isHeloUnit )
 				return 0;
 
 			// crossing a stream

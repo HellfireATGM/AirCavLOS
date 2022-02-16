@@ -1319,6 +1319,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 				if (MessageBox((CString)buffer1, _T("Evasive Maneuver"), MB_YESNO) == IDYES)
 				{
 					EVMmod = counterDataList[t]->evasiveManeuver(FALSE);
+					if (EVMmod) sendUnitInfo(t);
 				}
 			}
 		}
@@ -1967,6 +1968,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 						if (MessageBox((CString)buffer1, _T("Evasive Maneuver"), MB_YESNO) == IDYES)
 						{
 							EVMmod = counterDataList[m_ActiveUnit]->evasiveManeuver(FALSE);
+							if (EVMmod) sendUnitInfo(m_ActiveUnit);
 						}
 					}
 				}
@@ -3650,7 +3652,7 @@ void CAirCavLOSDlg::resolveOpportunityFire()
 	}
 	else
 	{
-		// if the active unit is an enemy unit, need to switch sides
+		// if the active unit is an enemy unit, might need to switch sides
 		SideType thisSide = counterDataList[m_ActiveUnit]->getSideType();
 		if (thisSide == s_networkActiveSide)
 		{
@@ -3659,6 +3661,16 @@ void CAirCavLOSDlg::resolveOpportunityFire()
 		}
 		else
 		{
+			// display the last unit with a kill and which side we are switching to
+			CString activeName = counterDataList[lastUnitWithKill]->getName();
+			SideType activeSide = counterDataList[lastUnitWithKill]->getSideType();
+			std::string newSide = "BLUE";
+			if (activeSide == SIDE_RED)
+				newSide = "RED";
+
+			char buffer1[MAX_BUF_SIZE];
+			sprintf_s(buffer1, "Last unit with a kill is \"%ls\". Switching active side to %s", activeName.GetString(), newSide.c_str());
+			MessageBox((CString)buffer1, _T("Active Side Change"), MB_OK);
 			OnBnClickedButtonConnect();
 		}
 	}

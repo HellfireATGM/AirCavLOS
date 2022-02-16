@@ -17,4 +17,4 @@ Jake_01    RED    SOVIET   ZSU-23_SPAAG        20   40   0     12.0  none       
 India_81   RED    SOVIET   BRDM_SPSAM          15   44   0     12.0  none       0
 Fox_21     RED    SOVIET   BMP-1_APC           23   40   0     12.0  none       0
 Romeo_21   RED    SOVIET   Soviet_Inf_Squad    23   40   0     12.0  Fox_21     1
-Sierra_01  RED    SOVIET   Mi-24_Hind          36   42   0     12.0  none       0
+Sierra_01  RED    SOVIET   Mi-28_Havoc         36   42   0     12.0  none       0

@@ -17,7 +17,6 @@
 #include "KillSuppressDialog.h"
 #include "UnitDetails.h"
 #include "IndirectFire.h"
-#include "ConnectDlg.h"
 
 #include <string>
 #include <vector>
@@ -3998,6 +3997,7 @@ void CAirCavLOSDlg::OnBnClickedButtonLaysmoke()
 	int row = counterDataList[m_ActiveUnit]->getHexRow();
 	counterDataList[m_ActiveUnit]->laySmoke(mapData, col, row);
 	m_vehicleSmokeHexList.Add( row, col );
+	sendMapInfo(row, col);
 	updateActiveUnit();
 }
 

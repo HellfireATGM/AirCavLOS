@@ -25,12 +25,13 @@ One minor tweak to the board game is instead of the FKN being a number from 1-10
 - Stacking limits and effects are enforced
 - In progress scenarios can be saved at any time and recalled later
 - Detailed LOS and FKN information is displayed if desired (in case you want to verify the algorithm results)
+- Head to Head networking is supported (this way two players can play remotely against each other)
 
 Current limitations:
 - Only the European map is implemented
 - Only Scenarios 1-5 are implemented, however the scenario format is a simple text file, so you can easily generate your own
 - Close Assault and Overrun, ECM and Random Events are not implemented at this time
 - Runs on Windows only (there are no plans to port to any other platform, please don't ask)
-- Head to Head networking support is being considered (this way two players could play remotely against each other)
+
 
 Please email aircavlos@gmail.com for any questions or comments

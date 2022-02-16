@@ -21,12 +21,18 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnBnClickedRadioScenario0();
+	afx_msg void OnBnClickedRadioSide();
 
 	int getScenario();
+	int getSide();
+	CString getHostIP();
 
 	int m_scenario;
+	int m_side;
+	CString m_ip;
 
 	void setScenarioTitle(int which, CString name);
 
 	CString scenarioNames[12];
+	afx_msg void OnEnChangeEditAddress();
 };

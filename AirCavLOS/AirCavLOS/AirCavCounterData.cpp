@@ -474,7 +474,7 @@ int AirCavCounterData::moveAction( AirCavMapData *mapData, AirCavCounterData *co
 			setDefilade(FALSE);
 			m_elevOffset = m_nextElevOffset;
 			if ( popSmoke )
-				mapData->setSmoke( row, col, false );
+				mapData->setSmoke( row, col, false, false );
 			return 1;
 		}
 		else
@@ -734,7 +734,7 @@ int AirCavCounterData::checkContour(AirCavMapData *mapData, int col, int row, in
 	return elevOffset;
 }
 
-void AirCavCounterData::setHeloOffset(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int elev, bool noCost)
+void AirCavCounterData::actionHeloOffset(AirCavMapData *mapData, AirCavCounterData *counterData[MAXCOUNTERS], int elev, bool noCost)
 {
 	double OPcost;
 
@@ -1088,7 +1088,7 @@ int AirCavCounterData::laySmoke( AirCavMapData *mapData, int col, int row )
 
 	if ( decrOPs(OPcost) != -1 )
 	{
-		mapData->setSmoke( row, col );
+		mapData->setSmoke( row, col, false );
 		setActionTaken(true);
 		return 1;
 	}

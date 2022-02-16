@@ -90,7 +90,8 @@ public:
 	int getHexRow() { return m_hexRow; }
 	void setElevOffset(int elev) { m_elevOffset = elev; }
 	int getElevOffset() { return m_elevOffset; }
-	void setHeloOffset(AirCavMapData *mapData, AirCavCounterData *counterDataList[MAXCOUNTERS], int elev, bool noCost = false);
+	void actionHeloOffset(AirCavMapData *mapData, AirCavCounterData *counterDataList[MAXCOUNTERS], int elev, bool noCost = false);
+	void setHeloOffset(int elev) { m_heloOffset = elev; }
 	int getHeloOffset() { return m_heloOffset; }
 	int enterDefilade(int terrain, int toggle = TRUE);
 	int evasiveManeuver(int toggle = TRUE);
@@ -151,8 +152,11 @@ public:
 	void move() { m_moved = TRUE; }
 	void nomove() { m_moved = FALSE; }
 	int getFired() { return m_fired; }
+	void setFired(int fired) { m_fired = fired; }
 	int getMoved() { return m_moved; }
+	void setMoved(int moved) { m_moved = moved; }
 	int getIsAlive() { return m_status; }
+	void setIsAlive(int status) { m_status = status; }
 	bool getIsOppFiring() { return m_isOppFiring; }
 	void setIsOppFiring(bool opp) { m_isOppFiring = opp; }
 	int getIsPopUp() { return m_isPopUp; }

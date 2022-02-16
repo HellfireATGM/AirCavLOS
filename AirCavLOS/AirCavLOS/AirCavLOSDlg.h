@@ -24,9 +24,10 @@ public:
 // Dialog Data
 	enum { IDD = IDD_AIRCAVLOS_DIALOG };
 
+	void updateActiveUnit(bool rebuildList = TRUE, bool noNetworkUpdate = FALSE);
+
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
-	void updateActiveUnit(bool rebuildList = TRUE);
 	void updateFiringUnits();
 
 // AirCav Data
@@ -115,6 +116,7 @@ public:
 	CString m_activeUnitActualElev;
 	CString m_activeCountry;
 	CString m_activeSide;
+	CString m_mySide;
 	CString m_activeUnitOptics;
 
 	CString m_currentWeather;
@@ -188,6 +190,25 @@ public:
 	void doUnitTracking(int previousOPs, int previousRow, int previousColumn);
 	void resetLaserDesignation();
 
+	void setActiveUnit(int& id);
+	void switchSides();
+
+	void sendUnitInfo(int unit);
+	void encodeUnitInfo(int unit, char *outbuffer);
+	void decodeUnitInfo(char *inbuffer);
+	
+	void sendMapInfo(int row, int col);
+	void encodeMapInfo(int col, int row, char *outbuffer);
+	void decodeMapInfo(char *inbuffer);
+	
+	void sendWeather();
+	void encodeWeather(char *outbuffer);
+	void decodeWeather(char *inbuffer);
+
+	void sendTimeOfDay();
+	void encodeTimeOfDay(char *outbuffer);
+	void decodeTimeOfDay(char *inbuffer);
+
 	afx_msg void OnBnClickedButtonEditTerrain();
 	afx_msg void OnBnClickedButtonFillTerrain();
 	afx_msg void OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult);
@@ -227,4 +248,5 @@ public:
 	afx_msg void OnBnClickedButtonActionLaser();
 	afx_msg void OnBnClickedButtonActionRadar();
 	afx_msg void OnBnClickedCheckActiveRadarOn();
+	afx_msg void OnBnClickedButtonConnect();
 };

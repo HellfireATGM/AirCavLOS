@@ -27,7 +27,7 @@ public:
 	int getStreamHex( int x, int y, int r );
 	int editTerrainData( int x, int y );
 	int getSmoke( int x, int y );
-	int setSmoke( int x, int y, bool toggle = FALSE );
+	int setSmoke( int x, int y, bool artillery, bool toggle = FALSE );
 	void clearSmoke( int x, int y );
 	bool validHex( int col, int row );
 	bool borderHex( int col, int row );

@@ -373,4 +373,83 @@ private:
 	vector<int> rowcol;
 };
 
+// messaging
+#define MSG_UPDATE_SET_ACTIVE 1
+#define MSG_UPDATE_UNIT_INFO 2
+#define MSG_UPDATE_MAP_INFO 3
+#define MSG_CHANGE_TIMEOFDAY 4
+#define MSG_CHANGE_WEATHER 5
+#define MSG_SWITCH_SIDES 6
+
+
+class Msg {
+public:
+	Msg::Msg(int type) { m_msg.infoMsg.UnitInfoMsg = type; };
+	Msg::Msg(uint64_t m) { m_msg.infoMsg.UnitInfoMsg = m; }
+	Msg::~Msg() {}
+
+	// xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
+	//                                ld   ld  op   elevOPs  row col  unit
+	union {
+		struct {
+			uint64_t type : 4;
+			uint64_t unit : 4;
+			uint64_t col : 4;
+			uint64_t row : 4;
+			uint64_t OPs : 4;
+			uint64_t elevoffset : 4;
+			uint64_t optics : 4;
+			uint64_t laserdesignated : 4;
+			uint64_t laserdesignating : 4;
+			uint64_t active : 1;
+			uint64_t status : 1;
+			uint64_t fired : 1;
+			uint64_t moved : 1;
+			uint64_t evading : 1;
+			uint64_t indefilade : 1;
+			uint64_t suppressed : 1;
+			uint64_t lowLevel : 1;
+			uint64_t isdismounted : 1;
+			uint64_t radarOn : 1;
+		};
+		uint64_t UnitInfoMsg;
+	} typedef BitfieldUnitInfoMsg;
+
+	// xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
+	//                                              w   a    v   row  col
+	union {
+		struct {
+			uint64_t type : 4;
+			uint64_t col : 4;
+			uint64_t row : 4;
+			uint64_t vehiclesmoke : 4;
+			uint64_t artillerysmoke : 4;
+			uint64_t wreck : 4;
+		};
+		uint64_t MapInfoMsg;
+	} typedef BitfieldMapInfoMsg; 
+
+	// xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx
+	//                                                                unit
+	union {
+		struct {
+			uint64_t type : 4;
+			uint64_t unit : 4;
+		};
+		uint64_t OppFireMsg;
+	} typedef BitfieldOppFireMsg;
+
+	union {
+		BitfieldUnitInfoMsg infoMsg;
+		BitfieldMapInfoMsg mapMsg;
+		BitfieldOppFireMsg oppFireMsg;
+	} typedef allMsg;
+
+public:
+	int getUnit() { return m_msg.infoMsg.unit; }
+	void setUnit(int u) { m_msg.infoMsg.unit = u; }
+
+public:
+	allMsg m_msg;
+};
 #endif

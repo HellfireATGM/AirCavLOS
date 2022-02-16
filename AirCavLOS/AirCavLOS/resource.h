@@ -18,6 +18,7 @@
 #define IDD_DIALOG_KILL2                141
 #define IDD_DIALOG_INDIRECT_FIRE        145
 #define IDD_DIALOG_KILL_SUP             146
+#define IDD_DIALOG_CONNECT              152
 #define IDC_LIST_UNITS                  1000
 #define IDC_BUTTON_ACTION_PASS          1001
 #define IDC_BUTTON_ACTION_FIRE          1002
@@ -162,9 +163,12 @@
 #define IDC_RADIO_SCENARIO_11           1082
 #define IDC_EDIT_MAINWPN5               1083
 #define IDC_CHECK_SMOKE                 1083
+#define IDC_RADIO_SIDE_0                1083
 #define IDC_BUTTON_ELEVOFFSET           1084
+#define IDC_RADIO_SIDE_1                1084
 #define IDC_NEXT                        1085
 #define IDC_EDIT_TERR_STACK             1085
+#define IDC_RADIO_SIDE_2                1085
 #define IDC_PREVIOUS                    1086
 #define IDC_COMBO_WEATHER               1086
 #define IDC_GOTO                        1087
@@ -174,7 +178,9 @@
 #define IDC_CHECK_SMOKE_MISSION         1089
 #define IDC_CHECK_IGNORE_WATER          1089
 #define IDC_CHECK_IGNORE_AUTOBAHN       1090
+#define IDC_EDIT_ADDRESS                1090
 #define IDC_BUTTON_ACTION_MOVE_N2       1091
+#define IDC_COMBO_NETWORK_SIDE          1091
 #define IDC_BUTTON_ACTION_MOVE_NE2      1092
 #define IDC_BUTTON_ACTION_MOVE_SE2      1093
 #define IDC_BUTTON_ACTION_MOVE_S2       1094
@@ -188,14 +194,16 @@
 #define IDC_BUTTON_ACTION_RADAR         1102
 #define IDC_CHECK_ACTIVE_SUPPRESSED2    1103
 #define IDC_CHECK_ACTIVE_RADAR_ON       1103
+#define IDC_BUTTON_CONNECT              1104
+#define IDC_EDIT_MY_SIDE                1105
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        152
+#define _APS_NEXT_RESOURCE_VALUE        155
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1090
+#define _APS_NEXT_CONTROL_VALUE         1092
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <io.h>
+#include <time.h>
+#include <winsock2.h>
 
 #include "stdafx.h"
 #include "AirCavCommon.h"
@@ -15,6 +17,7 @@
 #include "KillSuppressDialog.h"
 #include "UnitDetails.h"
 #include "IndirectFire.h"
+#include "ConnectDlg.h"
 
 #include <string>
 #include <vector>
@@ -28,7 +31,6 @@
 #endif
 
 #define BASIC_OBSERVATION 0
-
 
 extern void CalcAdj (int dir, int cur_y, int cur_x, int *y, int *x);
 
@@ -64,8 +66,346 @@ Artillery ArtilleryTypes[MAXINDIRECT] =
 // --------------------------------------------------------------------------------------
 
 
-// CAboutDlg dialog used for App About
+// ==========================================================================================================
+//                                                NETWORKING
+// ==========================================================================================================
 
+static int					s_networkActiveSide;
+static int					s_thisActiveSide;
+static std::string			s_hostIP;
+static uint64_t				s_networkCommand;
+static SOCKET				s_clientserversocket;
+static SOCKET				s_serverclientsocket;
+static char					s_networkBuffer[1024];
+
+// --------------------------------------------------------- client ------------------------------------------------ //
+
+// Function that receive data from server
+DWORD WINAPI clientReceive(LPVOID lpParam)
+{
+	// Created buffer[] to receive message
+	char buffer[1024] = { 0 };
+
+	// Created server socket
+	SOCKET server = *(SOCKET*)lpParam;
+
+	// Client executes continuously
+	while (true)
+	{
+		// If received buffer gives error then return -1
+		if (recv(server, buffer, sizeof(buffer), 0)	== SOCKET_ERROR) {
+			return -1;
+		}
+
+		// If Server exits
+		if (strcmp(buffer, "exit") == 0) {
+			return 1;
+		}
+
+		// parse the message
+		if (strncmp(buffer, "select", 6) == 0)
+		{
+			s_networkCommand = MSG_UPDATE_SET_ACTIVE;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, "info", 4) == 0)
+		{
+			s_networkCommand = MSG_UPDATE_UNIT_INFO;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, "map", 3) == 0)
+		{
+			s_networkCommand = MSG_UPDATE_MAP_INFO;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, "time", 4) == 0)
+		{
+			s_networkCommand = MSG_CHANGE_TIMEOFDAY;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, "weather", 7) == 0)
+		{
+			s_networkCommand = MSG_CHANGE_WEATHER;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, "switch", 6) == 0)
+		{
+			s_networkCommand = MSG_SWITCH_SIDES;
+			strcpy(s_networkBuffer, buffer);
+		}
+
+		// Clear buffer message
+		memset(buffer, 0, sizeof(buffer));
+	}
+	return 1;
+}
+
+DWORD WINAPI clientSend(const char *buffer)
+{
+	int size = (int)strlen(buffer);
+	if (send(s_clientserversocket, buffer, size, 0) == SOCKET_ERROR) {
+		return -1;
+	}
+	return 0;
+}
+
+int create_client(std::string &ipaddr)
+{
+	// Input data
+	WSADATA WSAData;
+
+	// Created socket server
+	SOCKADDR_IN addr;
+
+	WSAStartup(MAKEWORD(2, 0), &WSAData);
+
+	// If invalid socket created, return -1
+	if ((s_clientserversocket = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET) {
+		return -1;
+	}
+
+	addr.sin_addr.s_addr = inet_addr(ipaddr.c_str());
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(5555);
+
+	// If connection failed
+	if (connect(s_clientserversocket,	(SOCKADDR*)&addr, sizeof(addr))	== SOCKET_ERROR) {
+		return -1;
+	}
+
+	DWORD tid;
+
+	// Create Thread t1
+	HANDLE t1 = CreateThread(NULL,
+		0,
+		clientReceive,
+		&s_clientserversocket,
+		0, &tid);
+
+	// Received Objects from client
+	WaitForSingleObject(t1, INFINITE);
+
+	// Socket closed
+	closesocket(s_clientserversocket);
+	WSACleanup();
+	return 0;
+}
+
+// --------------------------------------------------------- server ------------------------------------------------ //
+
+// Function that receive data from client
+DWORD WINAPI serverReceive(LPVOID lpParam)
+{
+	// Created buffer[] to receive message
+	char buffer[1024] = { 0 };
+
+	// Created client socket
+	SOCKET client = *(SOCKET*)lpParam;
+
+	// Server executes continuously
+	while (true)
+	{
+		// If received buffer gives error then return -1
+		if (recv(client, buffer, sizeof(buffer), 0)	== SOCKET_ERROR) {
+			return -1;
+		}
+
+		// If Client exits
+		if (strcmp(buffer, "exit") == 0) {
+			break;
+		}
+
+		// parse the message
+		if (strncmp(buffer, "select", 6) == 0)
+		{
+			s_networkCommand = MSG_UPDATE_SET_ACTIVE;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, "info", 4) == 0)
+		{
+			s_networkCommand = MSG_UPDATE_UNIT_INFO;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, "map", 3) == 0)
+		{
+			s_networkCommand = MSG_UPDATE_MAP_INFO;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, "time", 4) == 0)
+		{
+			s_networkCommand = MSG_CHANGE_TIMEOFDAY;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, "weather", 7) == 0)
+		{
+			s_networkCommand = MSG_CHANGE_WEATHER;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, "switch", 6) == 0)
+		{
+			s_networkCommand = MSG_SWITCH_SIDES;
+			strcpy(s_networkBuffer, buffer);
+		}
+
+		// Clear buffer message
+		memset(buffer, 0, sizeof(buffer));
+	}
+	return 1;
+}
+
+DWORD WINAPI serverSend(const char *buffer)
+{
+	// If sending failed return -1
+	int size = (int)strlen(buffer);
+	if (send(s_serverclientsocket, buffer, size, 0) == SOCKET_ERROR) {
+		return -1;
+	}
+	return 0;
+}
+
+// Driver Code
+int create_server()
+{
+	// Data
+	WSADATA WSAData;
+
+	// Created socket server and client
+	SOCKET server;
+
+	// Socket address for server and client
+	SOCKADDR_IN serverAddr, clientAddr;
+
+	WSAStartup(MAKEWORD(2, 0), &WSAData);
+
+	// Making server
+	server = socket(AF_INET, SOCK_STREAM, 0);
+
+	// If invalid socket created, return -1
+	if (server == INVALID_SOCKET) {
+		return -1;
+	}
+	serverAddr.sin_addr.s_addr = INADDR_ANY;
+	serverAddr.sin_family = AF_INET;
+	serverAddr.sin_port = htons(5555);
+
+	// If socket error occurred, return -1
+	if (bind(server, (SOCKADDR*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
+		return -1;
+	}
+
+	// Get the request from server
+	if (listen(server, 0) == SOCKET_ERROR) {
+		return -1;
+	}
+
+	// Initialize client address
+	int clientAddrSize = sizeof(clientAddr);
+
+	// If connection established
+	if ((s_serverclientsocket = accept(server, (SOCKADDR*)&clientAddr, &clientAddrSize)) != INVALID_SOCKET)
+	{
+		// Create variable of type DWORD
+		DWORD tid;
+
+		// Create Thread t1
+		HANDLE t1 = CreateThread(NULL,
+			0,
+			serverReceive,
+			&s_serverclientsocket,
+			0,
+			&tid);
+
+		// Received Objects from client
+		WaitForSingleObject(t1,	INFINITE);
+
+		// Close the socket
+		closesocket(s_serverclientsocket);
+
+		// If socket closing failed.
+		if (closesocket(server)	== SOCKET_ERROR) {
+			return -1;
+		}
+		WSACleanup();
+	}
+	return 0;
+}
+
+void CALLBACK TimerProc(HWND hWnd, UINT nMsg, UINT_PTR nTimerID, DWORD dwTime)
+{
+	if (s_networkBuffer[0] != 0)
+	{
+		CAirCavLOSDlg* pMainWnd = (CAirCavLOSDlg*)AfxGetMainWnd();
+
+		switch (s_networkCommand)
+		{
+		case MSG_UPDATE_SET_ACTIVE:
+		{
+			char cmd[10];
+			int unitID;
+			sscanf(s_networkBuffer, "%s %d", cmd, &unitID);
+			pMainWnd->setActiveUnit(unitID);
+			break;
+		}
+		case MSG_UPDATE_UNIT_INFO:
+			pMainWnd->decodeUnitInfo(s_networkBuffer);
+			break;
+		case MSG_UPDATE_MAP_INFO:
+			pMainWnd->decodeMapInfo(s_networkBuffer);
+			break;
+		case MSG_CHANGE_TIMEOFDAY:
+			pMainWnd->decodeTimeOfDay(s_networkBuffer);
+			break;
+		case MSG_CHANGE_WEATHER:
+			pMainWnd->decodeWeather(s_networkBuffer);
+			break;
+		case MSG_SWITCH_SIDES:
+			pMainWnd->switchSides();
+			break;
+		}
+		pMainWnd->updateActiveUnit(TRUE);
+
+		memset(s_networkBuffer, 0, sizeof(s_networkBuffer));
+	}
+}
+
+
+class CMyObject : public CObject
+{
+	DECLARE_DYNAMIC(CMyObject);
+
+public:
+	CMyObject() {}
+	~CMyObject() {}
+
+	void startServer()
+	{
+		if (s_thisActiveSide == SIDE_BLUE)
+			create_server();
+		else
+			create_client(s_hostIP);
+	}
+};
+
+IMPLEMENT_DYNAMIC(CMyObject, CObject)
+
+UINT MyThreadProc(LPVOID pParam)
+{
+	CMyObject* pObject = (CMyObject*)pParam;
+
+	if (pObject == NULL || !pObject->IsKindOf(RUNTIME_CLASS(CMyObject)))
+		return 1;   // if pObject is not valid
+
+	// do something with 'pObject'
+	pObject->startServer();
+
+	return 0;   // thread completed successfully
+}
+
+// ==========================================================================================================
+
+
+
+// CAboutDlg dialog used for App About
 class CAboutDlg : public CDialog
 {
 public:
@@ -96,10 +436,6 @@ END_MESSAGE_MAP()
 
 
 // CAirCavLOSDlg dialog
-
-
-
-
 CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(CAirCavLOSDlg::IDD, pParent)
 	, m_activeUnitName(_T(""))
@@ -163,6 +499,8 @@ CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 	m_unitTracking.OPs = 0;
 
 	m_shutdown = false;
+
+	s_networkActiveSide = -1;
 }
 
 void CAirCavLOSDlg::DoDataExchange(CDataExchange* pDX)
@@ -219,6 +557,7 @@ void CAirCavLOSDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Check(pDX, IDC_CHECK_ACTIVE_IN_DEF, m_activeUnitInDefilade);
 	DDX_Text(pDX, IDC_EDIT_ACTIVE_SIDE, m_activeCountry);
 	DDX_Text(pDX, IDC_EDIT_ACTIVE_SIDE2, m_activeSide);
+	DDX_Text(pDX, IDC_EDIT_MY_SIDE, m_mySide);
 	DDX_Check(pDX, IDC_CHECK_DEBUG, m_debugLOSMessages);
 	DDX_Check(pDX, IDC_CHECK_DEBUG_PK, m_debugFKNMessages);
 	DDX_Check(pDX, IDC_CHECK_ACTIVE_LOWLEVEL, m_activeUnitLowLevel);
@@ -298,6 +637,7 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_ACTION_LASER, &CAirCavLOSDlg::OnBnClickedButtonActionLaser)
 	ON_BN_CLICKED(IDC_BUTTON_ACTION_RADAR, &CAirCavLOSDlg::OnBnClickedButtonActionRadar)
 	ON_BN_CLICKED(IDC_CHECK_ACTIVE_RADAR_ON, &CAirCavLOSDlg::OnBnClickedCheckActiveRadarOn)
+	ON_BN_CLICKED(IDC_BUTTON_CONNECT, &CAirCavLOSDlg::OnBnClickedButtonConnect)
 END_MESSAGE_MAP()
 
 
@@ -387,8 +727,14 @@ BOOL CAirCavLOSDlg::OnInitDialog()
 	// set dialog text based on scenarios loaded
 	for ( int c=0; c<numberOfScenarios; c++ )
 		dlg.setScenarioTitle( c, scenarioData->getName(c) );
-	if ( dlg.DoModal() == IDOK )
+
+	CString hostIP;
+	if (dlg.DoModal() == IDOK)
+	{
 		scenarioToPlay = dlg.getScenario();
+		s_thisActiveSide = dlg.getSide();
+		hostIP = dlg.getHostIP();
+	}
 
 	m_maxCounters = scenarioData->getScenario( scenarioToPlay, counterDataList, unitDataList );
 	SetWindowText((LPCTSTR)scenarioData->getName( scenarioToPlay ));
@@ -417,8 +763,27 @@ BOOL CAirCavLOSDlg::OnInitDialog()
 				int hexColumn = counterDataList[c]->getHexCol();
 				int hexRow = counterDataList[c]->getHexRow();
 				mapData->setWreck(hexRow, hexColumn);
+				sendMapInfo(hexRow, hexColumn);
 			}
 		}
+	}
+
+	// start networking if necessary
+	// - BLUE side is server (host IP)
+	// - RED side is client (connects to host IP)
+	if (s_thisActiveSide != BOTH)
+	{
+		CT2CA hostipConvertedAnsiString(hostIP);
+		std::string hostipStr(hostipConvertedAnsiString);
+		
+		s_hostIP = hostipStr;
+		s_networkActiveSide = SIDE_BLUE;
+		s_networkCommand = 0;
+
+		CMyObject *pNewObject = new CMyObject;
+		AfxBeginThread(MyThreadProc, pNewObject);
+
+		SetTimer(1, 500, TimerProc);
 	}
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -511,6 +876,7 @@ void CAirCavLOSDlg::OnCloseDialog()
 CAirCavLOSDlg::~CAirCavLOSDlg()
 {
 	OnCloseDialog();
+	//KillTimer(1);
 }
 
 // If you add a minimize button to your dialog, you will need the code below
@@ -617,6 +983,8 @@ void CAirCavLOSDlg::OnCbnSelchangeComboActiveSecondary()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionPopUp()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	// pre-perform Popup to get other units opportunity to fire
 	if ( m_ActiveUnit >= 0 )
 	{
@@ -627,12 +995,12 @@ void CAirCavLOSDlg::OnBnClickedButtonActionPopUp()
 		{
 			if ( counterDataList[m_ActiveUnit]->getHeloOffset() > NAP_OF_EARTH_METERS)
 			{
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, NAP_OF_EARTH_METERS, true);
+				counterDataList[m_ActiveUnit]->actionHeloOffset(mapData, counterDataList, NAP_OF_EARTH_METERS, true);
 				counterDataList[m_ActiveUnit]->setIsPopUp(NOT_IN_POPUP);
 			}
 			else
 			{
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, LOW_LEVEL_METERS, true);
+				counterDataList[m_ActiveUnit]->actionHeloOffset(mapData, counterDataList, LOW_LEVEL_METERS, true);
 				counterDataList[m_ActiveUnit]->setIsPopUp(POPUP_NOT_FIRED);
 			}
 			counterDataList[m_ActiveUnit]->setActionTaken(true);
@@ -643,6 +1011,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionPopUp()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	int wpnType, FKN, FKNpercent, SUP, SUPpercent;
 	bool popup = false;
 	bool skylined = false;
@@ -1055,27 +1425,34 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 			counterDataList[t]->setIsSuppressed(TRUE);
 
 			// infantry will go into defilade if suppressed
-			if ( counterDataList[tgt]->getUnitInfo()->isInfantry() )
-				counterDataList[tgt]->setDefilade(TRUE);
+			if ( counterDataList[t]->getUnitInfo()->isInfantry() )
+				counterDataList[t]->setDefilade(TRUE);
+
+			sendUnitInfo(t);
 		}
 		else if (result == IDOK)
 		{
 			// kill this unit
 			counterDataList[t]->kill();
+			sendUnitInfo(t);
 
 			// kill any mounted units as well
 			int numMountedUnits = counterDataList[t]->getNumberOfMountedUnits();
 			for (int i=0; i<numMountedUnits; i++ )
 			{
 				int id = counterDataList[t]->getMountedUnit(i);
-				if ( !counterDataList[id]->getIsDismounted() )
+				if (!counterDataList[id]->getIsDismounted())
+				{
 					counterDataList[id]->kill();
+					sendUnitInfo(id);
+				}
 			}
 
 			// if the target was a vehicle or helicopter, add a wreck marker to the target hex
 			if ( counterDataList[t]->getUnitInfo()->getUnitType() != INF )
 			{
 				m_wreck = mapData->setWreck(tgtRow, tgtCol);
+				sendMapInfo(tgtRow, tgtCol);
 			}
 		}
 
@@ -1124,7 +1501,8 @@ void CAirCavLOSDlg::resetLaserDesignation()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 {
 	if (m_ActiveUnit < 0) return;
-	
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
 		CString msgstr = (CString)"Suppressed infantry cannot move!";
@@ -1151,6 +1529,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 {
 	if (m_ActiveUnit < 0) return;
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
@@ -1178,6 +1557,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 {
 	if (m_ActiveUnit < 0) return;
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
@@ -1205,6 +1585,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 {
 	if (m_ActiveUnit < 0) return;
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
@@ -1232,6 +1613,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 {
 	if (m_ActiveUnit < 0) return;
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
@@ -1259,6 +1641,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveNe()
 {
 	if (m_ActiveUnit < 0) return;
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
 	{
@@ -1347,6 +1730,9 @@ void CAirCavLOSDlg::OnEnChangeEditCurWeaponName()
 
 void CAirCavLOSDlg::OnBnClickedButtonMakeActive()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide)
+		return;
+
 	int indexSelectedUnit = m_AvailableUnitsListBox.GetCurSel();
 	if (indexSelectedUnit < 0 )
 		return;
@@ -1358,11 +1744,31 @@ void CAirCavLOSDlg::OnBnClickedButtonMakeActive()
 		CString activeUnitsName = counterDataList[indexSelectedUnit]->getName();
 		if ( thisUnitsName == activeUnitsName /* && counterDataList[c]->getIsAlive() == ALIVE */ )
 		{
+			if (s_thisActiveSide != BOTH)
+			{
+				// if networked, don't allow selection of unit from the other side
+				SideType thisSide = counterDataList[c]->getSideType();
+				if (thisSide != s_thisActiveSide)
+				{
+					m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
+					return;
+				}
+				//if (m_ActiveUnit != c)
+				{
+					char buffer[MAX_BUF_SIZE];
+					sprintf_s(buffer, "select %d", c);
+					if (s_thisActiveSide == SIDE_BLUE)
+						serverSend(buffer);
+					else
+						clientSend(buffer);
+				}
+			}
+
 			m_ActiveUnit = c;
 			break;
 		}
 	}
-	
+
 	// reset a couple of things
 	m_activeUnitWeapon = 0;
 	m_popSmokeWhileMoving = false;
@@ -1376,7 +1782,7 @@ void CAirCavLOSDlg::OnBnClickedButtonMakeActive()
 
 	// update the dialog
 	UpdateData(FALSE);
-	updateActiveUnit();
+	updateActiveUnit(TRUE, TRUE);
 }
 
 void CAirCavLOSDlg::OnBnClickedButtonResetActive()
@@ -1390,6 +1796,8 @@ void CAirCavLOSDlg::OnBnClickedButtonResetActive()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	int indexSelectedUnit = m_SightingUnitsListBox.GetCurSel();
 	if (indexSelectedUnit < 0 )
 		return;
@@ -1644,6 +2052,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionLaser()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	int indexSelectedUnit = m_SightedUnitsListBox.GetCurSel();
 	if (indexSelectedUnit < 0)
 		return;
@@ -1728,6 +2138,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionLaser()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionRadar()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if (counterDataList[m_ActiveUnit]->getUnitInfo()->hasRadar())
 	{
 		if (counterDataList[m_ActiveUnit]->getRadarInUse())
@@ -1790,7 +2202,7 @@ void CAirCavLOSDlg::updateFiringUnits()
 	}
 }
 
-void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
+void CAirCavLOSDlg::updateActiveUnit(bool rebuildList, bool noNetworkUpdate)
 {
 	LPCTSTR STR_NOE = _T("Nap Of Earth");
 	LPCTSTR STR_LL = _T("Low Level");
@@ -1801,6 +2213,11 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 
 	if ( m_ActiveUnit >= 0 )
 	{
+		if (s_thisActiveSide != BOTH && s_thisActiveSide == s_networkActiveSide)
+			GetDlgItem(IDC_BUTTON_CONNECT)->EnableWindow(TRUE);
+		else
+			GetDlgItem(IDC_BUTTON_CONNECT)->EnableWindow(FALSE);
+
 		// Active Unit info
 		char buffer[MAX_BUF_SIZE];
 		m_activeUnitName = counterDataList[m_ActiveUnit]->getName();
@@ -1959,7 +2376,18 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 
 		// which side - blue or red
 		SideType activeSideType = counterDataList[m_ActiveUnit]->getSideType();
-		m_activeSide = counterDataList[m_ActiveUnit]->getUnitInfo()->getSideTypeString(activeSideType);
+		if (s_thisActiveSide != BOTH)
+		{
+			SideType activeSideType = s_networkActiveSide == SIDE_BLUE ? SIDE_BLUE : SIDE_RED;
+			SideType mySideType = s_thisActiveSide == SIDE_RED ? SIDE_RED : SIDE_BLUE;
+			m_activeSide = counterDataList[m_ActiveUnit]->getUnitInfo()->getSideTypeString(activeSideType);
+			m_mySide = counterDataList[m_ActiveUnit]->getUnitInfo()->getSideTypeString(mySideType);
+		}
+		else
+		{
+			m_activeSide = counterDataList[m_ActiveUnit]->getUnitInfo()->getSideTypeString(activeSideType);
+			m_mySide = (CString)"BOTH";
+		}
 
 		// unit type
 		UnitType unitType = counterDataList[m_ActiveUnit]->getUnitInfo()->getUnitType();
@@ -2641,9 +3069,233 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList)
 					m_SightingUnitsListBox.AddString(CString(s.second.c_str()));
 				}
 			}
+
+			// override the hex position and sighted units if this is not the active side over the network
+			if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide)
+			{
+				// do not display any units the active unit can sight
+				m_SightedUnitsListBox.ResetContent();
+
+				// if there are no units sighting this unit...
+				if (m_SightingUnitsListBox.GetCount() == 0)
+				{
+					// ...obscure its actual position from the enemy
+					m_activeUnitPosition = (CString)"XXXX";
+				}
+			}
+		}
+
+		if (!noNetworkUpdate && s_thisActiveSide == s_networkActiveSide)
+		{
+			sendUnitInfo(m_ActiveUnit);
 		}
 
 		UpdateData(FALSE);
+	}
+}
+
+void CAirCavLOSDlg::sendUnitInfo(int unit)
+{
+	// only if networking is enabled
+	if (s_thisActiveSide != BOTH)
+	{
+		char buffer[MAX_BUF_SIZE] = { 0 };;
+		encodeUnitInfo(unit, buffer);
+		if (s_thisActiveSide == SIDE_BLUE)
+			serverSend(buffer);
+		else
+			clientSend(buffer);
+		Sleep(1000);
+	}
+}
+
+void CAirCavLOSDlg::encodeUnitInfo(int unit, char *outbuffer)
+{
+	int col = counterDataList[unit]->getHexCol();
+	int row = counterDataList[unit]->getHexRow();
+	double OPs = counterDataList[unit]->getOPs();
+	int elevOffset = counterDataList[unit]->getElevOffset();
+	int heloOffset = counterDataList[unit]->getHeloOffset();
+	int fired = counterDataList[unit]->getFired();
+	int moved = counterDataList[unit]->getMoved();
+	int status = counterDataList[unit]->getIsAlive();
+	int defilade = counterDataList[unit]->getDefilade();
+	int evading = counterDataList[unit]->getEvading();
+	int dismounted = counterDataList[unit]->getIsDismounted();
+	int suppressed = counterDataList[unit]->getIsSuppressed();
+	int optics = counterDataList[unit]->getOpticsInUse();
+	int laserdesignated = counterDataList[unit]->getLaserDesignatedUnit();
+	int laserdesignating = counterDataList[unit]->getLaserDesignatingUnit();
+	int radar = counterDataList[unit]->getRadarInUse();
+
+	char buffer[MAX_BUF_SIZE] = { 0 };;
+	sprintf_s(buffer, "info %d %d %d %2.1f %d %d %d %d %d %d %d %d %d %d %d %d %d", unit, col, row, OPs, elevOffset, heloOffset, 
+		fired, moved, status, defilade, evading, dismounted, suppressed, optics, laserdesignated, laserdesignating, radar);
+	strncpy(outbuffer, buffer, strlen(buffer));
+}
+
+void CAirCavLOSDlg::decodeUnitInfo(char *inbuffer)
+{
+	char cmd[10];
+	int unit, col, row, elevOffset, heloOffset, fired, moved, status, defilade, evading, dismounted, suppressed, optics, laserdesignated, laserdesignating, radar;
+	float OPs;
+	char buffer[MAX_BUF_SIZE] = { 0 };;
+	strncpy(buffer, inbuffer, strlen(inbuffer));
+	sscanf(buffer, "%s %d %d %d %f %d %d %d %d %d %d %d %d %d %d %d %d %d", cmd, &unit, &col, &row, &OPs, &elevOffset, &heloOffset,
+		&fired, &moved, &status, &defilade, &evading, &dismounted, &suppressed, &optics, &laserdesignated, &laserdesignating, &radar);
+
+	counterDataList[unit]->setHexCol(col);
+	counterDataList[unit]->setHexRow(row);
+	counterDataList[unit]->setOPs(OPs);
+	counterDataList[unit]->setElevOffset(elevOffset);
+	counterDataList[unit]->setHeloOffset(heloOffset);
+	counterDataList[unit]->setFired(fired);
+	counterDataList[unit]->setMoved(moved);
+	counterDataList[unit]->setIsAlive(status);
+	counterDataList[unit]->setDefilade(defilade);
+	counterDataList[unit]->setEvading(evading);
+	counterDataList[unit]->setIsDismounted(dismounted);
+	counterDataList[unit]->setIsSuppressed(suppressed);
+	counterDataList[unit]->setOpticsInUse(optics);
+	counterDataList[unit]->setLaserDesignatedUnit(laserdesignated);
+	counterDataList[unit]->setLaserDesignatingUnit(laserdesignating);
+	counterDataList[unit]->setRadarInUse(radar);
+}
+
+void CAirCavLOSDlg::encodeMapInfo(int row, int col, char *outbuffer)
+{
+	int smoke = mapData->getSmoke(row, col);
+	int wreck = mapData->getWreck(row, col);
+
+	char buffer[MAX_BUF_SIZE] = { 0 };
+	sprintf_s(buffer, "map %d %d %d %d", row, col, smoke, wreck);
+	strncpy(outbuffer, buffer, strlen(buffer));
+}
+
+void CAirCavLOSDlg::decodeMapInfo(char *inbuffer)
+{
+	char cmd[10];
+	int col, row, smoke, wreck;
+	char buffer[MAX_BUF_SIZE] = { 0 };
+	strncpy(buffer, inbuffer, strlen(inbuffer));
+	sscanf(buffer, "%s %d %d %d %d", cmd, &row, &col, &smoke, &wreck);
+
+	if (smoke == 2)
+	{
+		m_artillerySmokeHexList.Add(row, col);
+		m_smoke = mapData->setSmoke(row, col, true, true);
+	}
+	else if (smoke == 1)
+	{
+		m_vehicleSmokeHexList.Add(row, col);
+		m_smoke = mapData->setSmoke(row, col, false, true);
+	}
+	else
+	{
+		mapData->clearSmoke(row, col);
+	}
+
+	mapData->clearWreck(row, col);
+	for (int i = 0; i < wreck; i++)
+	{
+		mapData->setWreck(row, col, false);
+	}
+}
+
+void CAirCavLOSDlg::sendMapInfo(int row, int col)
+{
+	// only if networking is enabled
+	if (s_thisActiveSide != BOTH)
+	{
+		char buffer[MAX_BUF_SIZE] = { 0 };
+		encodeMapInfo(row, col, buffer);
+		if (s_thisActiveSide == SIDE_BLUE)
+			serverSend(buffer);
+		else
+			clientSend(buffer);
+		Sleep(1000);
+	}
+}
+
+void CAirCavLOSDlg::encodeWeather(char *outbuffer)
+{
+	char buffer[MAX_BUF_SIZE] = { 0 };
+	sprintf_s(buffer, "weather %d", m_Weather);
+	strncpy(outbuffer, buffer, strlen(buffer));
+}
+
+void CAirCavLOSDlg::decodeWeather(char *inbuffer)
+{
+	char cmd[10];
+	char buffer[MAX_BUF_SIZE] = { 0 };
+	strncpy(buffer, inbuffer, strlen(inbuffer));
+	sscanf(buffer, "%s %d", cmd, &m_Weather);
+
+	if (m_Weather == WEATHER_CLEAR)
+		m_currentWeather = "Clear";
+	else if (m_Weather == WEATHER_LT_FOG)
+		m_currentWeather = "Light Fog";
+	else if (m_Weather == WEATHER_HVY_FOG)
+		m_currentWeather = "Heavy Fog";
+	else if (m_Weather == WEATHER_OVERCAST)
+		m_currentWeather = "Overcast";
+	else if (m_Weather == WEATHER_RAIN)
+		m_currentWeather = "Rain";
+	else if (m_Weather == WEATHER_SNOW)
+		m_currentWeather = "Snow";
+
+	UpdateData(FALSE);
+}
+
+void CAirCavLOSDlg::sendWeather()
+{
+	// only if networking is enabled
+	if (s_thisActiveSide != BOTH)
+	{
+		char buffer[MAX_BUF_SIZE] = { 0 };
+		encodeWeather(buffer);
+		if (s_thisActiveSide == SIDE_BLUE)
+			serverSend(buffer);
+		else
+			clientSend(buffer);
+		Sleep(1000);
+	}
+}
+
+void CAirCavLOSDlg::encodeTimeOfDay(char *outbuffer)
+{
+	char buffer[MAX_BUF_SIZE] = { 0 };
+	sprintf_s(buffer, "time %d", m_TimeOfDay);
+	strncpy(outbuffer, buffer, strlen(buffer));
+}
+
+void CAirCavLOSDlg::decodeTimeOfDay(char *inbuffer)
+{
+	char cmd[10];
+	char buffer[MAX_BUF_SIZE] = { 0 };
+	strncpy(buffer, inbuffer, strlen(inbuffer));
+	sscanf(buffer, "%s %d", cmd, &m_TimeOfDay);
+	
+	if (m_TimeOfDay == TIME_DAY)
+		m_currentTimeOfDay = "Day";
+	else if (m_TimeOfDay == TIME_NIGHT)
+		m_currentTimeOfDay = "Night";
+
+	UpdateData(FALSE);
+}
+
+void CAirCavLOSDlg::sendTimeOfDay()
+{
+	// only if networking is enabled
+	if (s_thisActiveSide != BOTH)
+	{
+		char buffer[MAX_BUF_SIZE];
+		encodeTimeOfDay(buffer);
+		if (s_thisActiveSide == SIDE_BLUE)
+			serverSend(buffer);
+		else
+			clientSend(buffer);
+		Sleep(1000);
 	}
 }
 
@@ -2707,6 +3359,8 @@ void CAirCavLOSDlg::OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult)
 
 void CAirCavLOSDlg::OnBnClickedCheckActiveFired()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if (m_ActiveUnit >= 0)
 	{
 		if (counterDataList[m_ActiveUnit]->getFired())
@@ -2720,6 +3374,8 @@ void CAirCavLOSDlg::OnBnClickedCheckActiveFired()
 
 void CAirCavLOSDlg::OnBnClickedCheckActiveMoved()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if (m_ActiveUnit >= 0)
 	{
 		if (counterDataList[m_ActiveUnit]->getMoved())
@@ -2733,6 +3389,8 @@ void CAirCavLOSDlg::OnBnClickedCheckActiveMoved()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionReset()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if ( m_ActiveUnit >= 0 )
 	{
 		counterDataList[m_ActiveUnit]->reset();
@@ -2742,6 +3400,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionReset()
 
 void CAirCavLOSDlg::OnEnChangeEditActiveLoc()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if ( m_ActiveUnit >= 0 )
 	{
 		UpdateData(TRUE);
@@ -2777,6 +3437,8 @@ void CAirCavLOSDlg::OnBnClickedCheckDebugPk()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionEvade()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if ( m_ActiveUnit >= 0 )
 	{
 		UpdateData(TRUE);
@@ -2789,6 +3451,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionEvade()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionDefilade()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if ( m_ActiveUnit >= 0 )
 	{
 		UpdateData(TRUE);
@@ -2810,6 +3474,8 @@ void CAirCavLOSDlg::OnBnClickedCheckActiveInDef()
 
 void CAirCavLOSDlg::OnBnClickedButtonActiveSuppressed()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if (m_ActiveUnit >= 0)
 	{
 		UpdateData(TRUE);
@@ -2859,6 +3525,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActiveSuppressed()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionMount()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if ( m_ActiveUnit >= 0 )
 	{
 		UpdateData(TRUE);
@@ -2921,6 +3589,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMount()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionLowlevel()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if ( m_ActiveUnit >= 0 )
 	{
 		UpdateData(TRUE);
@@ -2929,9 +3599,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionLowlevel()
 		if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() )
 		{
 			if ( counterDataList[m_ActiveUnit]->getHeloOffset() > 0 )
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, NAP_OF_EARTH_METERS);
+				counterDataList[m_ActiveUnit]->actionHeloOffset(mapData, counterDataList, NAP_OF_EARTH_METERS);
 			else
-				counterDataList[m_ActiveUnit]->setHeloOffset(mapData, counterDataList, LOW_LEVEL_METERS);
+				counterDataList[m_ActiveUnit]->actionHeloOffset(mapData, counterDataList, LOW_LEVEL_METERS);
 			updateActiveUnit();
 		}
 	}
@@ -2940,26 +3610,22 @@ void CAirCavLOSDlg::OnBnClickedButtonActionLowlevel()
 
 void CAirCavLOSDlg::resolveOpportunityFire()
 {
+	int lastUnitWithKill = -1;
+
 	// first pass - gun armed weapons
 	int lastUnitToKillGuns = resolveFirePass(GUN);
-	if (lastUnitToKillGuns != m_originalActiveUnit)
-		m_ActiveUnit = lastUnitToKillGuns;
-	else
-		m_ActiveUnit = m_originalActiveUnit;
+	if (lastUnitToKillGuns >= 0)
+		lastUnitWithKill = lastUnitToKillGuns;
 
 	// second pass - non-ATGM missile-type weapons (ROCKET, SAM)
 	int lastUnitToKillRocket= resolveFirePass(ROCKET);
-	if (lastUnitToKillRocket != m_originalActiveUnit)
-		m_ActiveUnit = lastUnitToKillRocket;
-	else
-		m_ActiveUnit = m_originalActiveUnit;
+	if (lastUnitToKillRocket >= 0)
+		lastUnitWithKill = lastUnitToKillRocket;
 
 	// third pass - ATGMs
 	int lastUnitToKillATGM = resolveFirePass(ATGM);
-	if (lastUnitToKillATGM != m_originalActiveUnit)
-		m_ActiveUnit = lastUnitToKillATGM;
-	else
-		m_ActiveUnit = m_originalActiveUnit;
+	if (lastUnitToKillATGM >= 0)
+		lastUnitWithKill = lastUnitToKillATGM;
 
 	// clear the list
 	size_t listSize = m_FiringUnitsList.size();
@@ -2972,13 +3638,35 @@ void CAirCavLOSDlg::resolveOpportunityFire()
 	}
 	m_FiringUnitsList.clear();
 
-	updateActiveUnit();
-	m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
+	// last unit with a kill is now the active unit, if any
+	if (lastUnitWithKill >= 0)
+		m_ActiveUnit = lastUnitWithKill;
+
+	// in non-network mode, just (re)select the active unit
+	if (s_thisActiveSide == BOTH)
+	{
+		updateActiveUnit();
+		m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
+	}
+	else
+	{
+		// if the active unit is an enemy unit, need to switch sides
+		SideType thisSide = counterDataList[m_ActiveUnit]->getSideType();
+		if (thisSide == s_networkActiveSide)
+		{
+			updateActiveUnit();
+			m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
+		}
+		else
+		{
+			OnBnClickedButtonConnect();
+		}
+	}
 }
 
 int CAirCavLOSDlg::resolveFirePass(int firePass)
 {
-	int lastActiveUnit = m_originalActiveUnit;
+	int lastActiveUnit = -1; // m_originalActiveUnit;
 	std::vector<int> unitsKilledThisPass;
 
 	size_t listSize = m_FiringUnitsList.size();
@@ -3236,19 +3924,24 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 			// infantry will go into defilade if suppressed
 			if ( counterDataList[tgt]->getUnitInfo()->isInfantry() )
 				counterDataList[tgt]->setDefilade(TRUE);
+			sendUnitInfo(tgt);
 		}
 		else if ( result == IDOK )
 		{
 			// kill this unit
 			counterDataList[tgt]->kill();
+			sendUnitInfo(tgt);
 
 			// kill any mounted units as well
 			int numMountedUnits = counterDataList[tgt]->getNumberOfMountedUnits();
 			for (int i=0; i<numMountedUnits; i++ )
 			{
 				int id = counterDataList[tgt]->getMountedUnit(i);
-				if ( !counterDataList[id]->getIsDismounted() )
+				if (!counterDataList[id]->getIsDismounted())
+				{
 					counterDataList[id]->kill();
+					sendUnitInfo(id);
+				}
 			}
 
 			// in the event of a kill, the firing unit becomes the active unit
@@ -3281,11 +3974,13 @@ void CAirCavLOSDlg::OnBnClickedButtonResolveOppfire()
 
 void CAirCavLOSDlg::OnBnClickedButtonLaysmoke()
 {
-   if (!counterDataList[m_ActiveUnit]->getIsDismounted())
-   {
-      MessageBox((CString)"A mounted unit cannot lay smoke", (CString)"Lay Smoke", MB_OK);
-      return;
-   }
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+	
+	if (!counterDataList[m_ActiveUnit]->getIsDismounted())
+	{
+		MessageBox((CString)"A mounted unit cannot lay smoke", (CString)"Lay Smoke", MB_OK);
+		return;
+	}
 
 	int col = counterDataList[m_ActiveUnit]->getHexCol();
 	int row = counterDataList[m_ActiveUnit]->getHexRow();
@@ -3304,14 +3999,21 @@ void CAirCavLOSDlg::OnBnClickedCheckSmoke()
 		m_artillerySmokeHexList.Remove(row, col);
 		m_vehicleSmokeHexList.Remove(row, col);
 		mapData->clearSmoke(row, col);
+		sendMapInfo(row, col);
 	}
 	else
 	{
 		if (MessageBox((CString)"OK for Artillery Smoke, Cancel for Vehicle Smoke", (CString)"Smoke!", MB_OKCANCEL) == IDOK)
+		{
 			m_artillerySmokeHexList.Add(row, col);
+			m_smoke = mapData->setSmoke(row, col, true, true);
+		}
 		else
+		{
 			m_vehicleSmokeHexList.Add(row, col);
-		m_smoke = mapData->setSmoke(row, col, true);
+			m_smoke = mapData->setSmoke(row, col, false, true);
+		}
+		sendMapInfo(row, col);
 	}
 	UpdateData(FALSE);
 	updateActiveUnit();
@@ -3330,6 +4032,7 @@ void CAirCavLOSDlg::OnBnClickedCheckWreck()
 	{
 		m_wreck = mapData->setWreck(row, col, true);
 	}
+	sendMapInfo(row, col);
 	UpdateData(FALSE);
 	updateActiveUnit();
 }
@@ -3373,6 +4076,8 @@ void CAirCavLOSDlg::OnBnClickedButtonListUnits()
 
 void CAirCavLOSDlg::OnCbnSelchangeComboWeather()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	UpdateData(TRUE);
 
 	if ( m_currentWeather == "Clear")
@@ -3388,11 +4093,14 @@ void CAirCavLOSDlg::OnCbnSelchangeComboWeather()
 	else if ( m_currentWeather == "Snow")
 		m_Weather = WEATHER_SNOW;
 
+	sendWeather();
 	updateActiveUnit();
 }
 
 void CAirCavLOSDlg::OnCbnSelchangeComboTimeOfDay()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	UpdateData(TRUE);
 
 	if (m_currentTimeOfDay == "Day")
@@ -3400,11 +4108,14 @@ void CAirCavLOSDlg::OnCbnSelchangeComboTimeOfDay()
 	else if (m_currentTimeOfDay == "Night")
 		m_TimeOfDay = TIME_NIGHT;
 
+	sendTimeOfDay();
 	updateActiveUnit();
 }
 
 void CAirCavLOSDlg::OnCbnSelchangeComboOptics()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if (m_ActiveUnit >= 0)
 	{
 		UpdateData(TRUE);
@@ -3433,6 +4144,8 @@ void CAirCavLOSDlg::OnCbnSelchangeComboOptics()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	IndirectFire dlg;
 	int smokeMission = 0;
 
@@ -3473,7 +4186,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 		{
 			char smokeStr[128];
 			// set target hex
-			mapData->setSmoke( m_lastArtilleryRow, m_lastArtilleryCol );
+			mapData->setSmoke( m_lastArtilleryRow, m_lastArtilleryCol, true );
+			sendMapInfo(m_lastArtilleryRow, m_lastArtilleryCol);
 			m_artillerySmokeHexList.Add( m_lastArtilleryRow, m_lastArtilleryCol );
 			sprintf_s( smokeStr, "Smoked hex:  %02d%02d", m_lastArtilleryCol, m_lastArtilleryRow );
 			MessageBox( (CString)smokeStr, (CString)"Artillery Smoke", MB_OK );
@@ -3484,7 +4198,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 				{
 					// set adjacent hexes
 					CalcAdj( adjHex, m_lastArtilleryRow, m_lastArtilleryCol, &aR, &aC );
-					mapData->setSmoke( aR, aC );
+					mapData->setSmoke( aR, aC, true);
+					sendMapInfo(aR, aC);
 					m_artillerySmokeHexList.Add( aR, aC );
 					sprintf_s( smokeStr, "Smoked hex:  %02d%02d", aC, aR );
 					MessageBox( (CString)smokeStr, (CString)"Artillery Smoke", MB_OK );
@@ -3495,7 +4210,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 						{
 							// set adjacent hexes
 							CalcAdj( nextAdjHex, aR, aC, &aaR, &aaC );
-							mapData->setSmoke( aaR, aaC );
+							mapData->setSmoke( aaR, aaC, true);
+							sendMapInfo(aaR, aaC);
 							m_artillerySmokeHexList.Add( aaR, aaC );
 							sprintf_s( smokeStr, "Smoked hex:  %02d%02d", aaC, aaR );
 							MessageBox( (CString)smokeStr, (CString)"Artillery Smoke", MB_OK );
@@ -3652,6 +4368,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 						// infantry will go into defilade if suppressed
 						if ( counterDataList[c]->getUnitInfo()->isInfantry() )
 							counterDataList[c]->setDefilade(TRUE);
+						sendUnitInfo(c);
 
 						// set suppressed any mounted units as well, but don't set them to defilade
 						int numMountedUnits = counterDataList[c]->getNumberOfMountedUnits();
@@ -3659,21 +4376,28 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 						{
 							int id = counterDataList[c]->getMountedUnit(i);
 							if (counterDataList[id]->getIsDismounted() == false)
+							{
 								counterDataList[id]->setIsSuppressed(TRUE);
+								sendUnitInfo(id);
+							}
 						}
 					}
 					else if ( result == IDOK )
 					{
 						// kill this unit
 						counterDataList[c]->kill();
+						sendUnitInfo(c);
 
 						// kill any mounted units as well
 						int numMountedUnits = counterDataList[c]->getNumberOfMountedUnits();
 						for (int i=0; i<numMountedUnits; i++ )
 						{
 							int id = counterDataList[c]->getMountedUnit(i);
-							if ( !counterDataList[id]->getIsDismounted() )
+							if (!counterDataList[id]->getIsDismounted())
+							{
 								counterDataList[id]->kill();
+								sendUnitInfo(id);
+							}
 						}
 					}
 					else
@@ -3687,6 +4411,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 							// infantry will go into defilade if suppressed
 							if ( counterDataList[c]->getUnitInfo()->isInfantry() )
 								counterDataList[c]->setDefilade(TRUE);
+							sendUnitInfo(c);
 
 							// set suppressed any mounted units as well, but don't set them to defilade
 							int numMountedUnits = counterDataList[c]->getNumberOfMountedUnits();
@@ -3694,7 +4419,10 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 							{
 								int id = counterDataList[c]->getMountedUnit(i);
 								if (counterDataList[id]->getIsDismounted() == false)
+								{
 									counterDataList[id]->setIsSuppressed(TRUE);
+									sendUnitInfo(id);
+								}
 							}
 						}
 					}
@@ -3710,6 +4438,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 
 void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	struct hex_loc {
 		hex_loc(int r, int c) : row(r), col(c) {};
 		int row;
@@ -3748,6 +4478,7 @@ void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 	{
 		mapData->clearSmoke(hex.row, hex.col);
 		m_vehicleSmokeHexList.Remove(hex.row, hex.col);
+		sendMapInfo(hex.row, hex.col);
 	}
 
 	// remove artillery smoke markers
@@ -3782,12 +4513,15 @@ void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 	{
 		mapData->clearSmoke(hex.row, hex.col);
 		m_artillerySmokeHexList.Remove(hex.row, hex.col);
+		sendMapInfo(hex.row, hex.col);
 	}
 	updateActiveUnit();
 }
 
 void CAirCavLOSDlg::OnBnClickedCheckPopSmoke()
 {
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() )
 		MessageBox( (CString)"Helicopters cannot lay smoke", (CString)"Pop Smoke", MB_OK );
 	else if (!counterDataList[m_ActiveUnit]->getIsDismounted())
@@ -4318,3 +5052,71 @@ void CAirCavLOSDlg::OnBnClickedCheckActiveRadarOn()
 {
 	OnBnClickedButtonActionRadar();
 }
+
+
+void CAirCavLOSDlg::OnBnClickedButtonConnect()
+{
+	// only the active side can switch
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide)
+	{
+		MessageBox((CString)"Only Active side can switch sides", (CString)"Error", MB_OK);
+		return;
+	}
+
+	// switch network sides
+	if (s_networkActiveSide == SIDE_RED)
+		s_networkActiveSide = SIDE_BLUE;
+	else
+		s_networkActiveSide = SIDE_RED;
+
+	// tell the other side to switch
+	char buffer[MAX_BUF_SIZE];
+	sprintf_s(buffer, "switch");
+	if (s_thisActiveSide == SIDE_BLUE)
+		serverSend(buffer);
+	else
+		clientSend(buffer);
+
+	// set active unit to the first one found on the active side
+	for (int c = 0; c<m_maxCounters; c++)
+	{
+		SideType thisSide = counterDataList[c]->getSideType();
+		if (thisSide == s_networkActiveSide)
+		{
+			m_ActiveUnit = c;
+			break;
+		}
+	}
+	m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
+}
+
+
+void CAirCavLOSDlg::setActiveUnit(int& id)
+{
+	m_ActiveUnit = id;
+	m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
+}
+
+
+void CAirCavLOSDlg::switchSides()
+{
+	// switch active side
+	if (s_networkActiveSide == SIDE_RED)
+		s_networkActiveSide = SIDE_BLUE;
+	else
+		s_networkActiveSide = SIDE_RED;
+
+	// set active unit to the first one found on the active side
+	for (int c = 0; c<m_maxCounters; c++)
+	{
+		SideType thisSide = counterDataList[c]->getSideType();
+		if (thisSide == s_networkActiveSide)
+		{
+			m_ActiveUnit = c;
+			break;
+		}
+	}
+	m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
+}
+
+

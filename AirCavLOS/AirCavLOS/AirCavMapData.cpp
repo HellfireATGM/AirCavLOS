@@ -932,18 +932,18 @@ int AirCavMapData::getSmoke( int x, int y )
 	return Map[y][x].smoke;
 }
 
-int AirCavMapData::setSmoke( int x, int y, bool toggle )
+int AirCavMapData::setSmoke( int x, int y, bool artillery, bool toggle )
 {
 	if ( toggle )
 	{
 		if ( Map[y][x].smoke ) 
 			Map[y][x].smoke = 0;
 		else
-			Map[y][x].smoke = 1;
+			Map[y][x].smoke = artillery ? 2 : 1;
 	}
 	else
 	{
-		Map[y][x].smoke = 1;
+		Map[y][x].smoke = artillery ? 2 : 1;
 	}
 	return Map[y][x].smoke;
 }

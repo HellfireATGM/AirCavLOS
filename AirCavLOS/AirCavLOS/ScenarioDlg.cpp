@@ -24,11 +24,17 @@ void ScenarioDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	DDX_Radio(pDX, IDC_RADIO_SCENARIO_0, m_scenario);
+	DDX_Radio(pDX, IDC_RADIO_SIDE_0, m_side);
+	DDX_Text(pDX, IDC_EDIT_ADDRESS, m_ip);
 }
 
 
 BEGIN_MESSAGE_MAP(ScenarioDlg, CDialog)
 	ON_BN_CLICKED(IDC_RADIO_SCENARIO_0, &ScenarioDlg::OnBnClickedRadioScenario0)
+	ON_BN_CLICKED(IDC_RADIO_SIDE_0, &ScenarioDlg::OnBnClickedRadioSide)
+	ON_BN_CLICKED(IDC_RADIO_SIDE_1, &ScenarioDlg::OnBnClickedRadioSide)
+	ON_BN_CLICKED(IDC_RADIO_SIDE_2, &ScenarioDlg::OnBnClickedRadioSide)
+	ON_EN_CHANGE(IDC_EDIT_ADDRESS, &ScenarioDlg::OnEnChangeEditAddress)
 END_MESSAGE_MAP()
 
 
@@ -39,15 +45,43 @@ void ScenarioDlg::OnBnClickedRadioScenario0()
 	// TODO: Add your control notification handler code here
 }
 
+void ScenarioDlg::OnBnClickedRadioSide()
+{
+	// host ip is only enable for RED (client) side
+	UpdateData(TRUE);
+	if (m_side == 1)
+		GetDlgItem(IDC_EDIT_ADDRESS)->EnableWindow(TRUE);
+	else
+		GetDlgItem(IDC_EDIT_ADDRESS)->EnableWindow(FALSE);
+}
+
+void ScenarioDlg::OnEnChangeEditAddress()
+{
+	// TODO:  Add your control notification handler code here
+}
 
 int ScenarioDlg::getScenario()
 {
 	return m_scenario;
 }
 	
+int ScenarioDlg::getSide()
+{
+	return m_side;
+}
+
+CString ScenarioDlg::getHostIP()
+{
+	return m_ip;
+}
+
 BOOL ScenarioDlg::OnInitDialog()
 {
 	m_scenario = 0;
+	m_side = 2;
+	m_ip = "192.168.1.154";
+
+	GetDlgItem(IDC_EDIT_ADDRESS)->EnableWindow(FALSE);
 
 	SetDlgItemText(IDC_RADIO_SCENARIO_0, scenarioNames[0]);
 	SetDlgItemText(IDC_RADIO_SCENARIO_1, scenarioNames[1]);

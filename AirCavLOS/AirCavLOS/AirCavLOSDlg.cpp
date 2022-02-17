@@ -571,6 +571,7 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_CTLCOLOR()
 	//}}AFX_MSG_MAP
 	ON_EN_CHANGE(IDC_EDIT_ACTIVE_NAME, &CAirCavLOSDlg::OnEnChangeEditActiveName)
 	ON_EN_CHANGE(IDC_EDIT_ACTIVE_OP, &CAirCavLOSDlg::OnEnChangeEditActiveOp)
@@ -641,6 +642,87 @@ END_MESSAGE_MAP()
 
 
 // CAirCavLOSDlg message handlers
+#define COLOR_RED RGB(255,128,128)
+#define COLOR_BLUE RGB(128,128,255)
+#define COLOR_BOTH RGB(128,255,128)
+#define COLOR_OPP RGB(220,220,36)
+HBRUSH hBrRed = []() { return CreateSolidBrush(COLOR_RED); }();
+HBRUSH hBrBlue = []() { return CreateSolidBrush(COLOR_BLUE); }();
+HBRUSH hBrBoth = []() { return CreateSolidBrush(COLOR_BOTH); }();
+HBRUSH hBrYellow = []() { return CreateSolidBrush(COLOR_OPP); }();
+
+HBRUSH CAirCavLOSDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
+{
+	if (nCtlColor == CTLCOLOR_EDIT && pWnd->GetDlgCtrlID() == IDC_EDIT_ACTIVE_SIDE2)
+	{
+		if (s_networkActiveSide == SIDE_BLUE)
+		{
+			pDC->SetBkColor(COLOR_BLUE);
+			return hBrBlue;
+		}
+		else
+		{
+			pDC->SetBkColor(COLOR_RED);
+			return hBrRed;
+		}
+	}
+	else if (nCtlColor == CTLCOLOR_EDIT && pWnd->GetDlgCtrlID() == IDC_EDIT_MY_SIDE)
+	{
+		if (s_thisActiveSide == BOTH)
+		{
+			pDC->SetBkColor(COLOR_BOTH);
+			return hBrBoth;
+		}
+		else if (s_thisActiveSide == SIDE_BLUE)
+		{
+			pDC->SetBkColor(COLOR_BLUE);
+			return hBrBlue;
+		}
+		else
+		{
+			pDC->SetBkColor(COLOR_RED);
+			return hBrRed;
+		}
+	}
+	else if (nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_UNITS)
+	{
+		pDC->SetBkColor(COLOR_BOTH);
+		return hBrBoth;
+	}
+	else if (nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_FIRING_UNITS)
+	{
+		pDC->SetBkColor(COLOR_OPP);
+		return hBrYellow;
+	}
+	else if (nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_SIGHTED_UNITS)
+	{
+		if (s_networkActiveSide == SIDE_BLUE)
+		{
+			pDC->SetBkColor(COLOR_RED);
+			return hBrRed;
+		}
+		else
+		{
+			pDC->SetBkColor(COLOR_BLUE);
+			return hBrBlue;
+		}
+	}
+	else if (nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_SIGHTING_UNITS)
+	{
+		if (s_networkActiveSide == SIDE_BLUE)
+		{
+			pDC->SetBkColor(COLOR_RED);
+			return hBrRed;
+		}
+		else
+		{
+			pDC->SetBkColor(COLOR_BLUE);
+			return hBrBlue;
+		}
+	}
+	// All the rest
+	return CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
+}
 
 BOOL CAirCavLOSDlg::OnInitDialog()
 {
@@ -2387,6 +2469,7 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList, bool noNetworkUpdate)
 		else
 		{
 			m_activeSide = counterDataList[m_ActiveUnit]->getUnitInfo()->getSideTypeString(activeSideType);
+			s_networkActiveSide = activeSideType;
 			m_mySide = (CString)"BOTH";
 		}
 
@@ -3658,7 +3741,7 @@ void CAirCavLOSDlg::resolveOpportunityFire()
 			updateActiveUnit();
 			m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
 		}
-		else
+		else if (lastUnitWithKill >= 0)
 		{
 			// display the last unit with a kill and which side we are switching to
 			CString activeName = counterDataList[lastUnitWithKill]->getName();

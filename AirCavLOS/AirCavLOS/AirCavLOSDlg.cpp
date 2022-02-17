@@ -98,6 +98,8 @@ DWORD WINAPI clientReceive(LPVOID lpParam)
 
 		// If Server exits
 		if (strcmp(buffer, "exit") == 0) {
+			CAirCavLOSDlg* pMainWnd = (CAirCavLOSDlg*)AfxGetMainWnd();
+			MessageBox(pMainWnd->GetSafeHwnd(), (CString)"BLUE side has quit. Please exit now.", (CString)"Lost Server", MB_OK);
 			return 1;
 		}
 
@@ -211,6 +213,8 @@ DWORD WINAPI serverReceive(LPVOID lpParam)
 
 		// If Client exits
 		if (strcmp(buffer, "exit") == 0) {
+			CAirCavLOSDlg* pMainWnd = (CAirCavLOSDlg*)AfxGetMainWnd();
+			MessageBox(pMainWnd->GetSafeHwnd(), (CString)"RED side has quit. Please exit now.", (CString)"Lost Client", MB_OK);
 			break;
 		}
 
@@ -956,6 +960,12 @@ void CAirCavLOSDlg::OnCloseDialog()
 
 CAirCavLOSDlg::~CAirCavLOSDlg()
 {
+	// send exit command to other side
+	if (s_thisActiveSide == SIDE_BLUE)
+		serverSend("exit");
+	else if(s_thisActiveSide == SIDE_RED)
+		clientSend("exit");
+
 	OnCloseDialog();
 	//KillTimer(1);
 }

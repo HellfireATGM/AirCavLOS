@@ -72,6 +72,7 @@ Artillery ArtilleryTypes[MAXINDIRECT] =
 static int					s_networkActiveSide;
 static int					s_thisActiveSide;
 static std::string			s_hostIP;
+static std::string			s_hostPort;
 static uint64_t				s_networkCommand;
 static SOCKET				s_clientserversocket;
 static SOCKET				s_serverclientsocket;
@@ -104,32 +105,32 @@ DWORD WINAPI clientReceive(LPVOID lpParam)
 		}
 
 		// parse the message
-		if (strncmp(buffer, "select", 6) == 0)
+		if (strncmp(buffer, set_active, strlen(set_active)) == 0)
 		{
 			s_networkCommand = MSG_UPDATE_SET_ACTIVE;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, "info", 4) == 0)
+		else if (strncmp(buffer, set_info, strlen(set_info)) == 0)
 		{
 			s_networkCommand = MSG_UPDATE_UNIT_INFO;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, "map", 3) == 0)
+		else if (strncmp(buffer, update_map, strlen(update_map)) == 0)
 		{
 			s_networkCommand = MSG_UPDATE_MAP_INFO;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, "time", 4) == 0)
+		else if (strncmp(buffer, set_time, strlen(set_time)) == 0)
 		{
 			s_networkCommand = MSG_CHANGE_TIMEOFDAY;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, "weather", 7) == 0)
+		else if (strncmp(buffer, set_weather, strlen(set_weather)) == 0)
 		{
 			s_networkCommand = MSG_CHANGE_WEATHER;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, "switch", 6) == 0)
+		else if (strncmp(buffer, switch_sides, strlen(switch_sides)) == 0)
 		{
 			s_networkCommand = MSG_SWITCH_SIDES;
 			strcpy(s_networkBuffer, buffer);
@@ -150,7 +151,7 @@ DWORD WINAPI clientSend(const char *buffer)
 	return 0;
 }
 
-int create_client(std::string &ipaddr)
+int create_client(std::string &ipaddr, std::string &port)
 {
 	// Input data
 	WSADATA WSAData;
@@ -167,7 +168,8 @@ int create_client(std::string &ipaddr)
 
 	addr.sin_addr.s_addr = inet_addr(ipaddr.c_str());
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(5555);
+	u_short iport = atoi(port.c_str());
+	addr.sin_port = htons(iport);
 
 	// If connection failed
 	if (connect(s_clientserversocket,	(SOCKADDR*)&addr, sizeof(addr))	== SOCKET_ERROR) {
@@ -219,32 +221,32 @@ DWORD WINAPI serverReceive(LPVOID lpParam)
 		}
 
 		// parse the message
-		if (strncmp(buffer, "select", 6) == 0)
+		if (strncmp(buffer, set_active, strlen(set_active)) == 0)
 		{
 			s_networkCommand = MSG_UPDATE_SET_ACTIVE;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, "info", 4) == 0)
+		else if (strncmp(buffer, set_info, strlen(set_info)) == 0)
 		{
 			s_networkCommand = MSG_UPDATE_UNIT_INFO;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, "map", 3) == 0)
+		else if (strncmp(buffer, update_map, strlen(update_map)) == 0)
 		{
 			s_networkCommand = MSG_UPDATE_MAP_INFO;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, "time", 4) == 0)
+		else if (strncmp(buffer, set_time, strlen(set_time)) == 0)
 		{
 			s_networkCommand = MSG_CHANGE_TIMEOFDAY;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, "weather", 7) == 0)
+		else if (strncmp(buffer, set_weather, strlen(set_weather)) == 0)
 		{
 			s_networkCommand = MSG_CHANGE_WEATHER;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, "switch", 6) == 0)
+		else if (strncmp(buffer, switch_sides, strlen(switch_sides)) == 0)
 		{
 			s_networkCommand = MSG_SWITCH_SIDES;
 			strcpy(s_networkBuffer, buffer);
@@ -267,7 +269,7 @@ DWORD WINAPI serverSend(const char *buffer)
 }
 
 // Driver Code
-int create_server()
+int create_server(std::string& port)
 {
 	// Data
 	WSADATA WSAData;
@@ -289,7 +291,8 @@ int create_server()
 	}
 	serverAddr.sin_addr.s_addr = INADDR_ANY;
 	serverAddr.sin_family = AF_INET;
-	serverAddr.sin_port = htons(5555);
+	u_short iport = atoi(port.c_str());
+	serverAddr.sin_port = htons(iport);
 
 	// If socket error occurred, return -1
 	if (bind(server, (SOCKADDR*)&serverAddr, sizeof(serverAddr)) == SOCKET_ERROR) {
@@ -383,9 +386,9 @@ public:
 	void startServer()
 	{
 		if (s_thisActiveSide == SIDE_BLUE)
-			create_server();
+			create_server(s_hostPort);
 		else
-			create_client(s_hostIP);
+			create_client(s_hostIP, s_hostPort);
 	}
 };
 
@@ -813,12 +816,13 @@ BOOL CAirCavLOSDlg::OnInitDialog()
 	for ( int c=0; c<numberOfScenarios; c++ )
 		dlg.setScenarioTitle( c, scenarioData->getName(c) );
 
-	CString hostIP;
+	CString hostIP, hostPort;
 	if (dlg.DoModal() == IDOK)
 	{
 		scenarioToPlay = dlg.getScenario();
 		s_thisActiveSide = dlg.getSide();
 		hostIP = dlg.getHostIP();
+		hostPort = dlg.getHostPort();
 	}
 
 	m_maxCounters = scenarioData->getScenario( scenarioToPlay, counterDataList, unitDataList );
@@ -860,8 +864,11 @@ BOOL CAirCavLOSDlg::OnInitDialog()
 	{
 		CT2CA hostipConvertedAnsiString(hostIP);
 		std::string hostipStr(hostipConvertedAnsiString);
-		
+		CT2CA hostportConvertedAnsiString(hostPort);
+		std::string hostportStr(hostportConvertedAnsiString);
+
 		s_hostIP = hostipStr;
+		s_hostPort = hostportStr;
 		s_networkActiveSide = SIDE_BLUE;
 		s_networkCommand = 0;
 

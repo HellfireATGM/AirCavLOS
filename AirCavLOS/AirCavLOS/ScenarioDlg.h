@@ -26,13 +26,16 @@ public:
 	int getScenario();
 	int getSide();
 	CString getHostIP();
+	CString getHostPort();
 
 	int m_scenario;
 	int m_side;
 	CString m_ip;
+	CString m_port;
 
 	void setScenarioTitle(int which, CString name);
 
 	CString scenarioNames[12];
 	afx_msg void OnEnChangeEditAddress();
+	afx_msg void OnEnChangeEditPort();
 };

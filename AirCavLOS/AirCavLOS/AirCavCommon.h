@@ -141,9 +141,6 @@ enum RoadType
 #define DEAD 		0
 #define ALIVE		1
 
-#define BLUE		0
-#define RED			1
-
 #define NOT_MOVING	0
 #define MOVING		1
 
@@ -204,23 +201,23 @@ enum RoadType
 /*  unit definitions  */
 typedef struct
 {
-        char            name[10];
-        int             x;						// row
-        int             y;						// column
-        int             type;
-        int             nation;
-        int             OPs;
-        int             active;
-        int             status;
-        int             mode;
-        int             moved;
-        int             range_to_active_unit;
-        int             active_unit_range;
-        int             in_defilade;
-		int             height_offset;
-		int				num_mounted_units;
-		int             mounted_units[6];		// units mounted on this one
-		int				carried_by_unit;		// unit mounting this one
+    char            name[10];
+    int             x;						// row
+    int             y;						// column
+    int             type;
+    int             nation;
+    int             OPs;
+    int             active;
+    int             status;
+    int             mode;
+    int             moved;
+    int             range_to_active_unit;
+    int             active_unit_range;
+    int             in_defilade;
+	int             height_offset;
+	int				num_mounted_units;
+	int             mounted_units[6];		// units mounted on this one
+	int				carried_by_unit;		// unit mounting this one
 } Unit;
 
 /*  vehicle definitions  */
@@ -374,6 +371,13 @@ private:
 };
 
 // messaging
+static const char *set_active = "select";
+static const char *set_info = "info";
+static const char *update_map = "map";
+static const char *set_time = "time";
+static const char *set_weather = "weather";
+static const char *switch_sides = "switch";
+
 #define MSG_UPDATE_SET_ACTIVE 1
 #define MSG_UPDATE_UNIT_INFO 2
 #define MSG_UPDATE_MAP_INFO 3

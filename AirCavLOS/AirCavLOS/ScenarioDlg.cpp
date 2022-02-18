@@ -26,6 +26,7 @@ void ScenarioDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Radio(pDX, IDC_RADIO_SCENARIO_0, m_scenario);
 	DDX_Radio(pDX, IDC_RADIO_SIDE_0, m_side);
 	DDX_Text(pDX, IDC_EDIT_ADDRESS, m_ip);
+	DDX_Text(pDX, IDC_EDIT_PORT, m_port);
 }
 
 
@@ -35,6 +36,7 @@ BEGIN_MESSAGE_MAP(ScenarioDlg, CDialog)
 	ON_BN_CLICKED(IDC_RADIO_SIDE_1, &ScenarioDlg::OnBnClickedRadioSide)
 	ON_BN_CLICKED(IDC_RADIO_SIDE_2, &ScenarioDlg::OnBnClickedRadioSide)
 	ON_EN_CHANGE(IDC_EDIT_ADDRESS, &ScenarioDlg::OnEnChangeEditAddress)
+	ON_EN_CHANGE(IDC_EDIT_PORT, &ScenarioDlg::OnEnChangeEditPort)
 END_MESSAGE_MAP()
 
 
@@ -47,15 +49,32 @@ void ScenarioDlg::OnBnClickedRadioScenario0()
 
 void ScenarioDlg::OnBnClickedRadioSide()
 {
-	// host ip is only enable for RED (client) side
+	// host ip is only enabled for RED (client) side
+	// port is enabled for both RED and BLUE, but disabled for BOTH
 	UpdateData(TRUE);
-	if (m_side == 1)
-		GetDlgItem(IDC_EDIT_ADDRESS)->EnableWindow(TRUE);
-	else
+	if (m_side == 2)
+	{
 		GetDlgItem(IDC_EDIT_ADDRESS)->EnableWindow(FALSE);
+		GetDlgItem(IDC_EDIT_PORT)->EnableWindow(FALSE);
+	}
+	else if (m_side == 1)
+	{
+		GetDlgItem(IDC_EDIT_ADDRESS)->EnableWindow(TRUE);
+		GetDlgItem(IDC_EDIT_PORT)->EnableWindow(TRUE);
+	}
+	else
+	{
+		GetDlgItem(IDC_EDIT_ADDRESS)->EnableWindow(FALSE);
+		GetDlgItem(IDC_EDIT_PORT)->EnableWindow(TRUE);
+	}
 }
 
 void ScenarioDlg::OnEnChangeEditAddress()
+{
+	// TODO:  Add your control notification handler code here
+}
+
+void ScenarioDlg::OnEnChangeEditPort()
 {
 	// TODO:  Add your control notification handler code here
 }
@@ -75,13 +94,20 @@ CString ScenarioDlg::getHostIP()
 	return m_ip;
 }
 
+CString ScenarioDlg::getHostPort()
+{
+	return m_port;
+}
+
 BOOL ScenarioDlg::OnInitDialog()
 {
 	m_scenario = 0;
 	m_side = 2;
 	m_ip = "192.168.1.154";
+	m_port = "5555";
 
 	GetDlgItem(IDC_EDIT_ADDRESS)->EnableWindow(FALSE);
+	GetDlgItem(IDC_EDIT_PORT)->EnableWindow(FALSE);
 
 	SetDlgItemText(IDC_RADIO_SCENARIO_0, scenarioNames[0]);
 	SetDlgItemText(IDC_RADIO_SCENARIO_1, scenarioNames[1]);
@@ -104,5 +130,4 @@ void ScenarioDlg::setScenarioTitle(int which, CString name)
 {
 	scenarioNames[which] = name;
 }
-
 

@@ -181,6 +181,8 @@
 #define IDC_EDIT_ADDRESS                1090
 #define IDC_BUTTON_ACTION_MOVE_N2       1091
 #define IDC_COMBO_NETWORK_SIDE          1091
+#define IDC_EDIT_ADDRESS2               1091
+#define IDC_EDIT_PORT                   1091
 #define IDC_BUTTON_ACTION_MOVE_NE2      1092
 #define IDC_BUTTON_ACTION_MOVE_SE2      1093
 #define IDC_BUTTON_ACTION_MOVE_S2       1094

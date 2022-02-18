@@ -426,6 +426,8 @@ public:
 // Implementation
 protected:
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnEnChangeEditBuildInfo();
 };
 
 CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
@@ -435,10 +437,20 @@ CAboutDlg::CAboutDlg() : CDialog(CAboutDlg::IDD)
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
+	char buffer1[MAX_BUF_SIZE];
+	sprintf(buffer1, "Build date: %s %s", __DATE__, __TIME__);
+	DDX_Text(pDX, IDC_EDIT_BUILD_INFO, (CString)buffer1);
 }
 
 BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+	ON_EN_CHANGE(IDC_EDIT_BUILD_INFO, &CAboutDlg::OnEnChangeEditBuildInfo)
 END_MESSAGE_MAP()
+
+void CAboutDlg::OnEnChangeEditBuildInfo()
+{
+	// TODO:  Add your control notification handler code here
+}
+
 
 
 // CAirCavLOSDlg dialog
@@ -5230,5 +5242,4 @@ void CAirCavLOSDlg::switchSides()
 	}
 	m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
 }
-
 

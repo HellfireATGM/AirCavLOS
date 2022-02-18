@@ -181,9 +181,9 @@
 #define IDC_EDIT_ADDRESS                1090
 #define IDC_BUTTON_ACTION_MOVE_N2       1091
 #define IDC_COMBO_NETWORK_SIDE          1091
-#define IDC_EDIT_ADDRESS2               1091
 #define IDC_EDIT_PORT                   1091
 #define IDC_BUTTON_ACTION_MOVE_NE2      1092
+#define IDC_EDIT_BUILD_INFO             1092
 #define IDC_BUTTON_ACTION_MOVE_SE2      1093
 #define IDC_BUTTON_ACTION_MOVE_S2       1094
 #define IDC_BUTTON_ACTION_MOVE_SW2      1095
@@ -205,7 +205,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        155
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         1092
+#define _APS_NEXT_CONTROL_VALUE         1093
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

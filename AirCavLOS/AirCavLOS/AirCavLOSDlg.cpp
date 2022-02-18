@@ -516,6 +516,7 @@ CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 	m_unitTracking.unit = -1;
 	m_unitTracking.OPs = 0;
 
+	m_colorMode = 1;
 	m_shutdown = false;
 
 	s_networkActiveSide = -1;
@@ -584,6 +585,7 @@ void CAirCavLOSDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_CBString(pDX, IDC_COMBO_TIME_OF_DAY, m_currentTimeOfDay);
 	DDX_Check(pDX, IDC_CHECK_POP_SMOKE, m_popSmokeWhileMoving);
 	DDX_Check(pDX, IDC_CHECK_ACTIVE_RADAR_ON, m_activeUnitRadarOn);
+	DDX_Check(pDX, IDC_CHECK_COLOR, m_colorMode);
 }
 
 BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
@@ -657,6 +659,7 @@ BEGIN_MESSAGE_MAP(CAirCavLOSDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_ACTION_RADAR, &CAirCavLOSDlg::OnBnClickedButtonActionRadar)
 	ON_BN_CLICKED(IDC_CHECK_ACTIVE_RADAR_ON, &CAirCavLOSDlg::OnBnClickedCheckActiveRadarOn)
 	ON_BN_CLICKED(IDC_BUTTON_CONNECT, &CAirCavLOSDlg::OnBnClickedButtonConnect)
+	ON_BN_CLICKED(IDC_CHECK_COLOR, &CAirCavLOSDlg::OnBnClickedCheckColor)
 END_MESSAGE_MAP()
 
 
@@ -703,17 +706,17 @@ HBRUSH CAirCavLOSDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 			return hBrRed;
 		}
 	}
-	else if (nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_UNITS)
+	else if (m_colorMode == 1 && nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_UNITS)
 	{
 		pDC->SetBkColor(COLOR_BOTH);
 		return hBrBoth;
 	}
-	else if (nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_FIRING_UNITS)
+	else if (m_colorMode == 1 && nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_FIRING_UNITS)
 	{
 		pDC->SetBkColor(COLOR_OPP);
 		return hBrYellow;
 	}
-	else if (nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_SIGHTED_UNITS)
+	else if (m_colorMode == 1 && nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_SIGHTED_UNITS)
 	{
 		if (s_networkActiveSide == SIDE_BLUE)
 		{
@@ -726,7 +729,7 @@ HBRUSH CAirCavLOSDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 			return hBrBlue;
 		}
 	}
-	else if (nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_SIGHTING_UNITS)
+	else if (m_colorMode == 1 && nCtlColor == CTLCOLOR_LISTBOX && pWnd->GetDlgCtrlID() == IDC_LIST_SIGHTING_UNITS)
 	{
 		if (s_networkActiveSide == SIDE_BLUE)
 		{
@@ -5243,3 +5246,16 @@ void CAirCavLOSDlg::switchSides()
 	m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
 }
 
+
+void CAirCavLOSDlg::OnBnClickedCheckColor()
+{
+	// toggle the color mode
+	if (m_colorMode == 1)
+		m_colorMode = 0;
+	else
+		m_colorMode = 1;
+
+	// refresh the entire window
+	Invalidate();
+	UpdateWindow();
+}

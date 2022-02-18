@@ -169,6 +169,7 @@ public:
 	int m_activeUnitRadarOn;
 	int m_debugLOSMessages;
 	int m_debugFKNMessages;
+	int m_colorMode;
 
 	std::map<int, std::string> popupSightedUnits;
 
@@ -251,4 +252,5 @@ public:
 	afx_msg void OnBnClickedButtonActionRadar();
 	afx_msg void OnBnClickedCheckActiveRadarOn();
 	afx_msg void OnBnClickedButtonConnect();
+	afx_msg void OnBnClickedCheckColor();
 };

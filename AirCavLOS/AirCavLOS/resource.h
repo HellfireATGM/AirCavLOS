@@ -198,6 +198,8 @@
 #define IDC_CHECK_ACTIVE_RADAR_ON       1103
 #define IDC_BUTTON_CONNECT              1104
 #define IDC_EDIT_MY_SIDE                1105
+#define IDC_CHECK_DEBUG_PK2             1106
+#define IDC_CHECK_COLOR                 1106
 
 // Next default values for new objects
 // 

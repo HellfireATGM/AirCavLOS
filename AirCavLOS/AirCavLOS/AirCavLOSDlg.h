@@ -59,7 +59,7 @@ public:
 	RowCol				m_artillerySmokeHexList;
 
 	UnitTracking		m_unitTracking;
-
+	bool				m_oppFiringMode;
 	bool				m_shutdown;
 
 // Implementation
@@ -198,19 +198,22 @@ public:
 
 	void sendUnitInfo(int unit);
 	void encodeUnitInfo(int unit, char *outbuffer);
-	void decodeUnitInfo(char *inbuffer);
+	void decodeUnitInfo(const char *inbuffer);
 	
 	void sendMapInfo(int row, int col);
 	void encodeMapInfo(int col, int row, char *outbuffer);
-	void decodeMapInfo(char *inbuffer);
+	void decodeMapInfo(const char *inbuffer);
 	
 	void sendWeather();
 	void encodeWeather(char *outbuffer);
-	void decodeWeather(char *inbuffer);
+	void decodeWeather(const char *inbuffer);
 
 	void sendTimeOfDay();
 	void encodeTimeOfDay(char *outbuffer);
-	void decodeTimeOfDay(char *inbuffer);
+	void decodeTimeOfDay(const char *inbuffer);
+
+	void sendOppFire(bool opFire);
+	void enterOppFire(const char *inbuffer);
 
 	afx_msg void OnBnClickedButtonEditTerrain();
 	afx_msg void OnBnClickedButtonFillTerrain();

@@ -115,9 +115,14 @@ DWORD WINAPI clientReceive(LPVOID lpParam)
 			s_networkCommand = MSG_UPDATE_UNIT_INFO;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, update_map, strlen(update_map)) == 0)
+		else if (strncmp(buffer, switch_sides, strlen(switch_sides)) == 0)
 		{
-			s_networkCommand = MSG_UPDATE_MAP_INFO;
+			s_networkCommand = MSG_SWITCH_SIDES;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, opp_fire, strlen(opp_fire)) == 0)
+		{
+			s_networkCommand = MSG_OPP_FIRE;
 			strcpy(s_networkBuffer, buffer);
 		}
 		else if (strncmp(buffer, set_time, strlen(set_time)) == 0)
@@ -130,9 +135,9 @@ DWORD WINAPI clientReceive(LPVOID lpParam)
 			s_networkCommand = MSG_CHANGE_WEATHER;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, switch_sides, strlen(switch_sides)) == 0)
+		else if (strncmp(buffer, update_map, strlen(update_map)) == 0)
 		{
-			s_networkCommand = MSG_SWITCH_SIDES;
+			s_networkCommand = MSG_UPDATE_MAP_INFO;
 			strcpy(s_networkBuffer, buffer);
 		}
 
@@ -231,9 +236,14 @@ DWORD WINAPI serverReceive(LPVOID lpParam)
 			s_networkCommand = MSG_UPDATE_UNIT_INFO;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, update_map, strlen(update_map)) == 0)
+		else if (strncmp(buffer, switch_sides, strlen(switch_sides)) == 0)
 		{
-			s_networkCommand = MSG_UPDATE_MAP_INFO;
+			s_networkCommand = MSG_SWITCH_SIDES;
+			strcpy(s_networkBuffer, buffer);
+		}
+		else if (strncmp(buffer, opp_fire, strlen(opp_fire)) == 0)
+		{
+			s_networkCommand = MSG_OPP_FIRE;
 			strcpy(s_networkBuffer, buffer);
 		}
 		else if (strncmp(buffer, set_time, strlen(set_time)) == 0)
@@ -246,9 +256,9 @@ DWORD WINAPI serverReceive(LPVOID lpParam)
 			s_networkCommand = MSG_CHANGE_WEATHER;
 			strcpy(s_networkBuffer, buffer);
 		}
-		else if (strncmp(buffer, switch_sides, strlen(switch_sides)) == 0)
+		else if (strncmp(buffer, update_map, strlen(update_map)) == 0)
 		{
-			s_networkCommand = MSG_SWITCH_SIDES;
+			s_networkCommand = MSG_UPDATE_MAP_INFO;
 			strcpy(s_networkBuffer, buffer);
 		}
 
@@ -340,6 +350,8 @@ void CALLBACK TimerProc(HWND hWnd, UINT nMsg, UINT_PTR nTimerID, DWORD dwTime)
 {
 	if (s_networkBuffer[0] != 0)
 	{
+		std::string message(s_networkBuffer);
+		memset(s_networkBuffer, 0, sizeof(s_networkBuffer));
 		CAirCavLOSDlg* pMainWnd = (CAirCavLOSDlg*)AfxGetMainWnd();
 
 		switch (s_networkCommand)
@@ -348,29 +360,30 @@ void CALLBACK TimerProc(HWND hWnd, UINT nMsg, UINT_PTR nTimerID, DWORD dwTime)
 		{
 			char cmd[10];
 			int unitID;
-			sscanf(s_networkBuffer, "%s %d", cmd, &unitID);
+			sscanf(message.c_str(), "%s %d", cmd, &unitID);
 			pMainWnd->setActiveUnit(unitID);
 			break;
 		}
 		case MSG_UPDATE_UNIT_INFO:
-			pMainWnd->decodeUnitInfo(s_networkBuffer);
+			pMainWnd->decodeUnitInfo(message.c_str());
 			break;
 		case MSG_UPDATE_MAP_INFO:
-			pMainWnd->decodeMapInfo(s_networkBuffer);
+			pMainWnd->decodeMapInfo(message.c_str());
 			break;
 		case MSG_CHANGE_TIMEOFDAY:
-			pMainWnd->decodeTimeOfDay(s_networkBuffer);
+			pMainWnd->decodeTimeOfDay(message.c_str());
 			break;
 		case MSG_CHANGE_WEATHER:
-			pMainWnd->decodeWeather(s_networkBuffer);
+			pMainWnd->decodeWeather(message.c_str());
 			break;
 		case MSG_SWITCH_SIDES:
 			pMainWnd->switchSides();
 			break;
+		case MSG_OPP_FIRE:
+			pMainWnd->enterOppFire(message.c_str());
+			break;
 		}
 		pMainWnd->updateActiveUnit(TRUE);
-
-		memset(s_networkBuffer, 0, sizeof(s_networkBuffer));
 	}
 }
 
@@ -518,6 +531,7 @@ CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 
 	m_colorMode = 1;
 	m_shutdown = false;
+	m_oppFiringMode = false;
 
 	s_networkActiveSide = -1;
 }
@@ -740,6 +754,18 @@ HBRUSH CAirCavLOSDlg::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		{
 			pDC->SetBkColor(COLOR_BLUE);
 			return hBrBlue;
+		}
+	}
+	else if (m_colorMode == 1 && nCtlColor == CTLCOLOR_BTN && pWnd->GetDlgCtrlID() == IDC_BUTTON_ACTION_OPPFIRE)
+	{
+		if (m_oppFiringMode)
+		{
+			pDC->SetBkColor(COLOR_OPP);
+			return hBrYellow;
+		}
+		else
+		{
+			return CDialog::OnCtlColor(pDC, pWnd, nCtlColor);
 		}
 	}
 	// All the rest
@@ -1910,7 +1936,14 @@ void CAirCavLOSDlg::OnBnClickedButtonResetActive()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 {
-	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
+	// if this is not the active side, just send the message that we are now in opp fire mode
+	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide)
+	{
+		sendOppFire(true);
+		return;
+	}
+
+	m_oppFiringMode = true;
 
 	int indexSelectedUnit = m_SightingUnitsListBox.GetCurSel();
 	if (indexSelectedUnit < 0 )
@@ -2497,6 +2530,10 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList, bool noNetworkUpdate)
 			SideType mySideType = s_thisActiveSide == SIDE_RED ? SIDE_RED : SIDE_BLUE;
 			m_activeSide = counterDataList[m_ActiveUnit]->getUnitInfo()->getSideTypeString(activeSideType);
 			m_mySide = counterDataList[m_ActiveUnit]->getUnitInfo()->getSideTypeString(mySideType);
+			if (s_thisActiveSide != s_networkActiveSide || m_oppFiringMode)
+				GetDlgItem(IDC_BUTTON_ACTION_OPPFIRE)->EnableWindow(TRUE);
+			else
+				GetDlgItem(IDC_BUTTON_ACTION_OPPFIRE)->EnableWindow(FALSE);
 		}
 		else
 		{
@@ -3186,17 +3223,26 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList, bool noNetworkUpdate)
 				}
 			}
 
-			// override the hex position and sighted units if this is not the active side over the network
-			if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide)
+			// modify the sighting units depending on which side this is on the network
+			if (s_thisActiveSide != BOTH)
 			{
-				// do not display any units the active unit can sight
-				m_SightedUnitsListBox.ResetContent();
-
-				// if there are no units sighting this unit...
-				if (m_SightingUnitsListBox.GetCount() == 0)
+				// override the hex position and sighted units if this is not the active side over the network
+				if (s_thisActiveSide != s_networkActiveSide)
 				{
-					// ...obscure its actual position from the enemy
-					m_activeUnitPosition = (CString)"XXXX";
+					// do not display any units the active unit can sight
+					m_SightedUnitsListBox.ResetContent();
+
+					// if there are no units sighting this unit...
+					if (m_SightingUnitsListBox.GetCount() == 0)
+					{
+						// ...obscure its actual position from the enemy
+						m_activeUnitPosition = (CString)"XXXX";
+					}
+				}
+				else if (!m_oppFiringMode)
+				{
+					// if this is the active side, don't display *any* sighting units unless in opp fire mode
+					m_SightingUnitsListBox.ResetContent();
 				}
 			}
 		}
@@ -3255,7 +3301,7 @@ void CAirCavLOSDlg::encodeUnitInfo(int unit, char *outbuffer)
 	strncpy(outbuffer, buffer, strlen(buffer));
 }
 
-void CAirCavLOSDlg::decodeUnitInfo(char *inbuffer)
+void CAirCavLOSDlg::decodeUnitInfo(const char *inbuffer)
 {
 	char cmd[10];
 	int unit, col, row, elevOffset, heloOffset, fired, moved, status, defilade, evading;
@@ -3300,7 +3346,7 @@ void CAirCavLOSDlg::encodeMapInfo(int row, int col, char *outbuffer)
 	strncpy(outbuffer, buffer, strlen(buffer));
 }
 
-void CAirCavLOSDlg::decodeMapInfo(char *inbuffer)
+void CAirCavLOSDlg::decodeMapInfo(const char *inbuffer)
 {
 	char cmd[10];
 	int col, row, smoke, wreck;
@@ -3345,6 +3391,22 @@ void CAirCavLOSDlg::sendMapInfo(int row, int col)
 	}
 }
 
+void CAirCavLOSDlg::sendOppFire(bool opFire)
+{
+	// only if networking is enabled
+	if (s_thisActiveSide != BOTH)
+	{
+		if (s_thisActiveSide == SIDE_BLUE)
+			if (opFire) serverSend("oppfire 1");
+			else serverSend("oppfire 0");
+		else
+			if (opFire) clientSend("oppfire 1");
+			else clientSend("oppfire 0");
+		Sleep(1000);
+	}
+	m_oppFiringMode = opFire;
+}
+
 void CAirCavLOSDlg::encodeWeather(char *outbuffer)
 {
 	char buffer[MAX_BUF_SIZE] = { 0 };
@@ -3352,7 +3414,7 @@ void CAirCavLOSDlg::encodeWeather(char *outbuffer)
 	strncpy(outbuffer, buffer, strlen(buffer));
 }
 
-void CAirCavLOSDlg::decodeWeather(char *inbuffer)
+void CAirCavLOSDlg::decodeWeather(const char *inbuffer)
 {
 	char cmd[10];
 	char buffer[MAX_BUF_SIZE] = { 0 };
@@ -3397,7 +3459,7 @@ void CAirCavLOSDlg::encodeTimeOfDay(char *outbuffer)
 	strncpy(outbuffer, buffer, strlen(buffer));
 }
 
-void CAirCavLOSDlg::decodeTimeOfDay(char *inbuffer)
+void CAirCavLOSDlg::decodeTimeOfDay(const char *inbuffer)
 {
 	char cmd[10];
 	char buffer[MAX_BUF_SIZE] = { 0 };
@@ -3775,9 +3837,13 @@ void CAirCavLOSDlg::resolveOpportunityFire()
 	{
 		updateActiveUnit();
 		m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
+		m_oppFiringMode = false;
 	}
 	else
 	{
+		// no longer handling opportunity fire
+		sendOppFire(false);
+
 		// if the active unit is an enemy unit, might need to switch sides
 		SideType thisSide = counterDataList[m_ActiveUnit]->getSideType();
 		if (thisSide == s_networkActiveSide)
@@ -4094,6 +4160,9 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 
 void CAirCavLOSDlg::OnBnClickedButtonResetFiring()
 {
+	// no longer handling opportunity fire
+	sendOppFire(false);
+
 	// set Evasive Maneuver to false for all targets since combat has been resolved
 	for ( int c=0; c<m_maxCounters; c++ )
 		counterDataList[c]->setEvading(0);
@@ -5255,7 +5324,28 @@ void CAirCavLOSDlg::switchSides()
 			break;
 		}
 	}
+	m_oppFiringMode = false;
 	m_AvailableUnitsListBox.SetCurSel(m_ActiveUnit);
+}
+
+
+void CAirCavLOSDlg::enterOppFire(const char *inbuffer)
+{
+	std::string opp(inbuffer);
+	if (opp == "oppfire 1")
+	{
+		if (s_networkActiveSide == SIDE_RED)
+			MessageBox((CString)"BLUE side is opportunity firing", (CString)"Opportunity Fire!", MB_OK);
+		else
+			MessageBox((CString)"RED side is opportunity firing", (CString)"Opportunity Fire!", MB_OK);
+
+		m_oppFiringMode = true;
+	}
+	else if (opp == "oppfire 0")
+	{
+		m_oppFiringMode = false;
+	}
+	updateActiveUnit();
 }
 
 

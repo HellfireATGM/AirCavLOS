@@ -3243,22 +3243,29 @@ void CAirCavLOSDlg::encodeUnitInfo(int unit, char *outbuffer)
 	int laserdesignated = counterDataList[unit]->getLaserDesignatedUnit();
 	int laserdesignating = counterDataList[unit]->getLaserDesignatingUnit();
 	int radar = counterDataList[unit]->getRadarInUse();
+	int ammom1 = counterDataList[unit]->getAmmoMainWeapon1();
+	int ammom2 = counterDataList[unit]->getAmmoMainWeapon2();
+	int ammom3 = counterDataList[unit]->getAmmoMainWeapon3();
+	int ammos1 = counterDataList[unit]->getAmmoSecondaryWeapon1();
+	int ammos2 = counterDataList[unit]->getAmmoSecondaryWeapon2();
 
 	char buffer[MAX_BUF_SIZE] = { 0 };;
-	sprintf_s(buffer, "info %d %d %d %2.1f %d %d %d %d %d %d %d %d %d %d %d %d %d", unit, col, row, OPs, elevOffset, heloOffset, 
-		fired, moved, status, defilade, evading, dismounted, suppressed, optics, laserdesignated, laserdesignating, radar);
+	sprintf_s(buffer, "info %d %d %d %2.1f %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", unit, col, row, OPs, elevOffset, heloOffset, 
+		fired, moved, status, defilade, evading, dismounted, suppressed, optics, laserdesignated, laserdesignating, radar, ammom1, ammom2, ammom3, ammos1, ammos2);
 	strncpy(outbuffer, buffer, strlen(buffer));
 }
 
 void CAirCavLOSDlg::decodeUnitInfo(char *inbuffer)
 {
 	char cmd[10];
-	int unit, col, row, elevOffset, heloOffset, fired, moved, status, defilade, evading, dismounted, suppressed, optics, laserdesignated, laserdesignating, radar;
+	int unit, col, row, elevOffset, heloOffset, fired, moved, status, defilade, evading;
+	int dismounted, suppressed, optics, laserdesignated, laserdesignating, radar;
+	int ammom1, ammom2, ammom3, ammos1, ammos2;
 	float OPs;
 	char buffer[MAX_BUF_SIZE] = { 0 };;
 	strncpy(buffer, inbuffer, strlen(inbuffer));
-	sscanf(buffer, "%s %d %d %d %f %d %d %d %d %d %d %d %d %d %d %d %d %d", cmd, &unit, &col, &row, &OPs, &elevOffset, &heloOffset,
-		&fired, &moved, &status, &defilade, &evading, &dismounted, &suppressed, &optics, &laserdesignated, &laserdesignating, &radar);
+	sscanf(buffer, "%s %d %d %d %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", cmd, &unit, &col, &row, &OPs, &elevOffset, &heloOffset,
+		&fired, &moved, &status, &defilade, &evading, &dismounted, &suppressed, &optics, &laserdesignated, &laserdesignating, &radar, &ammom1, &ammom2, &ammom3, &ammos1, &ammos2);
 
 	counterDataList[unit]->setHexCol(col);
 	counterDataList[unit]->setHexRow(row);
@@ -3276,6 +3283,11 @@ void CAirCavLOSDlg::decodeUnitInfo(char *inbuffer)
 	counterDataList[unit]->setLaserDesignatedUnit(laserdesignated);
 	counterDataList[unit]->setLaserDesignatingUnit(laserdesignating);
 	counterDataList[unit]->setRadarInUse(radar);
+	counterDataList[unit]->setAmmoMainWeapon1(ammom1);
+	counterDataList[unit]->setAmmoMainWeapon2(ammom2);
+	counterDataList[unit]->setAmmoMainWeapon3(ammom3);
+	counterDataList[unit]->setAmmoSecondaryWeapon1(ammos1);
+	counterDataList[unit]->setAmmoSecondaryWeapon2(ammos2);
 }
 
 void CAirCavLOSDlg::encodeMapInfo(int row, int col, char *outbuffer)

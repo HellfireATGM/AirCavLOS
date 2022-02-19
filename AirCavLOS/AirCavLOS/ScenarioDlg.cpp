@@ -103,7 +103,7 @@ BOOL ScenarioDlg::OnInitDialog()
 {
 	m_scenario = 0;
 	m_side = 2;
-	m_ip = "127.0.0.1";// "192.168.1.154";
+	m_ip = "192.168.1.154";
 	m_port = "5555";
 
 	GetDlgItem(IDC_EDIT_ADDRESS)->EnableWindow(FALSE);

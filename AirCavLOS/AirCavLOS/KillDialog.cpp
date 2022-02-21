@@ -25,6 +25,7 @@ void KillDialog::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_EDIT_FKN, m_FKN1);
 	DDX_Text(pDX, IDC_EDIT_FKN2, m_FKN2);
+	DDX_Text(pDX, IDC_EDIT_FKN3, m_FKN3);
 }
 
 

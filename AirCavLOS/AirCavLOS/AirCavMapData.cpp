@@ -358,7 +358,7 @@ int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, bool usingT
 	bool hitSmokeHex = false;
 	bool hitBlockingHex = false;
 
-	sprintf( logBuffer, "Calculating LOS from %02d%02d [%d] to %02d%02d [%d]\n", org_y, org_x, org_elev, tgt_y, tgt_x, tgt_elev);
+	sprintf( logBuffer, "Calculating LOS from %02d%02d [elev: %d] to %02d%02d [elev: %d]\n", org_y, org_x, org_elev, tgt_y, tgt_x, tgt_elev);
 	strcpy( logString, logBuffer );
 
 	/* setup initial values */
@@ -391,11 +391,11 @@ int AirCavMapData::CalculateLOS( int org_x, int org_y, int org_elev, bool usingT
 	getElevation( tgt_x, tgt_y );
 	sprintf( logBuffer, "Origin Hex %02d%02d   ", org_y, org_x );
 	strcat( logString, logBuffer );
-	sprintf( logBuffer, "Terrain: %s  Elevation: %d\n",TerrainString[Map[org_y][org_x].terrain],Map[org_y][org_x].elevation+org_elev );
+	sprintf( logBuffer, "Terrain: %s  Elevation: %d [%d]\n",TerrainString[Map[org_y][org_x].terrain],Map[org_y][org_x].elevation, org_elev );
 	strcat( logString, logBuffer );
 	sprintf( logBuffer, "Target Hex %02d%02d   ", tgt_y, tgt_x );
 	strcat( logString, logBuffer );
-	sprintf( logBuffer, "Terrain: %s  Elevation: %d\n",TerrainString[Map[tgt_y][tgt_x].terrain],Map[tgt_y][tgt_x].elevation+tgt_elev );
+	sprintf( logBuffer, "Terrain: %s  Elevation: %d [%d]\n",TerrainString[Map[tgt_y][tgt_x].terrain],Map[tgt_y][tgt_x].elevation, tgt_elev );
 	strcat( logString, logBuffer );
 
 top:
@@ -800,8 +800,8 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 
 	blk = LOS_UNBLOCKED;
 	int_hgt = getElevation( x, y );
-	org_hgt = getElevation( org_x, org_y ) + org_elev;
-	tgt_hgt = getElevation( tgt_x, tgt_y ) + tgt_elev;
+	org_hgt = /*getElevation( org_x, org_y ) +*/ org_elev;
+	tgt_hgt = /*getElevation( tgt_x, tgt_y )*/ + tgt_elev;
 
 	if (Map[y][x].terrain == WOODS || Map[y][x].terrain == TOWN)
 	{
@@ -820,7 +820,8 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 	{
 		if (int_hgt >= org_hgt)
 		{
-			blk = LOS_BLOCKED_BY_TERRAIN;
+			if (Map[y][x].contour == 0 || (Map[y][x].contour == 1 && (abs(int_hgt - org_hgt)) > 0))
+				blk = LOS_BLOCKED_BY_TERRAIN;
 		}
 		else if (int_hgt < org_hgt && int_hgt > tgt_hgt)
 		{
@@ -838,7 +839,8 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 	{
 		if (int_hgt >= tgt_hgt)
 		{
-			blk = LOS_BLOCKED_BY_TERRAIN;
+			if (Map[y][x].contour == 0 || (Map[y][x].contour == 1 && (abs(int_hgt - tgt_hgt)) > 0))
+				blk = LOS_BLOCKED_BY_TERRAIN;
 		}
 		else if (int_hgt > org_hgt && int_hgt < tgt_hgt)
 		{

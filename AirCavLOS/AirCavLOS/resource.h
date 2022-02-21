@@ -161,6 +161,7 @@
 #define IDC_EDIT_MAINWPN4               1082
 #define IDC_BUTTON_LAYSMOKE             1082
 #define IDC_RADIO_SCENARIO_11           1082
+#define IDC_EDIT_FKN3                   1082
 #define IDC_EDIT_MAINWPN5               1083
 #define IDC_CHECK_SMOKE                 1083
 #define IDC_RADIO_SIDE_0                1083
@@ -198,7 +199,6 @@
 #define IDC_CHECK_ACTIVE_RADAR_ON       1103
 #define IDC_BUTTON_CONNECT              1104
 #define IDC_EDIT_MY_SIDE                1105
-#define IDC_CHECK_DEBUG_PK2             1106
 #define IDC_CHECK_COLOR                 1106
 
 // Next default values for new objects

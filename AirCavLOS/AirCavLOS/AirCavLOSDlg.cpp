@@ -534,6 +534,8 @@ CAirCavLOSDlg::CAirCavLOSDlg(CWnd* pParent /*=NULL*/)
 	m_oppFiringMode = false;
 
 	s_networkActiveSide = -1;
+
+	srand(time(NULL));
 }
 
 void CAirCavLOSDlg::DoDataExchange(CDataExchange* pDX)
@@ -1122,6 +1124,7 @@ void CAirCavLOSDlg::OnCbnSelchangeComboActiveSecondary()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionPopUp()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	// pre-perform Popup to get other units opportunity to fire
@@ -1150,6 +1153,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionPopUp()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	int wpnType, FKN, FKNpercent, SUP, SUPpercent;
@@ -1259,14 +1263,18 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		int activeUnitOffset = counterDataList[m_ActiveUnit]->getElevOffset();
 		int activeUnitHeloOffset = counterDataList[m_ActiveUnit]->getHeloOffset();
 		activeUnitOffset += activeUnitHeloOffset;
+		int activeElev = mapData->getElevation(activeUnitHexRow, activeUnitHexColumn);
+		int activeUnitElev = activeElev + activeUnitOffset;
 
 		int targetUnitOffset = counterDataList[tgt]->getElevOffset();
 		int targetUnitHeloOffset = counterDataList[tgt]->getHeloOffset();
 		targetUnitOffset += targetUnitHeloOffset;
+		int targetElev = mapData->getElevation(tgtRow, tgtCol);
+		int targetUnitElev = targetElev + targetUnitOffset;
 
 		char buffer[MAX_BUF_SIZE];
-		int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, usingTI,
-			tgtRow, tgtCol, targetUnitOffset, skylined, false, buffer);
+		int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitElev, usingTI,
+			tgtRow, tgtCol, targetUnitElev, skylined, false, buffer);
 
 		if (range == 0)
 		{
@@ -1274,8 +1282,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 			if (counterDataList[m_ActiveUnit]->getUnitInfo()->isWeaponLaserGuided(m_activeUnitWeapon) && counterDataList[tgt]->getLaserDesignatingUnit() >= 0)
 			{
 				// need to check if smoke hex or more than one blocking hex along LOS - this will prevent laser designated targeting
-				int laserRange = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, false,
-					tgtRow, tgtCol, targetUnitOffset, skylined, true, buffer);
+				int laserRange = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitElev, false,
+					tgtRow, tgtCol, targetUnitElev, skylined, true, buffer);
 				if (laserRange == 0)
 				{
 					CString msgstr = (CString)"Path to laser designated target is blocked by terrain or smoke";
@@ -1302,7 +1310,14 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		char buffer[MAX_BUF_SIZE];
 		int activeUnitOffset = counterDataList[m_ActiveUnit]->getElevOffset();
 		int targetUnitOffset = counterDataList[tgt]->getElevOffset();
-		int rocketRange = mapData->CalculateLOS( unitRow, unitCol, targetUnitOffset, usingTI, tgtRow, tgtCol, activeUnitOffset, skylined, false, buffer );
+
+		int activeElev = mapData->getElevation(unitRow, unitCol);
+		int activeUnitElev = activeElev + activeUnitOffset;
+
+		int targetElev = mapData->getElevation(tgtRow, tgtCol);
+		int targetUnitElev = targetElev + targetUnitOffset;
+
+		int rocketRange = mapData->CalculateLOS( unitRow, unitCol, activeUnitElev, usingTI, tgtRow, tgtCol, targetUnitElev, skylined, false, buffer );
 		int wpnAdjustedMaxRange = wpn->getMaxRange() / 2;
 		if ( rocketRange > wpnAdjustedMaxRange )
 			return;
@@ -1540,6 +1555,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		// display the information
 		char buffer1[MAX_BUF_SIZE];
 		sprintf_s( buffer1, "%s [%s] -> %s [%s]", sName, sType, tName, tType );
+		char buffer3[MAX_BUF_SIZE];
+		sprintf_s(buffer3, "%d", rand() % 100);
+
 		char buffer2[MAX_BUF_SIZE];
 		int result = IDCANCEL;
 		if (nonHelicopterTarget && weaponCanSuppress)
@@ -1548,6 +1566,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 			KillSuppressDialog dlg;
 			dlg.setFKNText1((CString)buffer1);
 			dlg.setFKNText2((CString)buffer2);
+			dlg.setFKNText3((CString)buffer3);
 			result = dlg.DoModal();
 		}
 		else
@@ -1556,6 +1575,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 			KillDialog dlg;
 			dlg.setFKNText1((CString)buffer1);
 			dlg.setFKNText2((CString)buffer2);
+			dlg.setFKNText3((CString)buffer3);
 			result = dlg.DoModal();
 		}
 
@@ -1640,7 +1660,7 @@ void CAirCavLOSDlg::resetLaserDesignation()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 {
-	if (m_ActiveUnit < 0) return;
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
@@ -1668,7 +1688,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveN()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 {
-	if (m_ActiveUnit < 0) return;
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
@@ -1696,7 +1716,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveNw()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 {
-	if (m_ActiveUnit < 0) return;
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
@@ -1724,7 +1744,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSw()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 {
-	if (m_ActiveUnit < 0) return;
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
@@ -1752,7 +1772,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveS()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 {
-	if (m_ActiveUnit < 0) return;
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
@@ -1780,7 +1800,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMoveSe()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionMoveNe()
 {
-	if (m_ActiveUnit < 0) return;
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isInfantry() && counterDataList[m_ActiveUnit]->getIsSuppressed() )
@@ -2200,6 +2220,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionLaser()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	int indexSelectedUnit = m_SightedUnitsListBox.GetCurSel();
@@ -2286,6 +2307,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionLaser()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionRadar()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if (counterDataList[m_ActiveUnit]->getUnitInfo()->hasRadar())
@@ -2756,10 +2778,12 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList, bool noNetworkUpdate)
 						int targetUnitOffset = counterDataList[c]->getElevOffset();
 						int targetUnitHeloOffset = counterDataList[c]->getHeloOffset();
 						targetUnitOffset += targetUnitHeloOffset;
+						int targetElev = mapData->getElevation(targetHexRow, targetHexColumn);
+						int targetUnitElev = targetElev + targetUnitOffset;
 
 						//  calculate line-of-sight
-						int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, usingTI,
-							targetHexRow, targetHexColumn, targetUnitOffset, skylined, false, buffer);
+						int range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitElev, usingTI,
+							targetHexRow, targetHexColumn, targetUnitElev, skylined, false, buffer);
 
 						CString unitName = counterDataList[m_ActiveUnit]->getName();
 						CString targetName = counterDataList[c]->getName();
@@ -2777,8 +2801,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList, bool noNetworkUpdate)
 							if ( activeUnitHeloOffset == 0 && counterDataList[m_ActiveUnit]->getUnitInfo()->isAttackHelicopter() )
 							{
 								//  recalculate calculate line-of-sight assuming a pop-up
-								range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitOffset + LOW_LEVEL_METERS, usingTI,
-									targetHexRow, targetHexColumn, targetUnitOffset, skylined, false, buffer);
+								range = mapData->CalculateLOS(activeUnitHexRow, activeUnitHexColumn, activeUnitElev + LOW_LEVEL_METERS, usingTI,
+									targetHexRow, targetHexColumn, targetUnitElev, skylined, false, buffer);
 
 								if (range > 0)
 									popupRange = true;
@@ -2959,6 +2983,9 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList, bool noNetworkUpdate)
 						int targetUnitHeloOffset = counterDataList[s.first]->getHeloOffset();
 						targetUnitOffset += targetUnitHeloOffset;
 
+						int targetElev = mapData->getElevation(targetUnitHexRow, targetUnitHexColumn);
+						int targetUnitElev = targetElev + targetUnitOffset;
+
 						// determine if sighting unit is using Thermal Imaging (to see through smoke)
 						bool usingTI = counterDataList[c]->getOpticsInUse() == OPTICS_THERMAL_IMAGER;
 
@@ -2968,8 +2995,11 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList, bool noNetworkUpdate)
 						int friendlyUnitHeloOffset = counterDataList[c]->getHeloOffset();
 						friendlyUnitOffset += friendlyUnitHeloOffset;
 
-						int range = mapData->CalculateLOS(friendlyUnitHexRow, friendlyUnitHexColumn, friendlyUnitOffset, usingTI,
-							targetUnitHexRow, targetUnitHexColumn, targetUnitOffset, skylined, false, buffer);
+						int friendlyElev = mapData->getElevation(friendlyUnitHexRow, friendlyUnitHexColumn);
+						int friendlyUnitElev = friendlyElev + friendlyUnitOffset;
+
+						int range = mapData->CalculateLOS(friendlyUnitHexRow, friendlyUnitHexColumn, friendlyUnitElev, usingTI,
+							targetUnitHexRow, targetUnitHexColumn, targetUnitElev, skylined, false, buffer);
 						if (range > 0)
 							numNormalSightings++;
 					}
@@ -3003,9 +3033,12 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList, bool noNetworkUpdate)
 						int targetUnitHeloOffset = counterDataList[c]->getHeloOffset();
 						targetUnitOffset += targetUnitHeloOffset;
 
+						int targetElev = mapData->getElevation(targetHexRow, targetHexColumn);
+						int targetUnitElev = targetElev + targetUnitOffset;
+
 						//  calculate line-of-sight
-						int range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitOffset, usingTI,
-							activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, false, buffer);
+						int range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitElev, usingTI,
+							activeUnitHexRow, activeUnitHexColumn, activeUnitElev, skylined, false, buffer);
 
 						CString unitName = counterDataList[m_ActiveUnit]->getName();
 						CString targetName = counterDataList[c]->getName();
@@ -3023,8 +3056,8 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList, bool noNetworkUpdate)
 							if (targetUnitHeloOffset <= 0 && counterDataList[c]->getUnitInfo()->isAttackHelicopter() )
 							{
 								//  recalculate calculate line-of-sight assuming a pop-up
-								range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitOffset + LOW_LEVEL_METERS, usingTI,
-									activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, false, buffer);
+								range = mapData->CalculateLOS(targetHexRow, targetHexColumn, targetUnitElev + LOW_LEVEL_METERS, usingTI,
+									activeUnitHexRow, activeUnitHexColumn, activeUnitElev, skylined, false, buffer);
 
 								if (range > 0)
 									popupRange = true;
@@ -3210,8 +3243,11 @@ void CAirCavLOSDlg::updateActiveUnit(bool rebuildList, bool noNetworkUpdate)
 							int enemyUnitHeloOffset = counterDataList[c]->getHeloOffset();
 							enemyUnitOffset += enemyUnitHeloOffset;
 
-							int range = mapData->CalculateLOS(enemyUnitHexRow, enemyUnitHexColumn, enemyUnitOffset, usingTI,
-								activeUnitHexRow, activeUnitHexColumn, activeUnitOffset, skylined, false, buffer);
+							int enemyElev = mapData->getElevation(enemyUnitHexRow, enemyUnitHexColumn);
+							int enemyUnitElev = enemyElev + enemyUnitOffset;
+
+							int range = mapData->CalculateLOS(enemyUnitHexRow, enemyUnitHexColumn, enemyUnitElev, usingTI,
+								activeUnitHexRow, activeUnitHexColumn, activeUnitElev, skylined, false, buffer);
 							if (range > 0)
 								numNormalSightings++;
 						}
@@ -3549,6 +3585,7 @@ void CAirCavLOSDlg::OnDeltaposSpin1(NMHDR *pNMHDR, LRESULT *pResult)
 
 void CAirCavLOSDlg::OnBnClickedCheckActiveFired()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if (m_ActiveUnit >= 0)
@@ -3564,6 +3601,7 @@ void CAirCavLOSDlg::OnBnClickedCheckActiveFired()
 
 void CAirCavLOSDlg::OnBnClickedCheckActiveMoved()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if (m_ActiveUnit >= 0)
@@ -3579,6 +3617,7 @@ void CAirCavLOSDlg::OnBnClickedCheckActiveMoved()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionReset()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( m_ActiveUnit >= 0 )
@@ -3590,6 +3629,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionReset()
 
 void CAirCavLOSDlg::OnEnChangeEditActiveLoc()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( m_ActiveUnit >= 0 )
@@ -3627,6 +3667,7 @@ void CAirCavLOSDlg::OnBnClickedCheckDebugPk()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionEvade()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( m_ActiveUnit >= 0 )
@@ -3641,6 +3682,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionEvade()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionDefilade()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( m_ActiveUnit >= 0 )
@@ -3664,6 +3706,7 @@ void CAirCavLOSDlg::OnBnClickedCheckActiveInDef()
 
 void CAirCavLOSDlg::OnBnClickedButtonActiveSuppressed()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if (m_ActiveUnit >= 0)
@@ -3715,6 +3758,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActiveSuppressed()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionMount()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( m_ActiveUnit >= 0 )
@@ -3779,6 +3823,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionMount()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionLowlevel()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( m_ActiveUnit >= 0 )
@@ -3990,8 +4035,14 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 
 			char buffer[MAX_BUF_SIZE];
 			int activeUnitOffset = counterDataList[firingUnit]->getElevOffset();
+			int activeElev = mapData->getElevation(unitRow, unitCol);
+			int activeUnitElev = activeElev + activeUnitOffset;
+
 			int targetUnitOffset = counterDataList[tgt]->getElevOffset();
-			int rocketRange = mapData->CalculateLOS( unitRow, unitCol, activeUnitOffset, usingTI, tgtRow, tgtCol, targetUnitOffset, skylined, false, buffer );
+			int targetElev = mapData->getElevation(tgtRow, tgtCol);
+			int targetUnitElev = targetElev + targetUnitOffset;
+
+			int rocketRange = mapData->CalculateLOS( unitRow, unitCol, activeUnitElev, usingTI, tgtRow, tgtCol, targetUnitElev, skylined, false, buffer );
 			int wpnAdjustedMaxRange = wpnData->getMaxRange() / 2;
 			if ( rocketRange > wpnAdjustedMaxRange )
 				return lastActiveUnit;
@@ -4101,6 +4152,9 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 		// display the information
 		char buffer1[MAX_BUF_SIZE];
 		sprintf_s( buffer1, "%s [%s] -> %s [%s]", sName, sType, tName, tType );
+		char buffer3[MAX_BUF_SIZE];
+		sprintf_s(buffer3, "%d", rand() % 100);
+
 		char buffer2[MAX_BUF_SIZE];
 		int result = IDCANCEL;
 		if (nonHelicopterTarget && weaponCanSuppress)
@@ -4109,6 +4163,7 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 			KillSuppressDialog dlg;
 			dlg.setFKNText1((CString)buffer1);
 			dlg.setFKNText2((CString)buffer2);
+			dlg.setFKNText3((CString)buffer3);
 			result = dlg.DoModal();
 		}
 		else
@@ -4117,6 +4172,7 @@ int CAirCavLOSDlg::resolveFirePass(int firePass)
 			KillDialog dlg;
 			dlg.setFKNText1((CString)buffer1);
 			dlg.setFKNText2((CString)buffer2);
+			dlg.setFKNText3((CString)buffer3);
 			result = dlg.DoModal();
 		}
 
@@ -4181,6 +4237,7 @@ void CAirCavLOSDlg::OnBnClickedButtonResolveOppfire()
 
 void CAirCavLOSDlg::OnBnClickedButtonLaysmoke()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 	
 	if (!counterDataList[m_ActiveUnit]->getIsDismounted())
@@ -4352,6 +4409,7 @@ void CAirCavLOSDlg::OnCbnSelchangeComboOptics()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	IndirectFire dlg;
@@ -4547,6 +4605,8 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 					sprintf_s( buffer1, "%s -> %s [%s]", ArtilleryTypes[m_lastArtilleryUnit].name, tName, tType );
 					char buffer2[MAX_BUF_SIZE];
 					sprintf_s( buffer2, "FKN: %d [%d%%]", FKN, FKNpercent );
+					char buffer3[MAX_BUF_SIZE];
+					sprintf_s(buffer3, "%d", rand() % 100);
 
 					// launch the appropriate dialog
 					int result = IDCANCEL;
@@ -4556,6 +4616,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 						KillSuppressDialog dlg;
 						dlg.setFKNText1((CString)buffer1);
 						dlg.setFKNText2((CString)buffer2);
+						dlg.setFKNText3((CString)buffer3);
 						result = dlg.DoModal();
 					}
 					else
@@ -4564,6 +4625,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 						KillDialog dlg;
 						dlg.setFKNText1((CString)buffer1);
 						dlg.setFKNText2((CString)buffer2);
+						dlg.setFKNText3((CString)buffer3);
 						result = dlg.DoModal();
 					}
 
@@ -4646,6 +4708,7 @@ void CAirCavLOSDlg::OnBnClickedButtonActionIndfire()
 
 void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	struct hex_loc {
@@ -4728,6 +4791,7 @@ void CAirCavLOSDlg::OnBnClickedButtonRemoveSmoke()
 
 void CAirCavLOSDlg::OnBnClickedCheckPopSmoke()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide) return;
 
 	if ( counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() )
@@ -5196,6 +5260,7 @@ void CAirCavLOSDlg::doUnitTracking(int previousOPs, int previousRow, int previou
 
 void CAirCavLOSDlg::OnBnClickedButtonActionPreviousMove()
 {
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if ( m_unitTracking.unit > 0 && m_unitTracking.unit != m_ActiveUnit )
 	{
 		// check units are same side
@@ -5265,6 +5330,7 @@ void CAirCavLOSDlg::OnBnClickedCheckActiveRadarOn()
 void CAirCavLOSDlg::OnBnClickedButtonConnect()
 {
 	// only the active side can switch
+	if (m_ActiveUnit < 0 || m_oppFiringMode) return;
 	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide)
 	{
 		MessageBox((CString)"Only Active side can switch sides", (CString)"Error", MB_OK);

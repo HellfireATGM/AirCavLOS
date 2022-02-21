@@ -22,8 +22,10 @@ protected:
 public:
 	CString m_FKN1;
 	CString m_FKN2;
+	CString m_FKN3;
 
 	void setFKNText1( CString fkn ) { m_FKN1 = fkn; }
 	void setFKNText2( CString fkn ) { m_FKN2 = fkn; }
+	void setFKNText3( CString fkn ) { m_FKN3 = fkn; }
 	afx_msg void OnBnClickedOk2();
 };

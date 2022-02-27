@@ -474,6 +474,7 @@ top:
 	if (Rtan < SmallTan) SmallTan = Rtan;
 
 	/* find direction with smallest tangent */
+	int hgt;
 	if ( (DBLEQUALTAN(SmallTan, Ftan)) && (DBLEQUALTAN(SmallTan, Rtan)) )
 	{
 		if (!validHex(Fy, Fx))
@@ -484,10 +485,10 @@ top:
 		}
 		else
 		{
-			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev);
+			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev, hgt);
 			sprintf(logBuffer, "Hex 1: %02d%02d result: %s  ", Fy, Fx, blk1 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], Map[Fy][Fx].elevation);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (!validHex(Ry, Rx))
@@ -498,10 +499,10 @@ top:
 		}
 		else
 		{
-			blk2 = Check_Block(org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev);
+			blk2 = Check_Block(org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev, hgt);
 			sprintf(logBuffer, "Hex 2: %02d%02d result: %s  ", Ry, Rx, blk2 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ry][Rx].terrain], Map[Ry][Rx].elevation);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ry][Rx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (blk1 && blk2)
@@ -538,10 +539,10 @@ top:
 		}
 		else
 		{
-			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev);
+			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev, hgt);
 			sprintf(logBuffer, "Hex 1: %02d%02d result: %s  ", Fy, Fx, blk1 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], Map[Fy][Fx].elevation);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (!validHex(Ly, Lx))
@@ -552,10 +553,10 @@ top:
 		}
 		else
 		{
-			blk2 = Check_Block(org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev);
+			blk2 = Check_Block(org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev, hgt);
 			sprintf(logBuffer, "Hex 2: %02d%02d result: %s  ", Ly, Lx, blk2 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ly][Lx].terrain], Map[Ly][Lx].elevation);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ly][Lx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (blk1 && blk2)
@@ -592,10 +593,10 @@ top:
 		}
 		else
 		{
-			blk1 = Check_Block(org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev);
+			blk1 = Check_Block(org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev, hgt);
 			sprintf(logBuffer, "Hex: %02d%02d result: %s  ", Ly, Lx, blk1 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ly][Lx].terrain], Map[Ly][Lx].elevation);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ly][Lx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (blk1)
@@ -632,10 +633,10 @@ top:
 		}
 		else
 		{
-			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev);
+			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev, hgt);
 			sprintf(logBuffer, "Hex: %02d%02d result: %s  ", Fy, Fx, blk1 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], Map[Fy][Fx].elevation);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (blk1)
@@ -672,10 +673,10 @@ top:
 		}
 		else
 		{
-			blk1 = Check_Block(org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev);
+			blk1 = Check_Block(org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev, hgt);
 			sprintf(logBuffer, "Hex: %02d%02d result: %s  ", Ry, Rx, blk1 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ry][Rx].terrain], Map[Ry][Rx].elevation);
+			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ry][Rx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (blk1)
@@ -793,15 +794,12 @@ top:
 	return 0;
 }
 
-int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y, int tgt_x, int tgt_y, int tgt_elev)
+int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y, int tgt_x, int tgt_y, int tgt_elev, int &int_hgt)
 {
-	double dist2tgt, dist2org;
-	int tgt_hgt, org_hgt, int_hgt, blk;
-
-	blk = LOS_UNBLOCKED;
-	int_hgt = getElevation( x, y );
-	org_hgt = /*getElevation( org_x, org_y ) +*/ org_elev;
-	tgt_hgt = /*getElevation( tgt_x, tgt_y )*/ + tgt_elev;
+	int blk = LOS_UNBLOCKED;
+	int_hgt = CalculateAverageHeight(x, y);
+	int org_hgt = org_elev;
+	int tgt_hgt = tgt_elev;
 
 	if (Map[y][x].terrain == WOODS || Map[y][x].terrain == TOWN)
 	{
@@ -818,10 +816,10 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 	}
 	else if (org_hgt > tgt_hgt)
 	{
+		double dist2tgt, dist2org;
 		if (int_hgt >= org_hgt)
 		{
-			if (Map[y][x].contour == 0 || (Map[y][x].contour == 1 && (abs(int_hgt - org_hgt)) > 0))
-				blk = LOS_BLOCKED_BY_TERRAIN;
+			blk = LOS_BLOCKED_BY_TERRAIN;
 		}
 		else if (int_hgt < org_hgt && int_hgt > tgt_hgt)
 		{
@@ -837,10 +835,10 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 	}
 	else if (org_hgt < tgt_hgt)
 	{
+		double dist2tgt, dist2org;
 		if (int_hgt >= tgt_hgt)
 		{
-			if (Map[y][x].contour == 0 || (Map[y][x].contour == 1 && (abs(int_hgt - tgt_hgt)) > 0))
-				blk = LOS_BLOCKED_BY_TERRAIN;
+			blk = LOS_BLOCKED_BY_TERRAIN;
 		}
 		else if (int_hgt > org_hgt && int_hgt < tgt_hgt)
 		{
@@ -855,6 +853,57 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 		}
 	}
 	return (blk);
+}
+
+int AirCavMapData::CalculateAverageHeight(int x, int y)
+{ 
+	// average height is calculated in order to handle the case where you are sighting along hexes with
+	// contour lines, where if you draw a line from one hex to the other, it is clear. 
+	//
+	// For example, 2932 (10m) to 2435 (10m). The intermediate hexes are 20m, so will block LOS, but if you draw 
+	// a straight line from one to the other, no contour lines are intersected, so the LOS should be clear.
+	// or the illustration on page 5 of the rulebook, between E and D. 2823 is 30m so it blocks LOS according to
+	// this algorithm, but it really shouldn't because the LOS runs along the contour line and doesn't intersect it.
+	// 
+	// A human can easily see this, but because we only have a single value for the contour, we cannot tell where
+	// the contour actually is, so we cannot algorithmically handle this case. This workaround handles the latter
+	// case, but not the former.
+	//
+	int contour = getContour(x, y);
+	int hgt = getElevation(x, y);
+	// a hex without a contour has an absolute elevation, just return this
+	if (contour == 0) return hgt;
+	// otherwise, calculate the average height from the entire megahex
+	if (contour && hgt > 0) hgt -= 5;
+
+	int NOx, NOy;
+	CalcAdj(DIRECTION_NO, x, y, &NOx, &NOy);
+	int NOhgt = validHex(NOy, NOx) ? getElevation(NOx, NOy) : hgt;
+	if (getContour(NOx, NOy) && NOhgt > 0) NOhgt -= 5;
+	int NWx, NWy;
+	CalcAdj(DIRECTION_NW, x, y, &NWx, &NWy);
+	int NWhgt = validHex(NWy, NWx) ? getElevation(NWx, NWy) : hgt;
+	if (getContour(NWx, NWy) && NWhgt > 0) NWhgt -= 5;
+	int NEx, NEy;
+	CalcAdj(DIRECTION_NE, x, y, &NEx, &NEy);
+	int NEhgt = validHex(NEy, NEx) ? getElevation(NEx, NEy) : hgt;
+	if (getContour(NEx, NEy) && NEhgt > 0) NEhgt -= 5;
+
+	int SOx, SOy;
+	CalcAdj(DIRECTION_SO, x, y, &SOx, &SOy);
+	int SOhgt = validHex(SOy, SOx) ? getElevation(SOx, SOy) : hgt;
+	if (getContour(SOx, SOy) && SOhgt > 0) SOhgt -= 5;
+	int SWx, SWy;
+	CalcAdj(DIRECTION_SW, x, y, &SWx, &SWy);
+	int SWhgt = validHex(SWy, SWx) ? getElevation(SWx, SWy) : hgt;
+	if (getContour(SWx, SWy) && SWhgt > 0) SWhgt -= 5;
+	int SEx, SEy;
+	CalcAdj(DIRECTION_SE, x, y, &SEx, &SEy);
+	int SEhgt = validHex(SEy, SEx) ? getElevation(SEx, SEy) : hgt;
+	if (getContour(SEx, SEy) && SEhgt > 0) SEhgt -= 5;
+
+	int avgHgt = (hgt + NOhgt + NWhgt + NEhgt + SOhgt + SWhgt + SEhgt) / 7;
+	return avgHgt;
 }
 
 int AirCavMapData::getTerrain( int x, int y )

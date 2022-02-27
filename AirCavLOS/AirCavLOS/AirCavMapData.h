@@ -13,7 +13,8 @@ public:
 	int SaveAndCloseMapDataFile( char *msgbox );
 	int CloseMapDataFile(void);
 	int CalculateLOS( int fx, int fy, int fe, bool ti, int tx, int ty, int te, bool &skylined, bool laser, char *log );
-	int Check_Block (int org_x, int org_y, int fe, int x, int y, int tgt_x, int tgt_y, int te);
+	int Check_Block (int org_x, int org_y, int fe, int x, int y, int tgt_x, int tgt_y, int te, int &hgt);
+	int CalculateAverageHeight(int x, int y);
 
 public:
 	int getContour( int col, int row );

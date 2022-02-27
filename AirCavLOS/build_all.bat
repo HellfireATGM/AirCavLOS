@@ -12,4 +12,7 @@ devenv AirCavLOS.sln /build "Debug|x64"
 
 :end
 cd %root%
+
+call copy_to_dist.bat
+
 @pause

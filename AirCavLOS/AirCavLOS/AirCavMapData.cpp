@@ -150,7 +150,7 @@ int AirCavMapData::OpenMapDataFile(std::string& file_dir)
 
 				fread (&Map[j][i].unit,      sizeof(int), 1, map_file_pointer);
 
-				if ( Map[j][i].elevation == 0xcdcdcdcd )
+				if ( Map[j][i].elevation == -1 )
 				{
 					Map[j][i].terrain = 0;
 					Map[j][i].elevation = -1;
@@ -890,29 +890,39 @@ int AirCavMapData::CalculateAverageHeight(int x, int y)
 
 	int NOx, NOy;
 	CalcAdj(DIRECTION_NO, x, y, &NOx, &NOy);
-	int NOhgt = validHex(NOy, NOx) ? getElevation(NOx, NOy) : hgt;
-	if (getContour(NOx, NOy) && NOhgt > 0) NOhgt -= 5;
+	bool NOvalid = validHex(NOy, NOx);
+	int NOhgt = NOvalid ? getElevation(NOx, NOy) : hgt;
+	if (NOvalid && getContour(NOx, NOy) && NOhgt > 0) NOhgt -= 5;
+
 	int NWx, NWy;
 	CalcAdj(DIRECTION_NW, x, y, &NWx, &NWy);
-	int NWhgt = validHex(NWy, NWx) ? getElevation(NWx, NWy) : hgt;
-	if (getContour(NWx, NWy) && NWhgt > 0) NWhgt -= 5;
+	bool NWvalid = validHex(NWy, NWx);
+	int NWhgt = NWvalid ? getElevation(NWx, NWy) : hgt;
+	if (NWvalid && getContour(NWx, NWy) && NWhgt > 0) NWhgt -= 5;
+
 	int NEx, NEy;
 	CalcAdj(DIRECTION_NE, x, y, &NEx, &NEy);
-	int NEhgt = validHex(NEy, NEx) ? getElevation(NEx, NEy) : hgt;
-	if (getContour(NEx, NEy) && NEhgt > 0) NEhgt -= 5;
+	bool NEvalid = validHex(NEy, NEx);
+	int NEhgt = NEvalid ? getElevation(NEx, NEy) : hgt;
+	if (NEvalid && getContour(NEx, NEy) && NEhgt > 0) NEhgt -= 5;
 
 	int SOx, SOy;
 	CalcAdj(DIRECTION_SO, x, y, &SOx, &SOy);
-	int SOhgt = validHex(SOy, SOx) ? getElevation(SOx, SOy) : hgt;
-	if (getContour(SOx, SOy) && SOhgt > 0) SOhgt -= 5;
+	bool SOvalid = validHex(SOy, SOx);
+	int SOhgt = SOvalid ? getElevation(SOx, SOy) : hgt;
+	if (SOvalid && getContour(SOx, SOy) && SOhgt > 0) SOhgt -= 5;
+
 	int SWx, SWy;
 	CalcAdj(DIRECTION_SW, x, y, &SWx, &SWy);
-	int SWhgt = validHex(SWy, SWx) ? getElevation(SWx, SWy) : hgt;
-	if (getContour(SWx, SWy) && SWhgt > 0) SWhgt -= 5;
+	bool SWvalid = validHex(SWy, SWx);
+	int SWhgt = SWvalid ? getElevation(SWx, SWy) : hgt;
+	if (SWvalid && getContour(SWx, SWy) && SWhgt > 0) SWhgt -= 5;
+
 	int SEx, SEy;
 	CalcAdj(DIRECTION_SE, x, y, &SEx, &SEy);
-	int SEhgt = validHex(SEy, SEx) ? getElevation(SEx, SEy) : hgt;
-	if (getContour(SEx, SEy) && SEhgt > 0) SEhgt -= 5;
+	bool SEvalid = validHex(SEy, SEx);
+	int SEhgt = SEvalid ? getElevation(SEx, SEy) : hgt;
+	if (SEvalid && getContour(SEx, SEy) && SEhgt > 0) SEhgt -= 5;
 
 	int avgHgt = (hgt + NOhgt + NWhgt + NEhgt + SOhgt + SWhgt + SEhgt) / 7;
 	return avgHgt;
@@ -961,6 +971,8 @@ int AirCavMapData::getElevation( int x, int y )
 			Map[y][x].vs = dlg.getRiverHex(DIRECTION_SO);
 			Map[y][x].vse = dlg.getRiverHex(DIRECTION_SE);
 			Map[y][x].vne = dlg.getRiverHex(DIRECTION_NE);
+
+			setMapDataEdited();
 		}
 	}
 	return Map[y][x].elevation;
@@ -1141,7 +1153,7 @@ int AirCavMapData::editTerrainData( int x, int y )
 		Map[y][x].vse = dlg.getRiverHex(DIRECTION_SE);
 		Map[y][x].vne = dlg.getRiverHex(DIRECTION_NE);
 
-		m_mapDataEdited = true;
+		setMapDataEdited();
 	}
 	return 1;
 }

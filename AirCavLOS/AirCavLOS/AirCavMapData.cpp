@@ -823,11 +823,17 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 		}
 		else if (int_hgt < org_hgt && int_hgt > tgt_hgt)
 		{
-			double d2o = (x-org_x)*(x-org_x) + (y-org_y)*(y-org_y);
+			double origin_x = Map[org_y][org_x].x;
+			double origin_y = Map[org_y][org_x].y;
+			double target_x = Map[tgt_y][tgt_x].x;
+			double target_y = Map[tgt_y][tgt_x].y;
+			double int_x = Map[y][x].x;
+			double int_y = Map[y][x].y;
+			double d2o = (int_x - origin_x)*(int_x - origin_x) + (int_y - origin_y)*(int_y - origin_y);
 			dist2org = sqrt(d2o);
-			double d2t = (x-tgt_x)*(x-tgt_x) + (y-tgt_y)*(y-tgt_y);
+			double d2t = (int_x - target_x)*(int_x - target_x) + (int_y - target_y)*(int_y - target_y);
 			dist2tgt = sqrt(d2t);
-			if (dist2tgt < dist2org)
+			if (!DBLEQUAL(dist2tgt, dist2org) && dist2tgt < dist2org)
 			{
 				blk = LOS_BLOCKED_BY_TERRAIN;
 			}
@@ -842,11 +848,17 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 		}
 		else if (int_hgt > org_hgt && int_hgt < tgt_hgt)
 		{
-			double d2o = (x-org_x)*(x-org_x) + (y-org_y)*(y-org_y);
+			double origin_x = Map[org_y][org_x].x;
+			double origin_y = Map[org_y][org_x].y;
+			double target_x = Map[tgt_y][tgt_x].x;
+			double target_y = Map[tgt_y][tgt_x].y;
+			double int_x = Map[y][x].x;
+			double int_y = Map[y][x].y;
+			double d2o = (int_x - origin_x)*(int_x - origin_x) + (int_y - origin_y)*(int_y - origin_y);
 			dist2org = sqrt(d2o);
-			double d2t = (x-tgt_x)*(x-tgt_x) + (y-tgt_y)*(y-tgt_y);
+			double d2t = (int_x - target_x)*(int_x - target_x) + (int_y - target_y)*(int_y - target_y);
 			dist2tgt = sqrt(d2t);
-			if (dist2org < dist2tgt)
+			if (!DBLEQUAL(dist2org, dist2tgt) && dist2org < dist2tgt)
 			{
 				blk = LOS_BLOCKED_BY_TERRAIN;
 			}

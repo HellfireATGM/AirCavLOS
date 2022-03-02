@@ -15,4 +15,4 @@ cd %root%
 
 call copy_to_dist.bat
 
-@pause
+rem @pause

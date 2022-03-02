@@ -716,7 +716,7 @@ int AirCavCounterData::checkContour(AirCavMapData *mapData, int col, int row, in
 		// don't bring up the dialog if moving via a road - always stay at the lowest elevation
 		if (moveViaRoad)
 		{
-			elevOffset = -20;
+			elevOffset = -10;
 			if ((elevOffset + nextElev) < 0)
 				elevOffset += 10;
 		}

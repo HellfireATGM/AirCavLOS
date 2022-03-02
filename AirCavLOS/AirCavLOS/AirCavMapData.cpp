@@ -879,15 +879,23 @@ int AirCavMapData::CalculateAverageHeight(int x, int y)
 	// 
 	// A human can easily see this, but because we only have a single value for the contour, we cannot tell where
 	// the contour actually is, so we cannot algorithmically handle this case. This workaround handles the latter
-	// case, but not the former.
+	// case, but not the former. It could be argued that this method is more accurate because it is not based on 
+	// the assumption that the terrain is a "wedding cake", rather there is a smooth transition from one elevation
+	// to the next.
 	//
-	int contour = getContour(x, y);
 	int hgt = getElevation(x, y);
-	// a hex without a contour has an absolute elevation, just return this
-	if (contour == 0) return hgt;
-	// otherwise, calculate the average height from the entire megahex
-	if (contour && hgt > 0) hgt -= 5;
+	int contour = getContour(x, y);
+	int river = getRiver(x, y);
 
+	// a hex without a contour or a river hex has an absolute elevation, just return this
+	if (contour == 0 || river == 1)
+		return hgt;
+
+	// consider a hex with contour lines to be 5 meters less than its highest elevation (on average)
+	if (contour && hgt > 0)
+		hgt -= 5;
+
+	// then calculate the average height from the entire megahex
 	int NOx, NOy;
 	CalcAdj(DIRECTION_NO, x, y, &NOx, &NOy);
 	bool NOvalid = validHex(NOy, NOx);

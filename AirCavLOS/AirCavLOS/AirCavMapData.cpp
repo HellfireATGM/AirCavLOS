@@ -475,6 +475,7 @@ top:
 
 	/* find direction with smallest tangent */
 	int hgt;
+	double ip;
 	if ( (DBLEQUALTAN(SmallTan, Ftan)) && (DBLEQUALTAN(SmallTan, Rtan)) )
 	{
 		if (!validHex(Fy, Fx))
@@ -485,10 +486,13 @@ top:
 		}
 		else
 		{
-			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev, hgt);
+			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev, hgt, ip);
 			sprintf(logBuffer, "Hex 1: %02d%02d result: %s  ", Fy, Fx, blk1 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], hgt);
+			if (blk1 == LOS_BLOCKED_BY_TERRAIN_INTERSECT)
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d (%3.2f)\n", TerrainString[Map[Fy][Fx].terrain], hgt, ip);
+			else
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (!validHex(Ry, Rx))
@@ -499,10 +503,13 @@ top:
 		}
 		else
 		{
-			blk2 = Check_Block(org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev, hgt);
+			blk2 = Check_Block(org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev, hgt, ip);
 			sprintf(logBuffer, "Hex 2: %02d%02d result: %s  ", Ry, Rx, blk2 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ry][Rx].terrain], hgt);
+			if (blk2 == LOS_BLOCKED_BY_TERRAIN_INTERSECT)
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d (%3.2f)\n", TerrainString[Map[Ry][Rx].terrain], hgt, ip);
+			else
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ry][Rx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (blk1 && blk2)
@@ -539,10 +546,13 @@ top:
 		}
 		else
 		{
-			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev, hgt);
+			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev, hgt, ip);
 			sprintf(logBuffer, "Hex 1: %02d%02d result: %s  ", Fy, Fx, blk1 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], hgt);
+			if (blk1 == LOS_BLOCKED_BY_TERRAIN_INTERSECT)
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d (%3.2f)\n", TerrainString[Map[Fy][Fx].terrain], hgt, ip);
+			else
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (!validHex(Ly, Lx))
@@ -553,10 +563,13 @@ top:
 		}
 		else
 		{
-			blk2 = Check_Block(org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev, hgt);
+			blk2 = Check_Block(org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev, hgt, ip);
 			sprintf(logBuffer, "Hex 2: %02d%02d result: %s  ", Ly, Lx, blk2 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ly][Lx].terrain], hgt);
+			if (blk2 == LOS_BLOCKED_BY_TERRAIN_INTERSECT)
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d (%3.2f)\n", TerrainString[Map[Ly][Lx].terrain], hgt, ip);
+			else
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ly][Lx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (blk1 && blk2)
@@ -593,10 +606,13 @@ top:
 		}
 		else
 		{
-			blk1 = Check_Block(org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev, hgt);
+			blk1 = Check_Block(org_x, org_y, org_elev, Lx, Ly, tgt_x, tgt_y, tgt_elev, hgt, ip);
 			sprintf(logBuffer, "Hex: %02d%02d result: %s  ", Ly, Lx, blk1 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ly][Lx].terrain], hgt);
+			if (blk1 == LOS_BLOCKED_BY_TERRAIN_INTERSECT)
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d (%3.2f)\n", TerrainString[Map[Ly][Lx].terrain], hgt, ip);
+			else
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ly][Lx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (blk1)
@@ -633,10 +649,13 @@ top:
 		}
 		else
 		{
-			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev, hgt);
+			blk1 = Check_Block(org_x, org_y, org_elev, Fx, Fy, tgt_x, tgt_y, tgt_elev, hgt, ip);
 			sprintf(logBuffer, "Hex: %02d%02d result: %s  ", Fy, Fx, blk1 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], hgt);
+			if (blk1 == LOS_BLOCKED_BY_TERRAIN_INTERSECT)
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d (%3.2f)\n", TerrainString[Map[Fy][Fx].terrain], hgt, ip);
+			else
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Fy][Fx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (blk1)
@@ -673,10 +692,13 @@ top:
 		}
 		else
 		{
-			blk1 = Check_Block(org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev, hgt);
+			blk1 = Check_Block(org_x, org_y, org_elev, Rx, Ry, tgt_x, tgt_y, tgt_elev, hgt, ip);
 			sprintf(logBuffer, "Hex: %02d%02d result: %s  ", Ry, Rx, blk1 ? "Blocked" : "Clear");
 			strcat(logString, logBuffer);
-			sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ry][Rx].terrain], hgt);
+			if (blk1 == LOS_BLOCKED_BY_TERRAIN_INTERSECT)
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d (%3.2f)\n", TerrainString[Map[Ry][Rx].terrain], hgt, ip);
+			else
+				sprintf(logBuffer, "Terrain: %s  Elevation: %d\n", TerrainString[Map[Ry][Rx].terrain], hgt);
 			strcat(logString, logBuffer);
 		}
 		if (blk1)
@@ -794,7 +816,103 @@ top:
 	return 0;
 }
 
-int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y, int tgt_x, int tgt_y, int tgt_elev, int &int_hgt)
+//---------------------------------------------------------------------------------------------------------------------------------
+// This calculates Line of Sight without regard to the hex grid (or the rules). It uses only the origin and target points and
+// the intersecting hex point at the elevation of the hex. If these intersect, the LOS is blocked. The reason for this is the
+// original rules do not handle certain cases well - i.e. if the target is behind a very small elevation, no matter what the
+// height of the origin, they cannot be seen, since the intersecting hex is always higher than the target hex, even if a little.
+// https://stackoverflow.com/questions/2316490/the-algorithm-to-find-the-point-of-intersection-of-two-3d-line-segment
+// http://mathworld.wolfram.com/Line-LineIntersection.html
+//---------------------------------------------------------------------------------------------------------------------------------
+typedef double Point;
+ 
+class Coord
+{
+public:
+	Coord() {}
+	Coord(double x, double y, double z) { m_x = x; m_y = y; m_z = z; }
+	double x() const { return m_x; }
+	double y() const { return m_y; }
+	double z() const { return m_z; }
+	inline const Coord& operator+(const Coord& rhs)
+	{
+		m_x = m_x + rhs.m_x;
+		m_y = m_y + rhs.m_y;
+		m_z = m_z + rhs.m_z;
+		return *this;
+	}
+	inline const Coord& operator-(const Coord& rhs)
+	{
+		m_x = m_x - rhs.m_x;
+		m_y = m_y - rhs.m_y;
+		m_z = m_z - rhs.m_z;
+		return *this;
+	}
+	inline const Coord& operator*(const Coord& rhs)
+	{
+		m_x = m_x * rhs.m_x;
+		m_y = m_y * rhs.m_y;
+		m_z = m_z * rhs.m_z;
+		return *this;
+	}
+private:
+	double m_x;
+	double m_y;
+	double m_z;
+};
+
+class Line
+{
+public:
+	Line(Coord first, Coord second) { m_first = first; m_second = second; }
+	Coord first() const { return m_first; }
+	Coord second() const { return m_second; }
+private:
+	Coord m_first;
+	Coord m_second;
+};
+
+inline Point dot(const Coord& u, const Coord& v)
+{
+	return u.x() * v.x() + u.y() * v.y() + u.z() * v.z();
+}
+
+inline Point norm2(const Coord& v)
+{
+	return v.x() * v.x() + v.y() * v.y() + v.z() * v.z();
+}
+
+inline Point norm(const Coord& v)
+{
+	return sqrt(norm2(v));
+}
+
+inline Coord cross(const Coord& b, const Coord& c) // cross product
+{
+	return Coord(b.y() * c.z() - c.y() * b.z(), b.z() * c.x() - c.z() * b.x(), b.x() *  c.y() - c.x() * b.y());
+}
+
+bool intersection(const Line& a, const Line& b, Coord& ip)
+{
+	Coord da = a.second() - a.first();
+	Coord db = b.second() - b.first();
+	Coord dc = b.first() - a.first();
+
+	if (dot(dc, cross(da, db)) != 0.0) // lines are not coplanar
+		return false;
+
+	Point s = dot(cross(dc, db), cross(da, db)) / norm2(cross(da, db));
+	if (s >= 0.0 && s <= 1.0)
+	{
+		ip = a.first() + da * Coord(s, s, s);
+		return true;
+	}
+
+	return false;
+}
+//---------------------------------------------------------------------------------------------------------------------------------
+
+int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y, int tgt_x, int tgt_y, int tgt_elev, int &int_hgt, double &ip)
 {
 	int blk = LOS_UNBLOCKED;
 	int_hgt = CalculateAverageHeight(x, y);
@@ -816,7 +934,6 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 	}
 	else if (org_hgt > tgt_hgt)
 	{
-		double dist2tgt, dist2org;
 		if (int_hgt >= org_hgt)
 		{
 			blk = LOS_BLOCKED_BY_TERRAIN;
@@ -829,19 +946,30 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 			double target_y = Map[tgt_y][tgt_x].y;
 			double int_x = Map[y][x].x;
 			double int_y = Map[y][x].y;
+
+			double dist2tgt, dist2org;
 			double d2o = (int_x - origin_x)*(int_x - origin_x) + (int_y - origin_y)*(int_y - origin_y);
 			dist2org = sqrt(d2o);
 			double d2t = (int_x - target_x)*(int_x - target_x) + (int_y - target_y)*(int_y - target_y);
 			dist2tgt = sqrt(d2t);
 			if (!DBLEQUAL(dist2tgt, dist2org) && dist2tgt < dist2org)
 			{
-				blk = LOS_BLOCKED_BY_TERRAIN;
+				// LOS using the above method is inaccurate. This abandons the hex grid and simply calculates
+				// a line from the origin to the target, another line at the intersecting hex from the ground
+				// to the hex elevation. If these intersect, the LOS is blocked.
+				Line originToTarget(Coord(origin_x, origin_y, org_hgt), Coord(target_x, target_y, tgt_hgt));
+				Line intersectingLine(Coord(int_x, int_y, 0), Coord(int_x, int_y, int_hgt));
+				Coord intersectingPoint;
+				if (intersection(originToTarget, intersectingLine, intersectingPoint))
+				{
+					ip = intersectingPoint.z();
+					blk = LOS_BLOCKED_BY_TERRAIN_INTERSECT;
+				}
 			}
 		}
 	}
 	else if (org_hgt < tgt_hgt)
 	{
-		double dist2tgt, dist2org;
 		if (int_hgt >= tgt_hgt)
 		{
 			blk = LOS_BLOCKED_BY_TERRAIN;
@@ -854,13 +982,25 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 			double target_y = Map[tgt_y][tgt_x].y;
 			double int_x = Map[y][x].x;
 			double int_y = Map[y][x].y;
+
+			double dist2tgt, dist2org;
 			double d2o = (int_x - origin_x)*(int_x - origin_x) + (int_y - origin_y)*(int_y - origin_y);
 			dist2org = sqrt(d2o);
 			double d2t = (int_x - target_x)*(int_x - target_x) + (int_y - target_y)*(int_y - target_y);
 			dist2tgt = sqrt(d2t);
 			if (!DBLEQUAL(dist2org, dist2tgt) && dist2org < dist2tgt)
 			{
-				blk = LOS_BLOCKED_BY_TERRAIN;
+				// LOS using the above method is inaccurate. This abandons the hex grid and simply calculates
+				// a line from the origin to the target, another line at the intersecting hex from the ground
+				// to the hex elevation. If these intersect, the LOS is blocked.
+				Line targetToOrigin(Coord(target_x, target_y, tgt_hgt), Coord(origin_x, origin_y, org_hgt));
+				Line intersectingLine(Coord(int_x, int_y, 0), Coord(int_x, int_y, int_hgt));
+				Coord intersectingPoint;
+				if (intersection(targetToOrigin, intersectingLine, intersectingPoint))
+				{
+					ip = intersectingPoint.z();
+					blk = LOS_BLOCKED_BY_TERRAIN_INTERSECT;
+				}
 			}
 		}
 	}
@@ -885,7 +1025,7 @@ int AirCavMapData::CalculateAverageHeight(int x, int y)
 	//
 	int hgt = getElevation(x, y);
 	int contour = getContour(x, y);
-	int river = getRiver(x, y);
+	int river = (getTerrain(x, y) == RIVER);
 
 	// a hex without a contour or a river hex has an absolute elevation, just return this
 	if (contour == 0 || river == 1)

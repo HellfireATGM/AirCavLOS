@@ -312,6 +312,7 @@ typedef struct {
 	float	op;			// OPs remaining
 	int		mount;		// unit mounting this one
 	int		mounted;	// starts mounted
+	int		defilade;	// starts in defilade
 } UnitDef;
 
 typedef struct {

@@ -40,7 +40,8 @@ int AirCavScenarioData::getScenario( int which, AirCavCounterData *counterDataLi
 										unit.offset,				// elevation offset
 										unit.op,					// OPs remaining
 										unit.mount,					// carried by
-										unit.mounted);				// starts mounted or not
+										unit.mounted,				// starts mounted or not
+										unit.defilade);				// starts in defilade or not
 	}
 
 	// assign the carried units to the carrying unit
@@ -93,7 +94,7 @@ int AirCavScenarioData::saveScenario(std::string& file_dir, AirCavCounterData *c
 	replaceString(scenarioName, "]", "");
 	fprintf(scenarioFile, "In-Progress [%s]\n", scenarioName.c_str());
 	fprintf(scenarioFile, "#\n");
-	fprintf(scenarioFile, "# name     side   country  unit type           col  row  elev  op   carrier  mounted\n");
+	fprintf(scenarioFile, "# name     side   country  unit type           col  row  elev  op   carrier  mounted  defilade\n");
 	fprintf(scenarioFile, "#\n");
 
 	for (int i = 0; i < scenarioData[m_currentScenario].numunits; i++)
@@ -159,7 +160,8 @@ int AirCavScenarioData::saveScenario(std::string& file_dir, AirCavCounterData *c
 		{
 			fprintf(scenarioFile, "  %s", "none");
 		}
-		fprintf(scenarioFile, "  %d\n", counterDataList[i]->getIsDismounted()==1 ? 0 : 1);
+		fprintf(scenarioFile, "  %d", counterDataList[i]->getIsDismounted() == 1 ? 0 : 1);
+		fprintf(scenarioFile, "  %d\n", counterDataList[i]->getDefilade() == TRUE ? 1 : 0);
 	}
 	fclose(scenarioFile);
 

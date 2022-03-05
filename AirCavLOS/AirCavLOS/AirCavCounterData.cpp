@@ -128,7 +128,7 @@ AirCavCounterData::AirCavCounterData(void)
 }
 
 AirCavCounterData::AirCavCounterData(CString name, SideType side, CountryType country, 
-					AirCavUnitData *unitinfo, int column, int row, int elev, float op, int mount, int mounted)
+					AirCavUnitData *unitinfo, int column, int row, int elev, float op, int mount, int mounted, int defilade)
 {
 	unitinfo->setCountryType(country);
 	m_name = name;
@@ -150,7 +150,7 @@ AirCavCounterData::AirCavCounterData(CString name, SideType side, CountryType co
 	m_moved = 0;
 	m_rangeToActiveUnit = 0;
 	m_activeUnitRange = 0;
-	m_inDefilade = FALSE;
+	m_inDefilade = defilade;
 	m_evasiveManeuver = FALSE;
 	m_isOppFiring = FALSE;
 	m_tgtOppFiring = -1;

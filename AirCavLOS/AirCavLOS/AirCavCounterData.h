@@ -10,7 +10,7 @@ class AirCavCounterData
 public:
 	AirCavCounterData(void);
 	AirCavCounterData(CString name, SideType side, CountryType country, 
-					AirCavUnitData *unitinfo, int column, int row, int elev, float op, int mount, int mounted);
+					AirCavUnitData *unitinfo, int column, int row, int elev, float op, int mount, int mounted, int defilade);
 public:
 	~AirCavCounterData(void);
 

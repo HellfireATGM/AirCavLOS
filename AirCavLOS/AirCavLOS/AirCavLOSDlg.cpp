@@ -1457,7 +1457,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		int EVMmod = 0;
 		if ( !counterDataList[t]->getEvading() && counterDataList[t]->enoughOPsForEvasiveManeuver() )
 		{
-			bool cannotEvade = ((counterDataList[t]->getUnitInfo()->isHelicopter() || counterDataList[t]->getUnitInfo()->isVehicle()) && wpnType == ROCKET);
+			bool isRocketAttack = ((counterDataList[t]->getUnitInfo()->isHelicopter() || counterDataList[t]->getUnitInfo()->isVehicle()) && wpnType == ROCKET);
+			bool targetInDefilade = (counterDataList[t]->getDefilade() == TRUE);   // my errata: do not allow evade if in defilade
+			bool cannotEvade = (isRocketAttack || targetInDefilade);
 			if (!cannotEvade)
 			{
 				CString tgtUnitName = counterDataList[t]->getName();
@@ -2118,7 +2120,9 @@ void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 				int EVMmod = 0;
 				if ( !counterDataList[m_ActiveUnit]->getEvading() && counterDataList[m_ActiveUnit]->enoughOPsForEvasiveManeuver() )
 				{
-					bool cannotEvade = ((counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() || counterDataList[m_ActiveUnit]->getUnitInfo()->isVehicle()) && wpnType == ROCKET);
+					bool isRocketAttack = ((counterDataList[m_ActiveUnit]->getUnitInfo()->isHelicopter() || counterDataList[m_ActiveUnit]->getUnitInfo()->isVehicle()) && wpnType == ROCKET);
+					bool activeInDefilade = (counterDataList[m_ActiveUnit]->getDefilade() == TRUE);   // my errata: do not allow evade if in defilade
+					bool cannotEvade = (isRocketAttack || activeInDefilade);
 					if (!cannotEvade)
 					{
 						CString tgtUnitName = counterDataList[m_ActiveUnit]->getName();
@@ -5002,10 +5006,10 @@ FILE * CAirCavLOSDlg::openScenarioTextFile(std::string file_dir, int scen)
 
 bool CAirCavLOSDlg::readScenarioTextFile( FILE *fptr, int scen )
 {
-	const int numParameters = 10;
+	const int numParameters = 11;
 
-//  0         1       2        3        4     5     6      7       8       9
-// name     side   country  unit type  col   row  elev     op   carrier  mounted
+//  0         1       2        3        4     5     6      7       8       9       10
+// name     side   country  unit type  col   row  elev     op   carrier  mounted  defilade
 	char		name[32];		// unit name
 	char		side[32];		// which side (0=BLUE, 1=RED)
 	char		country[32];	// which country (0=US, 1=USSR)
@@ -5016,6 +5020,7 @@ bool CAirCavLOSDlg::readScenarioTextFile( FILE *fptr, int scen )
 	float		op;				// OPs remaining
 	char		carrier[32];	// unit mounting this one
 	int			mounted;		// starts mounted
+	int			defilade;		// starts in defilade
 
 	int u = 0;
 	bool done = false;
@@ -5043,8 +5048,8 @@ bool CAirCavLOSDlg::readScenarioTextFile( FILE *fptr, int scen )
 			if ( lineStr[0] == '#' )
 				continue;
 
-			int ret = sscanf( lineStr, "%s %s %s %s %d %d %d %f %s %d", 
-								name, side, country, type, &col, &row, &elev, &op, carrier, &mounted );
+			int ret = sscanf( lineStr, "%s %s %s %s %d %d %d %f %s %d %d", 
+								name, side, country, type, &col, &row, &elev, &op, carrier, &mounted, &defilade);
 
 			if( ret == numParameters)
 			{
@@ -5074,6 +5079,7 @@ bool CAirCavLOSDlg::readScenarioTextFile( FILE *fptr, int scen )
 				newUnit.offset = elev;
 				newUnit.op = op;
 				newUnit.mounted = mounted;
+				newUnit.defilade = defilade;
 
 				newUnit.type = findUnitIndex( type );
 				if ( carrier != (CString)"none" )

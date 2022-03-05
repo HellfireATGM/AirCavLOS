@@ -1,18 +1,18 @@
 Scenario 1: Pipesmoke Mission 1980
 #
-# name     side   country  unit type           col  row  elev  op    carrier   mounted
-#
-Alpha_01   BLUE   US       AH-1S_Cobra         36   33   0     12.0  none      0
-Alpha_02   BLUE   US       AH-1S_Cobra         38   34   0     12.0  none      0
-Delta_21   BLUE   US       UH-60_Blackhawk     38   01   0     12.0  none      0
-Jake_01    BLUE   US       U.S._Inf_Squad      39   31   0     12.0  Delta_21  0
-Mike_05    RED    SOVIET   BRDM_Recon          14   43   0     12.0  none      0
-Mike_06    RED    SOVIET   BRDM_Recon          14   43   0     12.0  none      0
-Mike_07    RED    SOVIET   BRDM_Recon          14   43   0     12.0  none      0
-Fox_21     RED    SOVIET   BMP-1_APC           13   43   0     12.0  none      0
-Fox_22     RED    SOVIET   BMP-1_APC           13   43   0     12.0  none      0
-Fox_23     RED    SOVIET   BMP-1_APC           13   43   0     12.0  none      0
-Romeo_21   RED    SOVIET   Soviet_Inf_Squad    13   43   0     12.0  Fox_21    1
-Romeo_22   RED    SOVIET   Soviet_Inf_Squad    13   43   0     12.0  Fox_22    1
-Romeo_23   RED    SOVIET   Soviet_Inf_Squad    13   43   0     12.0  Fox_23    1
-Jake_01    RED    SOVIET   ZSU-23_SPAAG        14   43   0     12.0  none      0
+# name     side   country  unit type           col  row  elev  op    carrier   mounted  defilade
+#                                                                                     
+Alpha_01   BLUE   US       AH-1S_Cobra         36   33   0     12.0  none      0          0
+Alpha_02   BLUE   US       AH-1S_Cobra         38   34   0     12.0  none      0          0
+Delta_21   BLUE   US       UH-60_Blackhawk     38   01   0     12.0  none      0          0
+Jake_01    BLUE   US       U.S._Inf_Squad      39   31   0     12.0  Delta_21  0          0
+Mike_05    RED    SOVIET   BRDM_Recon          14   43   0     12.0  none      0          0
+Mike_06    RED    SOVIET   BRDM_Recon          14   43   0     12.0  none      0          0
+Mike_07    RED    SOVIET   BRDM_Recon          14   43   0     12.0  none      0          0
+Fox_21     RED    SOVIET   BMP-1_APC           13   43   0     12.0  none      0          0
+Fox_22     RED    SOVIET   BMP-1_APC           13   43   0     12.0  none      0          0
+Fox_23     RED    SOVIET   BMP-1_APC           13   43   0     12.0  none      0          0
+Romeo_21   RED    SOVIET   Soviet_Inf_Squad    13   43   0     12.0  Fox_21    1          0
+Romeo_22   RED    SOVIET   Soviet_Inf_Squad    13   43   0     12.0  Fox_22    1          0
+Romeo_23   RED    SOVIET   Soviet_Inf_Squad    13   43   0     12.0  Fox_23    1          0
+Jake_01    RED    SOVIET   ZSU-23_SPAAG        14   43   0     12.0  none      0          0

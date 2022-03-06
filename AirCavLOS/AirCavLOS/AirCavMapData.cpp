@@ -960,7 +960,7 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 				Line originToTarget(Coord(origin_x, origin_y, org_hgt), Coord(target_x, target_y, tgt_hgt));
 				Line intersectingLine(Coord(int_x, int_y, 0), Coord(int_x, int_y, int_hgt));
 				Coord intersectingPoint;
-				if (intersection(originToTarget, intersectingLine, intersectingPoint))
+				if (intersection(originToTarget, intersectingLine, intersectingPoint) && intersectingPoint.z() <= int_hgt)
 				{
 					ip = intersectingPoint.z();
 					blk = LOS_BLOCKED_BY_TERRAIN_INTERSECT;
@@ -996,7 +996,7 @@ int AirCavMapData::Check_Block (int org_x, int org_y, int org_elev, int x, int y
 				Line targetToOrigin(Coord(target_x, target_y, tgt_hgt), Coord(origin_x, origin_y, org_hgt));
 				Line intersectingLine(Coord(int_x, int_y, 0), Coord(int_x, int_y, int_hgt));
 				Coord intersectingPoint;
-				if (intersection(targetToOrigin, intersectingLine, intersectingPoint))
+				if (intersection(targetToOrigin, intersectingLine, intersectingPoint) && intersectingPoint.z() <= int_hgt)
 				{
 					ip = intersectingPoint.z();
 					blk = LOS_BLOCKED_BY_TERRAIN_INTERSECT;

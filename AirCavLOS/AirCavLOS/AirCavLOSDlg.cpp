@@ -3380,7 +3380,7 @@ void CAirCavLOSDlg::decodeUnitInfo(const char *inbuffer)
 	if (popsmoke == 1)
 	{
 		m_vehicleSmokeHexList.Add(row, col);
-		m_smoke = mapData->setSmoke(row, col, false, true);
+		m_smoke = mapData->setSmoke(row, col, false, false);
 	}
 }
 

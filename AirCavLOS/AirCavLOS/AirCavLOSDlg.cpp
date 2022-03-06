@@ -3334,10 +3334,11 @@ void CAirCavLOSDlg::encodeUnitInfo(int unit, char *outbuffer)
 	int ammom3 = counterDataList[unit]->getAmmoMainWeapon3();
 	int ammos1 = counterDataList[unit]->getAmmoSecondaryWeapon1();
 	int ammos2 = counterDataList[unit]->getAmmoSecondaryWeapon2();
+	int popsmoke = m_popSmokeWhileMoving;
 
 	char buffer[MAX_BUF_SIZE] = { 0 };;
-	sprintf_s(buffer, "info %d %d %d %2.1f %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", unit, col, row, OPs, elevOffset, heloOffset, 
-		fired, moved, status, defilade, evading, dismounted, suppressed, optics, laserdesignated, laserdesignating, radar, ammom1, ammom2, ammom3, ammos1, ammos2);
+	sprintf_s(buffer, "info %d %d %d %2.1f %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", unit, col, row, OPs, elevOffset, heloOffset, 
+		fired, moved, status, defilade, evading, dismounted, suppressed, optics, laserdesignated, laserdesignating, radar, ammom1, ammom2, ammom3, ammos1, ammos2, popsmoke);
 	strncpy(outbuffer, buffer, strlen(buffer));
 }
 
@@ -3346,12 +3347,12 @@ void CAirCavLOSDlg::decodeUnitInfo(const char *inbuffer)
 	char cmd[10];
 	int unit, col, row, elevOffset, heloOffset, fired, moved, status, defilade, evading;
 	int dismounted, suppressed, optics, laserdesignated, laserdesignating, radar;
-	int ammom1, ammom2, ammom3, ammos1, ammos2;
+	int ammom1, ammom2, ammom3, ammos1, ammos2, popsmoke;
 	float OPs;
 	char buffer[MAX_BUF_SIZE] = { 0 };;
 	strncpy(buffer, inbuffer, strlen(inbuffer));
-	sscanf(buffer, "%s %d %d %d %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", cmd, &unit, &col, &row, &OPs, &elevOffset, &heloOffset,
-		&fired, &moved, &status, &defilade, &evading, &dismounted, &suppressed, &optics, &laserdesignated, &laserdesignating, &radar, &ammom1, &ammom2, &ammom3, &ammos1, &ammos2);
+	sscanf(buffer, "%s %d %d %d %f %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d %d", cmd, &unit, &col, &row, &OPs, &elevOffset, &heloOffset,
+		&fired, &moved, &status, &defilade, &evading, &dismounted, &suppressed, &optics, &laserdesignated, &laserdesignating, &radar, &ammom1, &ammom2, &ammom3, &ammos1, &ammos2, &popsmoke);
 
 	counterDataList[unit]->setHexCol(col);
 	counterDataList[unit]->setHexRow(row);
@@ -3374,6 +3375,13 @@ void CAirCavLOSDlg::decodeUnitInfo(const char *inbuffer)
 	counterDataList[unit]->setAmmoMainWeapon3(ammom3);
 	counterDataList[unit]->setAmmoSecondaryWeapon1(ammos1);
 	counterDataList[unit]->setAmmoSecondaryWeapon2(ammos2);
+
+	// active unit is popping smoke
+	if (popsmoke == 1)
+	{
+		m_vehicleSmokeHexList.Add(row, col);
+		m_smoke = mapData->setSmoke(row, col, false, true);
+	}
 }
 
 void CAirCavLOSDlg::encodeMapInfo(int row, int col, char *outbuffer)

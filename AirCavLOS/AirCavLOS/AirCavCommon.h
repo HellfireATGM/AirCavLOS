@@ -19,7 +19,7 @@ using namespace std;
 #define LIGHT_HELO_STACKING 2
 #define HEAVY_HELO_STACKING 3
 
-#define MAX_BUF_SIZE 4096
+#define MAX_BUF_SIZE 8192
 
 // unit types
 #define MAXUNITTYPES 8

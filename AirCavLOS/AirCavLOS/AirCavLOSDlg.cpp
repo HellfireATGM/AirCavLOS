@@ -1174,6 +1174,17 @@ void CAirCavLOSDlg::OnBnClickedButtonActionFireGun()
 		return;
 	}
 
+	// if the active unit is mounted, it cannot fire
+	int isCarriedBy = counterDataList[m_ActiveUnit]->getIsCarriedBy();
+	bool isCarried = (isCarriedBy != -1);
+	bool isMounted = (counterDataList[m_ActiveUnit]->getIsDismounted() != 1);
+	if (isCarried && isMounted)
+	{
+		CString msgstr = (CString)"Mounted unit cannot fire";
+		MessageBox((LPCTSTR)msgstr);
+		return;
+	}
+
 	// get the string, if this is a popup set the flag
 	m_SightedUnitsListBox.GetText(indexSelectedUnit, strSightedUnit);
 	if ( counterDataList[m_ActiveUnit]->getIsPopUp() )
@@ -1958,15 +1969,6 @@ void CAirCavLOSDlg::OnBnClickedButtonResetActive()
 
 void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 {
-	// if this is not the active side, just send the message that we are now in opp fire mode
-	if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide)
-	{
-		sendOppFire(true);
-		return;
-	}
-
-	m_oppFiringMode = true;
-
 	int indexSelectedUnit = m_SightingUnitsListBox.GetCurSel();
 	if (indexSelectedUnit < 0 )
 		return;
@@ -2003,6 +2005,26 @@ void CAirCavLOSDlg::OnBnClickedButtonActionOppfire()
 		// found a target
 		if (thisUnitsActualName == activeUnitsActualName && activeSide != thisSide)
 		{
+			// if the target unit is mounted, it cannot be fired on
+			int isCarriedBy = counterDataList[m_ActiveUnit]->getIsCarriedBy();
+			bool isCarried = (isCarriedBy != -1);
+			bool isMounted = (counterDataList[m_ActiveUnit]->getIsDismounted() != 1);
+			if (isCarried && isMounted)
+			{
+				CString msgstr = (CString)"Mounted unit cannot be fired on";
+				MessageBox((LPCTSTR)msgstr);
+				return;
+			}
+
+			// if this is not the active side, just send the message that we are now in opp fire mode
+			if (s_thisActiveSide != BOTH && s_thisActiveSide != s_networkActiveSide)
+			{
+				sendOppFire(true);
+				return;
+			}
+
+			m_oppFiringMode = true;
+
 			// use popup to figure out which weapon is fired
 			AirCavWeaponData *wpn1, *wpn2, *wpn3, *wpn4, *wpn5;
 			int wpn1Type, wpn2Type, wpn3Type, wpn4Type, wpn5Type;

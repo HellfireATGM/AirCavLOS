@@ -26,10 +26,10 @@ Fox_01       RED        SOVIET     Mi-8_Hip          22     37     0   12.0  non
 Fox_02       RED        SOVIET     Mi-8_Hip          22     37     0   12.0  none        0          0
 Fox_03       RED        SOVIET     Mi-8_Hip          22     37     0   12.0  none        0          0
 Fox_04       RED        SOVIET     Mi-8_Hip          22     37     0   12.0  none        0          0
-Sierra_01    RED        SOVIET     Mi-24_Hind        22     37     0   12.0  none        0          0
-Sierra_02    RED        SOVIET     Mi-24_Hind        22     37     0   12.0  none        0          0
-Sierra_03    RED        SOVIET     Mi-24_Hind        22     37     0   12.0  none        0          0
-Sierra_04    RED        SOVIET     Mi-24_Hind        22     37     0   12.0  none        0          0
+Sierra_01    RED        SOVIET     Mi-24E_Hind       22     37     0   12.0  none        0          0
+Sierra_02    RED        SOVIET     Mi-24E_Hind       22     37     0   12.0  none        0          0
+Sierra_03    RED        SOVIET     Mi-24E_Hind       22     37     0   12.0  none        0          0
+Sierra_04    RED        SOVIET     Mi-24E_Hind       22     37     0   12.0  none        0          0
 Mike_05      RED        SOVIET     BMD_APC           22     37     0   12.0  Echo_01     1          0
 Mike_06      RED        SOVIET     BMD_APC           22     37     0   12.0  Echo_02     1          0
 Mike_07      RED        SOVIET     BMD_APC           22     37     0   12.0  Echo_03     1          0

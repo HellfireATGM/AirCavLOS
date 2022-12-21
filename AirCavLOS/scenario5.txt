@@ -45,5 +45,5 @@ Papa_07      RED      SOVIET   Soviet_Inf_Squad  48   26   0   12.0  Echo_17    
 Papa_08      RED      SOVIET   Soviet_Inf_Squad  48   26   0   12.0  Echo_18    1        0  	 
 Papa_09      RED      SOVIET   Soviet_Inf_Squad  48   26   0   12.0  Echo_19    1        0  	 
 Papa_10      RED      SOVIET   Soviet_Inf_Squad  48   26   0   12.0  Echo_20    1        0  	 
-Sierra_03    RED      SOVIET   Mi-24_Hind        48   30   0   12.0  none       0        0  	 
-Sierra_04    RED      SOVIET   Mi-24_Hind        48   30   0   12.0  none       0        0  	 
+Sierra_03    RED      SOVIET   Mi-24D_Hind       48   30   0   12.0  none       0        0  	 
+Sierra_04    RED      SOVIET   Mi-24D_Hind       48   30   0   12.0  none       0        0  	 

@@ -34,4 +34,20 @@ Current limitations:
 - Runs on Windows only (there are no plans to port to any other platform, please don't ask)
 
 
-Please email aircavlos@gmail.com for any questions or comments
+Please email aircavlos@gmail.com for any questions or comments.
+
+
+Scenario selection screen:
+
+![ac-1](https://github.com/HellfireATGM/AirCavLOS/assets/96739000/012d105b-a311-4b4c-af53-32f24ce848db)
+
+
+Main Dialog:
+
+![ac-2](https://github.com/HellfireATGM/AirCavLOS/assets/96739000/4d5938f8-c217-4746-95c5-161128351fd4)
+
+
+Fire confirmation dialog:
+
+![ac-3](https://github.com/HellfireATGM/AirCavLOS/assets/96739000/c15cefa5-1350-45a6-a22f-bca243298ae1)
+
